@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Services & Tarifs — MS Comm' | Melody</title>
+  <meta name="description" content="Découvrez les services et tarifs de MS Comm' — templates, chartes graphiques, réseaux sociaux, photographie, vidéo et accompagnement." />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" type="image/png" href="assets/data/logo_black-removebg.png" media="(prefers-color-scheme: light)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+
+  <canvas id="sparkle-canvas"></canvas>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
+          <div class="brand-text">
+            <strong>MS Comm'</strong>
+            <span>Prestataire de services de communication</span>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html" class="active">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer" id="drawer">
+    <a href="index.html">Accueil</a>
+    <a href="experiences.html">Expériences</a>
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <main>
+
+    <div class="page-header">
+      <h1>Services & <span class="gold">Tarifs</span></h1>
+      <p>Des solutions adaptées à chaque univers — sport, musique, restauration, beauté et plus encore.</p>
+    </div>
+
+    <!-- À LA CARTE -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Prestations <span class="gold">à la carte</span></h2>
+          <p>Des créations rapides et accessibles pour avancer vite tout en gardant une cohérence visuelle.</p>
+        </div>
+
+        <div class="tarif-grid reveal stagger">
+
+          <!-- Réseaux Sociaux -->
+          <div class="tarif-card">
+            <h3>Réseaux Sociaux</h3>
+            <ul class="tarif-list">
+              <li><span>Story</span><strong>15€</strong></li>
+              <li><span>Publication</span><strong>20€</strong></li>
+              <li><span>Template Story*</span><strong>30€</strong></li>
+              <li><span>Template Publication*</span><strong>35€</strong></li>
+              <li><span>Montage vidéo (type réels)</span><strong>30€</strong></li>
+            </ul>
+          </div>
+
+          <!-- Identité Visuelle -->
+          <div class="tarif-card">
+            <h3>Identité Visuelle</h3>
+            <ul class="tarif-list">
+              <li><span>Charte graphique</span><strong>150€</strong></li>
+              <li><span>Carte de visite recto</span><strong>50€</strong></li>
+              <li><span>+ verso</span><strong>+10€</strong></li>
+            </ul>
+          </div>
+
+          <!-- Supports à imprimer -->
+          <div class="tarif-card">
+            <h3>Supports à imprimer</h3>
+            <ul class="tarif-list">
+              <li><span>Création d'affiches / flyers</span><strong>60€</strong></li>
+              <li><span>Carte de restaurant ou de prestations</span><strong>60€</strong></li>
+              <li><span>Carte de fidélité</span><strong>40€</strong></li>
+              <li><span>Roll up</span><strong>110€</strong></li>
+            </ul>
+          </div>
+
+          <!-- Photographies -->
+          <div class="tarif-card">
+            <h3>Photographies</h3>
+            <p class="tarif-note">Toutes les photos sont livrées retouchées</p>
+            <ul class="tarif-list">
+              <li><span>1 photo</span><strong>20€</strong></li>
+              <li><span>10 photos</span><strong>150€</strong></li>
+              <li><span>20 photos ou plus</span><strong>10€ / unité</strong></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <p class="tarif-footnote reveal">*Personnalisation par MS Comm' en supplément.<br>Tarifs indiqués hors frais d'impression et de déplacement — voir CGV.</p>
+      </div>
+    </section>
+
+    <!-- PACKS DE LANCEMENT -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Packs de <span class="gold">lancement</span></h2>
+          <p style="white-space: nowrap">Plus d'impact, moins de budget — pour démarrer fort avec une structure claire.</p>
+        </div>
+
+        <div class="services-grid reveal stagger">
+          <div class="service-card">
+            <h3>Pack Réseaux Sociaux Starter</h3>
+            <div class="price"><span class="price-old">95€</span> 80€</div>
+            <div class="price-note">pack complet</div>
+            <ul class="service-list">
+              <li>1 template story*</li>
+              <li>1 template publication</li>
+              <li>1 montage vidéo type réel</li>
+            </ul>
+            <a class="btn btn-outline-gold pack-cta" href="contact.html?pack=Pack+R%C3%A9seaux+Sociaux+Starter+%E2%80%94+80%E2%82%AC">Choisir ce pack</a>
+          </div>
+
+          <div class="service-card featured">
+            <h3>Pack Réseaux Sociaux Boost</h3>
+            <div class="price"><span class="price-old">220€</span> 190€</div>
+            <div class="price-note">pack complet</div>
+            <ul class="service-list">
+              <li>3 templates story*</li>
+              <li>2 templates publications*</li>
+              <li>2 montages vidéo type réels</li>
+            </ul>
+            <a class="btn btn-gold pack-cta" href="contact.html?pack=Pack+R%C3%A9seaux+Sociaux+Boost+%E2%80%94+190%E2%82%AC">Choisir ce pack</a>
+          </div>
+
+          <div class="service-card">
+            <h3>Pack Identité Visuelle</h3>
+            <div class="price"><span class="price-old">235€</span> 200€</div>
+            <div class="price-note">pack complet</div>
+            <ul class="service-list">
+              <li>Carte de visite recto</li>
+              <li>1 template publication</li>
+              <li>Charte graphique complète</li>
+            </ul>
+            <a class="btn btn-outline-gold pack-cta" href="contact.html?pack=Pack+Identit%C3%A9+Visuelle+%E2%80%94+200%E2%82%AC">Choisir ce pack</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PACKS SPÉCIAUX -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Packs <span class="gold">spéciaux</span></h2>
+          <p style="white-space: nowrap">Votre univers, sur mesure — des packs conçus pour faire briller chaque projet.</p>
+        </div>
+
+        <div class="services-grid reveal stagger" style="grid-template-columns:repeat(2,1fr)">
+          <div class="service-card">
+            <h3>Pack Sportif</h3>
+            <div class="price"><span class="price-old">170€</span> 150€</div>
+            <div class="price-note">par pack</div>
+            <ul class="service-list">
+              <li>1 template story* Compétition</li>
+              <li>1 template Story Matchs</li>
+              <li>1 Publication Récap</li>
+              <li>3 montages type réel</li>
+            </ul>
+            <a class="btn btn-outline-gold pack-cta" href="contact.html?pack=Pack+Sportif+%E2%80%94+150%E2%82%AC">Choisir ce pack</a>
+          </div>
+
+          <div class="service-card">
+            <h3>Pack Beauté & Bien-être</h3>
+            <div class="price"><span class="price-old">170€</span> 140€</div>
+            <div class="price-note">par pack</div>
+            <ul class="service-list">
+              <li>Carte de prestations</li>
+              <li>2 templates Story</li>
+              <li>1 Publication</li>
+              <li>1 Montage vidéo type réel</li>
+            </ul>
+            <a class="btn btn-outline-gold pack-cta" href="contact.html?pack=Pack+Beaut%C3%A9+%26+Bien-%C3%AAtre+%E2%80%94+140%E2%82%AC">Choisir ce pack</a>
+          </div>
+
+          <div class="service-card">
+            <h3>Pack Restauration</h3>
+            <div class="price"><span class="price-old">130€</span> 100€</div>
+            <div class="price-note">par pack</div>
+            <ul class="service-list">
+              <li>Carte de restaurant</li>
+              <li>1 carte de fidélité</li>
+              <li>1 Template Story*</li>
+            </ul>
+            <a class="btn btn-outline-gold pack-cta" href="contact.html?pack=Pack+Restauration+%E2%80%94+100%E2%82%AC">Choisir ce pack</a>
+          </div>
+
+          <div class="service-card">
+            <h3>Pack Événement</h3>
+            <div class="price"><span class="price-old">90€</span> 70€</div>
+            <div class="price-note">par pack</div>
+            <ul class="service-list">
+              <li>Affiche ou flyer</li>
+              <li>1 Story vidéo ou réel</li>
+            </ul>
+            <a class="btn btn-outline-gold pack-cta" href="contact.html?pack=Pack+%C3%89v%C3%A9nement+%E2%80%94+70%E2%82%AC">Choisir ce pack</a>
+          </div>
+        </div>
+
+        <p class="tarif-footnote reveal" style="margin-top:32px">
+          *Personnalisation par MS Comm' en supplément.<br>
+          Personnalisation de packs possible : remplacez un élément du pack par un autre service équivalent.<br>
+          Tarifs indiqués hors frais d'impression et de déplacement — voir CGV.
+        </p>
+      </div>
+    </section>
+
+    <!-- ACCOMPAGNEMENT -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Accompagnement <span class="gold">sur mesure</span></h2>
+          <p>Pour les projets long terme : gestion de réseaux sociaux,<br> stratégie de contenu, reporting mensuel.</p>
+        </div>
+
+        <div class="services-grid reveal stagger" style="grid-template-columns:1fr">
+          <div class="service-card featured" style="max-width:600px;margin:0 auto">
+            <h3>Accompagnement Premium</h3>
+            <div class="price">Sur devis</div>
+            <div class="price-note">engagement mensuel</div>
+            <ul class="service-list">
+              <li>Gestion complète des réseaux sociaux</li>
+              <li>Stratégie éditoriale mensuelle</li>
+              <li>Création de contenus (posts, stories, réels)</li>
+              <li>Accompagnement & conseils personnalisés</li>
+              <li>Disponibilité et réactivité</li>
+            </ul>
+            <a class="btn btn-gold pack-cta" href="contact.html?pack=Accompagnement+Premium+%E2%80%94+Sur+devis">Demander un devis personnalisé</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTE -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Une question ?</h2>
+          <p>Les tarifs sont indicatifs et personnalisables selon la complexité, la durée et le volume de contenu. N'hésitez pas à me contacter pour un devis adapté à vos besoins.</p>
+          <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-gold" href="contact.html">Me contacter</a>
+            <a class="btn btn-outline-gold" href="portfolio.html">Voir mes réalisations</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="assets/data/logo_black-removebg.png" alt="MS" />
+          <span>MS Comm'</span>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+      </div>
+    </div>
+  </footer>
+
+  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-7 7m7-7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Contact — MS Comm' | Melody</title>
+  <meta name="description" content="Contactez Melody — MS Comm' pour vos projets de communication, création visuelle et réseaux sociaux." />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" type="image/png" href="assets/data/logo_black-removebg.png" media="(prefers-color-scheme: light)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+
+  <canvas id="sparkle-canvas"></canvas>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
+          <div class="brand-text">
+            <strong>MS Comm'</strong>
+            <span>Prestataire de services de communication</span>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="contact.html" class="active">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer" id="drawer">
+    <a href="index.html">Accueil</a>
+    <a href="experiences.html">Expériences</a>
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <main>
+
+    <div class="page-header">
+      <h1>Me <span class="gold">Contacter</span></h1>
+      <p>Et si on écrivait la suite ensemble ? <br>Décrivez votre projet et je vous répondrai rapidement.</p>
+      <div id="packBanner" class="pack-banner" style="display:none"></div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="contact-grid">
+
+          <!-- Infos -->
+          <div class="contact-info reveal-left">
+            <h3>Discutons de votre <span class="gold">projet</span></h3>
+            <p>
+              Que vous ayez besoin d'un visuel ponctuel, d'un pack complet ou d'un accompagnement
+              sur le long terme, je suis là pour vous aider à briller. <br>N'hésitez pas à me contacter !
+            </p>
+
+            <div class="contact-detail">
+              <div class="contact-detail-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span><a href="mailto:mscomm.contact@gmail.com">mscomm.contact@gmail.com</a></span>
+            </div>
+
+            <div class="contact-detail">
+              <div class="contact-detail-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
+              </div>
+              <span><a href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener">@ms_communication_france</a></span>
+            </div>
+
+            <div class="contact-detail">
+              <div class="contact-detail-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 8h3V4h-3c-3.3 0-6 2.7-6 6v3H5v4h3v3h4v-3h4l1-4h-5v-3c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span><a href="https://www.facebook.com/share/1CMyp7KkkU/?mibextid=wwXIfr" target="_blank" rel="noopener">MS Comm' — Facebook </a></span>
+            </div>
+
+            <div class="contact-detail">
+              <div class="contact-detail-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="2"/><rect x="2" y="9" width="4" height="12" stroke="currentColor" stroke-width="2"/><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+              <span><a href="https://www.linkedin.com/company/ms-comm%E2%80%99/" target="_blank" rel="noopener">MS Comm' — LinkedIn</a></span>
+            </div>
+
+            <div class="contact-detail">
+              <div class="contact-detail-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+              <span>Paris · Montpellier · France</span>
+            </div>
+
+          </div>
+
+          <!-- Formulaire -->
+          <div class="contact-form reveal-right">
+            <h3>Envoyer un message</h3>
+            <form id="contactForm">
+              <label>
+                Nom
+                <input name="name" autocomplete="name" placeholder="Votre nom" required />
+              </label>
+              <label>
+                Email
+                <input name="email" type="email" autocomplete="email" placeholder="votre@email.com" required />
+              </label>
+              <label>
+                Sujet
+                <input name="subject" placeholder="Ex : Demande de devis Pack Sportif" />
+              </label>
+              <label>
+                Message
+                <textarea name="message" placeholder="Décrivez votre projet, vos objectifs, délais et budget estimé..." required></textarea>
+              </label>
+              <button class="btn btn-gold" type="submit" style="width:100%">Envoyer le message</button>
+              <div id="formHint" style="font-size:12px;color:var(--muted-2);text-align:center" aria-live="polite"></div>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Carte de visite 3D -->
+        <div class="card3d-section reveal">
+          <h3 style="text-align:center;font-family:var(--font-display);font-size:clamp(20px,2vw,28px);margin-bottom:24px">Ma carte de <span class="gold">visite</span></h3>
+          <div class="card3d-wrap">
+            <div class="card3d" id="card3d">
+              <div class="card3d-face card3d-front">
+                <img src="assets/data/visit_card_recto.png" alt="Carte de visite recto" />
+              </div>
+              <div class="card3d-face card3d-back">
+                <img src="assets/data/visit_card_verso.png" alt="Carte de visite verso" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CTA réseaux -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Suivez <span class="gold">MS Comm'</span></h2>
+          <p>Retrouvez mes dernières créations et actualités sur les réseaux sociaux.</p>
+          <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-outline-gold" href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener">Instagram — MS Comm'</a>
+            <a class="btn btn-outline-gold" href="https://www.instagram.com/melododo2001/" target="_blank" rel="noopener">Instagram — Melody Sok</a>
+            <a class="btn btn-outline-gold" href="https://www.instagram.com/paris13tt/" target="_blank" rel="noopener">Instagram — Paris 13 TT</a>
+            <a class="btn btn-outline-gold" href="https://www.instagram.com/pingpangeffect/" target="_blank" rel="noopener">Instagram — Ping Pang</a>
+            <a class="btn btn-outline-gold" href="https://www.facebook.com/share/1CMyp7KkkU/?mibextid=wwXIfr" target="_blank" rel="noopener">Facebook — MS Comm'</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="assets/data/logo_black-removebg.png" alt="MS" />
+          <span>MS Comm'</span>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+      </div>
+    </div>
+  </footer>
+
+  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-7 7m7-7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+</body>
+</html>

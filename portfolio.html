@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Portfolio — MS Comm' | Melody</title>
+  <meta name="description" content="Portfolio de Melody — affiches, posts, articles, journaux, vidéos et créations visuelles." />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" type="image/png" href="assets/data/logo_black-removebg.png" media="(prefers-color-scheme: light)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+
+  <canvas id="sparkle-canvas"></canvas>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
+          <div class="brand-text">
+            <strong>MS Comm'</strong>
+            <span>Prestataire de services de communication</span>
+          </div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html" class="active">Portfolio</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer" id="drawer">
+    <a href="index.html">Accueil</a>
+    <a href="experiences.html">Expériences</a>
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <main>
+
+    <div class="page-header">
+      <h1>Mon <span class="gold">Portfolio</span></h1>
+      <p>Affiches, posts, articles, journaux, vidéos — une sélection de mes réalisations.</p>
+    </div>
+
+    <!-- 1. MS COMM' CRÉATIONS -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>MS Comm' — <span class="gold">Créations</span></h2>
+          <p>Affiches, flyers, cartes de visite, identité visuelle...
+            <a href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener" style="color:var(--gold-2)">@ms_communication_france</a>
+          </p>
+        </div>
+
+        <div class="portfolio-grid reveal stagger">
+          <div class="portfolio-item wide">
+            <img src="assets/data/MsComm_affiche_1.jpeg" alt="Affiche MS Comm'" />
+            <div class="portfolio-overlay">
+              <h4>Création visuelle</h4>
+              <span>MS Comm'</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/MsComm_affiche_2.jpeg" alt="Affiche MS Comm'" />
+            <div class="portfolio-overlay">
+              <h4>Création visuelle</h4>
+              <span>MS Comm'</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/MsComm_affiche_3.jpeg" alt="Affiche MS Comm'" />
+            <div class="portfolio-overlay">
+              <h4>Création visuelle</h4>
+              <span>MS Comm'</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/MsComm_affiche_4.jpeg" alt="Affiche MS Comm'" />
+            <div class="portfolio-overlay">
+              <h4>Template Publication</h4>
+              <span>MS Comm'</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/MsComm_affiche_5.jpeg" alt="Affiche MS Comm'" />
+            <div class="portfolio-overlay">
+              <h4>Affiche</h4>
+              <span>MS Comm'</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/MsComm_affiche_6.jpeg" alt="Affiche MS Comm'" />
+            <div class="portfolio-overlay">
+              <h4>Création visuelle</h4>
+              <span>MS Comm'</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte de visite 3D -->
+        <div class="section-header reveal" style="margin-top:48px">
+          <h2 style="font-size:clamp(20px,2vw,28px)">Carte de <span class="gold">visite</span></h2>
+        </div>
+        <div class="card3d-section reveal">
+          <div class="card3d-wrap">
+            <div class="card3d">
+              <div class="card3d-face card3d-front">
+                <img src="assets/data/visit_card_recto.png" alt="Carte de visite recto" />
+              </div>
+              <div class="card3d-face card3d-back">
+                <img src="assets/data/visit_card_verso.png" alt="Carte de visite verso" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ALEXIS LEBRUN -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Alexis <span class="gold">Lebrun</span></h2>
+          <p style="white-space: nowrap">Community management pour un pongiste professionnel — médaillé olympique.
+          </p>
+          <a href="https://www.instagram.com/alexislebrun2003/" target="_blank" rel="noopener" style="color:var(--gold-2)">@alexislebrun2003</a>
+        </div>
+
+        <div class="portfolio-grid reveal stagger">
+          <div class="portfolio-item wide">
+            <img src="assets/data/Alexis_image_1.jpeg" alt="Alexis Lebrun" />
+            <div class="portfolio-overlay">
+              <h4>Template Story</h4>
+              <span>Alexis Lebrun</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/Alexis_image_2.jpeg" alt="Alexis Lebrun" />
+            <div class="portfolio-overlay">
+              <h4>Création</h4>
+              <span>Alexis Lebrun</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/Alexis_image_3.jpeg" alt="Alexis Lebrun" />
+            <div class="portfolio-overlay">
+              <h4>Affiche</h4>
+              <span>Alexis Lebrun</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/Alexis_image_4.jpeg" alt="Alexis Lebrun" />
+            <div class="portfolio-overlay">
+              <h4>Publication Interview</h4>
+              <span>Alexis Lebrun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Réels Alexis -->
+        <div class="section-header reveal" style="margin-top:48px">
+          <h2 style="font-size:clamp(20px,2vw,28px)">Réels</h2>
+        </div>
+        <div class="portfolio-grid reveal stagger" style="grid-template-columns:repeat(3,1fr)">
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/Alexis_video_reels_1.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Tournage & montage vidéo</h4>
+              <span>Entrainement</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/Alexis_video_reels_2.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Tournage & montage vidéo</h4>
+              <span>Trickshot</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/Alexis_video_reels_3.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Montage vidéo</h4>
+              <span>Compétition</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PARIS 13 -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Paris 13 <span class="gold">Tennis de Table</span></h2>
+          <p>Affiches de matchs, stories, contenus jour de compétition.<br>
+            <a href="https://www.instagram.com/paris13tt/" target="_blank" rel="noopener" style="color:var(--gold-2)">@paris13tt</a>
+          </p>
+        </div>
+
+        <div class="portfolio-grid reveal stagger">
+          <div class="portfolio-item wide">
+            <img src="assets/data/affiche_paris13_1.jpeg" alt="Affiche Paris 13 TT" />
+            <div class="portfolio-overlay">
+              <h4>Affiche de match</h4>
+              <span>Paris 13 TT</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/affiche_paris13_2.jpeg" alt="Affiche Paris 13" />
+            <div class="portfolio-overlay">
+              <h4>Affiche de match</h4>
+              <span>Paris 13 TT</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/affiche_paris13_3.jpeg" alt="Affiche Paris 13" />
+            <div class="portfolio-overlay">
+              <h4>Affiche de match</h4>
+              <span>Paris 13 TT</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/affiche_paris13_4.jpeg" alt="Affiche Paris 13" />
+            <div class="portfolio-overlay">
+              <h4>Template Publication</h4>
+              <span>Paris 13 TT</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/affiche_paris13_5.jpeg" alt="Affiche Paris 13" />
+            <div class="portfolio-overlay">
+              <h4>Roll-up</h4>
+              <span>Paris 13 TT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vidéos Paris 13 -->
+        <div class="section-header reveal" style="margin-top:48px">
+          <h2 style="font-size:clamp(20px,2vw,28px)">Réels</h2>
+        </div>
+        <div class="portfolio-grid reveal stagger" style="grid-template-columns:repeat(3,1fr)">
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/reel_paris13_3.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Tournage & montage vidéo</h4>
+              <span>Temps forts</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/reel_paris13_1.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Tournage & montage vidéo</h4>
+              <span>Compétition</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/reel_paris13_2.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Tournage & montage vidéo</h4>
+              <span>Compétition</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CRÉATRICE DE CONTENU -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Créatrice de <span class="gold">contenu</span></h2>
+          <p>Lifestyle, beauté & matcha • Création de contenu & collaborations.</p>
+          <p>Tiktok: <a href="https://www.tiktok.com/@melododo2001?_r=1&_t=ZN-94rQcImmXmo" target="_blank" rel="noopener" style="color:var(--gold-2)">@melododo2001</a> / Instagram: <a href="https://www.instagram.com/melododo2001/" target="_blank" rel="noopener" style="color:var(--gold-2)">@melododo2001</a></p>
+        </div>
+
+        <div class="portfolio-grid reveal stagger" style="grid-template-columns:repeat(3,1fr)">
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/reels_content_creator_1.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Collaboration commerciale</h4>
+              <span>Lancôme</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/reels_content_creator_2.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Inviation</h4>
+              <span>Le 19ème (brunch à Montpellier)</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/reels_content_creator_3.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Collaboration commerciale</h4>
+              <span>Sephora Collection</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Pongistic -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2><span class="gold">Pongistic</span></h2>
+          <p style="white-space: nowrap">Tournage et montage vidéo, contenus dynamiques pour les réseaux sociaux.</p>
+          <a href="https://www.instagram.com/pongistic/" target="_blank" rel="noopener" style="color:var(--gold-2)">@Pongistic</a>
+        </div>
+
+        <div class="portfolio-grid reveal stagger" style="grid-template-columns:repeat(3,1fr)">
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/pongistic_reel.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Interview</h4>
+              <span>Championnats de France</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/pongistic_reel_2.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Interview Bénévoles</h4>
+              <span>Tournage et montage</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:9/16">
+            <video src="assets/data/pongistic_reel_3.mp4" muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover"></video>
+            <div class="portfolio-overlay">
+              <h4>Réel</h4>
+              <span>Immersion compétition</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PING PANG -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Ping Pang <span class="gold">Effect</span></h2>
+          <p>Articles, posts historiques, contenu éditorial et rédaction.
+            <a href="https://www.instagram.com/pingpangeffect/" target="_blank" rel="noopener" style="color:var(--gold-2)">@pingpangeffect</a>
+          </p>
+        </div>
+
+        <p class="pingpang-stack-title reveal">Article - Alexis Lebrun, 1er français à remporter 2 titres de Champion d'Europe sur la même édition</p>
+        <div class="pingpang-stack reveal" aria-label="Aperçu posts Ping Pang">
+          <article class="pingpang-card pingpang-card-1 pingpang-card-featured portfolio-item">
+            <img src="assets/data/ping_pang_post_c1_1.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-2 portfolio-item">
+            <img src="assets/data/ping_pang_post_c1_2.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-3 portfolio-item">
+            <img src="assets/data/ping_pang_post_c1_3.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-4 portfolio-item">
+            <img src="assets/data/ping_pang_post_c1_4.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-5 portfolio-item">
+            <img src="assets/data/ping_pang_post_c1_5.jpeg" alt="Post Ping Pang" />
+          </article>
+        </div>
+
+        <p class="pingpang-stack-title reveal">Article - La France candidate pour accueillir les Championnats du Monde 2027</p>
+        <div class="pingpang-stack pingpang-stack--six reveal" aria-label="Posts Ping Pang 7 à 12">
+          <article class="pingpang-card pingpang-card-1 pingpang-card-featured portfolio-item">
+            <img src="assets/data/ping_pang_post_c2_1.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-2 portfolio-item">
+            <img src="assets/data/ping_pang_post_c2_2.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-3 portfolio-item">
+            <img src="assets/data/ping_pang_post_c2_3.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-4 portfolio-item">
+            <img src="assets/data/ping_pang_post_c2_4.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-5 portfolio-item">
+            <img src="assets/data/ping_pang_post_c2_5.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-6 portfolio-item">
+            <img src="assets/data/ping_pang_post_c2_6.jpeg" alt="Post Ping Pang" />
+          </article>
+        </div>
+
+        <p class="pingpang-stack-title reveal">Interview - L'inspirante histoire de Tigran Tsitoghdzyan</p>
+        <div class="pingpang-stack pingpang-stack--seven reveal" aria-label="Posts Ping Pang c3">
+          <article class="pingpang-card pingpang-card-1 pingpang-card-featured portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_1.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-2 portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_2.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-3 portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_3.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-4 portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_4.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-5 portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_5.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-6 portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_6.jpeg" alt="Post Ping Pang" />
+          </article>
+          <article class="pingpang-card pingpang-card-7 portfolio-item">
+            <img src="assets/data/ping_pang_post_c3_7.jpeg" alt="Post Ping Pang" />
+          </article>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- LE JOURNAL DU PONGISTE -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Le Journal du <span class="gold">Pongiste</span></h2>
+          <p style="white-space: nowrap">Journal mensuel récapitulant toute l'actualité du tennis de table français.
+          </p>
+          <a href="https://drive.google.com/drive/folders/10Azp_Ld1tnW9vuitrVVRC741ipFi7sfG" target="_blank" rel="noopener" style="color:var(--gold-2)">→ Lire les 12 éditions</a>
+        </div>
+
+        <div class="portfolio-grid reveal stagger" style="grid-template-columns:repeat(2,1fr)">
+          <div class="portfolio-item" style="aspect-ratio:auto">
+            <img src="assets/data/le_journal_du_pongiste_1.png" alt="Le Journal du Pongiste" />
+            <div class="portfolio-overlay">
+              <h4>Couverture - Janvier 2023</h4>
+              <span>Le Journal du Pongiste</span>
+            </div>
+          </div>
+          <div class="portfolio-item" style="aspect-ratio:auto">
+            <img src="assets/data/le_journal_du_pongiste_2.png" alt="Le Journal du Pongiste" />
+            <div class="portfolio-overlay">
+              <h4>Extrait</h4>
+              <span>Le Journal du Pongiste</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHOTOGRAPHIE -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2><span class="gold">Photographie</span></h2>
+          <p>Découvrez mes photos et retouches.</p>
+        </div>
+
+        <div class="portfolio-grid reveal stagger">
+          <div class="portfolio-item wide">
+            <img src="assets/data/image_photo_1.jpg" alt="Photographie Melody" />
+            <div class="portfolio-overlay">
+              <h4>Photographie</h4>
+              <span>Sport</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/image_photo_2.jpg" alt="Photographie Melody" />
+            <div class="portfolio-overlay">
+              <h4>Photographie</h4>
+              <span>Paysage</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/image_photo_3.jpg" alt="Photographie Melody" />
+            <div class="portfolio-overlay">
+              <h4>Photographie</h4>
+              <span>Sport</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/image_photo_4.jpg" alt="Photographie Melody" />
+            <div class="portfolio-overlay">
+              <h4>Photographie</h4>
+              <span>Sport</span>
+            </div>
+          </div>
+          <div class="portfolio-item">
+            <img src="assets/data/image_photo_5.jpg" alt="Photographie Melody" />
+            <div class="portfolio-overlay">
+              <h4>Photographie</h4>
+              <span>Sport</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Un projet en tête ?</h2>
+          <p>Contactez-moi pour discuter de vos besoins et obtenir un devis personnalisé.</p>
+          <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-gold" href="contact.html">Me contacter</a>
+            <a class="btn btn-outline-gold" href="services.html">Voir mes services</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="assets/data/logo_black-removebg.png" alt="MS" />
+          <span>MS Comm'</span>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+      </div>
+    </div>
+  </footer>
+
+  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-7 7m7-7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Fermer">&times;</button>
+    <img class="lightbox-img" id="lightboxImg" alt="" />
+    <video class="lightbox-video" id="lightboxVideo" controls playsinline style="display:none"></video>
+  </div>
+
+</body>
+</html>
