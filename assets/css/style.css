@@ -1516,8 +1516,10 @@ textarea:focus {
 .page-header p {
   color: var(--muted);
   font-size: 16px;
-  max-width: none;
-  white-space: nowrap;
+  max-width: 56ch;
+  white-space: normal;
+  line-height: 1.7;
+  overflow-wrap: break-word;
   margin: 0 auto;
   position: relative;
 }
