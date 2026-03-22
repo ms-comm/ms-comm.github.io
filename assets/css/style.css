@@ -1515,7 +1515,7 @@ textarea:focus {
 
 .page-header p {
   color: var(--muted);
-  font-size: clamp(11px, 1.6vw, 16px);
+  font-size: 16px;
   max-width: none;
   white-space: nowrap;
   margin: 0 auto;
