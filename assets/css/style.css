@@ -471,11 +471,12 @@ main {
 
 .section-header p {
   color: var(--muted);
-  font-size: clamp(11px, 1.6vw, 16px);
-  max-width: none;
+  font-size: 16px;
+  max-width: 56ch;
   margin: 0 auto;
   line-height: 1.7;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .section-header p.services-intro-line {
@@ -483,7 +484,7 @@ main {
   font-size: 16px;
   max-width: 640px;
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
 }
 
 .section-line {
@@ -1911,11 +1912,7 @@ textarea:focus {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 960px) {
   .section-header p.services-intro-line {
-    font-size: 14px;
     max-width: 90vw;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
   }
 
   .hero-split {
@@ -2096,11 +2093,7 @@ textarea:focus {
   }
 
   .section-header p.services-intro-line {
-    font-size: 13px;
     max-width: 100%;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
   }
 
   .testimonials-rail-wrap::before,
