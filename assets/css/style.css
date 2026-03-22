@@ -471,16 +471,19 @@ main {
 
 .section-header p {
   color: var(--muted);
-  font-size: 16px;
-  max-width: 56ch;
+  font-size: clamp(11px, 1.6vw, 16px);
+  max-width: none;
   margin: 0 auto;
   line-height: 1.7;
+  white-space: nowrap;
 }
 
-.services-intro-line {
-  white-space: nowrap;
-  max-width: none !important;
-  font-size: clamp(10px, 1.15vw, 16px);
+.section-header p.services-intro-line {
+  white-space: normal;
+  font-size: 16px;
+  max-width: 640px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .section-line {
@@ -1511,8 +1514,9 @@ textarea:focus {
 
 .page-header p {
   color: var(--muted);
-  font-size: 16px;
-  max-width: 50ch;
+  font-size: clamp(11px, 1.6vw, 16px);
+  max-width: none;
+  white-space: nowrap;
   margin: 0 auto;
   position: relative;
 }
@@ -1906,6 +1910,14 @@ textarea:focus {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 960px) {
+  .section-header p.services-intro-line {
+    font-size: 14px;
+    max-width: 90vw;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
   .hero-split {
     grid-template-columns: 1fr;
     text-align: center;
@@ -2083,8 +2095,12 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .services-intro-line {
-    font-size: clamp(9px, 2.6vw, 12px);
+  .section-header p.services-intro-line {
+    font-size: 13px;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .testimonials-rail-wrap::before,
