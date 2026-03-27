@@ -1,0 +1,22 @@
+{
+  "name": "MS Comm' — Communication Sportive Paris",
+  "short_name": "MS Comm'",
+  "description": "Spécialiste en communication sportive, média et événementiel à Paris.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#c69b00",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "assets/data/logo_white-removebg.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/data/logo_white-removebg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

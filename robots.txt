@@ -3,7 +3,5 @@ Allow: /
 
 Sitemap: https://ms-comm.github.io/sitemap.xml
 
-# Bloquer les dossiers sensibles
-Disallow: /assets/data/
 Disallow: /*.tmp$
 Disallow: /*.log$
