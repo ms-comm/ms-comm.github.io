@@ -1,0 +1,36 @@
+# Règles workspace — MS Comm' Website
+
+## Contexte du projet
+Site vitrine multi-pages pour **Melody (MS Comm')**, prestataire de communication sportive, média et événementiel basée à Paris.
+- **URL live** : https://ms-comm.github.io/
+- **Dépôt** : `ms-comm/ms-comm.github.io` (branche `main`)
+- **Dossier local** : `c:\Users\lolol\Documents\Code\Web\Melody`
+- **Stack** : HTML/CSS/JS vanilla, hébergé sur GitHub Pages
+
+## Fichier de contexte complet
+Toujours lire `PROJECT_CONTEXT.md` à la racine du projet pour obtenir le contexte complet : structure des fichiers, design system, tarifs, expériences, SEO, règles CSS, historique des décisions.
+
+## Règles critiques à ne jamais oublier
+
+### Git / Déploiement
+- **PowerShell** : ne JAMAIS utiliser `&&` entre commandes git — exécuter `git add .`, `git commit`, `git push` séparément
+- Branche de déploiement : `main`
+- Les changements ne sont visibles en ligne qu'après `git push origin main`
+
+### CSS
+- Ne JAMAIS mettre `white-space: nowrap` sur les sous-titres (`.section-header p`, `.page-header p`) → débordement mobile
+- `.services-intro-line` : utiliser le sélecteur `.section-header p.services-intro-line` (spécificité haute)
+- `font-size: 16px` fixe pour les sous-titres desktop, breakpoints à 960px et 600px
+- Thème : dark mode, couleurs CSS via variables (--gold: #c69b00, --bg: #0a0a0a, etc.)
+
+### HTML
+- Alt tags obligatoires sur toutes les images
+- Liens externes : `target="_blank" rel="noopener"`
+- Éviter les inline styles — préférer des classes CSS
+
+### SEO (état actuel — complet)
+- JSON-LD Schema.org sur toutes les pages ✅
+- `<link rel="canonical">` sur toutes les pages ✅
+- `sitemap.xml` soumis à Google Search Console ✅
+- `robots.txt` sans blocage `/assets/data/` ✅
+- `manifest.json` créé ✅
