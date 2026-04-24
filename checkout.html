@@ -279,7 +279,7 @@ async function initPayment() {
      simple, we create it right now using whatever email is in the field, then
      update the metadata later if needed. But the intent needs the final amount
      fixed at creation — OK since the cart is immutable from here. */
-  const emailPlaceholder = document.getElementById('f-email').value.trim() || 'pending@checkout';
+  const emailPlaceholder = document.getElementById('f-email').value.trim() || 'pending@checkout.local';
 
   try {
     const resp = await fetch(`${API}/api/orders/create-payment-intent`, {
