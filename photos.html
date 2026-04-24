@@ -1133,18 +1133,26 @@ function buildDlDropdown(p) {
   let html = '';
   if (paid && !hasToken) {
     /* ── Paid photo, not yet purchased ────────────────────────────────────
-     *
-     *  UX contract: buying a paid photo unlocks ALL resolutions in one go.
-     *  So we offer a single "Acheter" CTA at the photo's price, and then
-     *  list the resolutions underneath WITHOUT prices (each row just adds
-     *  the photo to the cart — same outcome: one purchase = all resolutions
-     *  available after checkout via the emailed token).
-     *
-     *  We deliberately DO NOT offer a "télécharger filigrané gratuitement"
-     *  option anymore — the previous UI cluttered the menu and diluted the
-     *  purchase CTA. Visitors who just want a filigraned preview already
-     *  see it on the page. */
-    html += `
+     *  Two-tier UX: a free watermarked download is offered first (preview
+     *  quality, any resolution), then a single "Acheter" CTA unlocks ALL
+     *  resolutions without watermark after checkout. Locked rows below the
+     *  CTA route to the cart so the interaction stays predictable. */
+    /* ── Free watermarked download (preview-grade) ───────────────────────
+     *  Visitors can grab the photo with the watermark baked in at any
+     *  resolution for free. The backend serves `flickrWatermarkId` when no
+     *  token is provided (see publicApi.js download routing matrix). */
+    html += `<div class="dl-hint">Télécharger avec filigrane — gratuit :</div>`;
+    html += resolutions.map(r => `
+      <div class="dl-opt" onclick="downloadPhoto('${p.id}','${p.ext}','${encodeURIComponent(p.title)}','${r.res}')">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          ${r.label} <small style="color:var(--muted);font-weight:400">(filigrane)</small>
+        </div>
+        <span class="dl-opt-res">${r.sub}</span>
+      </div>`).join('');
+
+    /* ── Paid CTA — unlock ALL resolutions without watermark ───────────── */
+    html += `<div class="dl-sep"></div>
       <div class="dl-opt dl-opt-cart" onclick="addToCartAndClose()">
         <div class="dl-opt-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -1152,10 +1160,8 @@ function buildDlDropdown(p) {
         </div>
         <span class="dl-opt-res" style="color:var(--gold-2);font-weight:700">${p.price}\u20ac</span>
       </div>
-      <div class="dl-hint">Débloque toutes les résolutions disponibles :</div>`;
-    /* Resolutions listed as informational rows — no individual price. A
-       click still routes to the cart so the interaction stays predictable
-       regardless of which line the user taps. */
+      <div class="dl-hint">Débloque toutes les résolutions sans filigrane :</div>`;
+    /* Locked resolutions listed as informational rows — click routes to cart. */
     html += resolutions.map(r => `
       <div class="dl-opt dl-opt-locked" onclick="addToCartAndClose()">
         <div class="dl-opt-label">
