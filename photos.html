@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js" defer></script>
   <style>
 /* ===== GALLERY PAGE ===== */
@@ -312,19 +313,19 @@
       <div class="topbar-inner">
         <a class="brand" href="index.html">
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
-          <div class="brand-text"><strong>MS Comm'</strong><span>Prestataire de services de communication</span></div>
+          <div class="brand-text"><strong>MS Comm'</strong><span data-i18n="brand.sub">Prestataire de services de communication</span></div>
         </a>
         <nav class="nav">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html" class="active">Photographie</a>
-          <a href="contact.html">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" class="active" data-i18n="nav.photos">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </nav>
         <div style="display:flex;align-items:center;gap:10px">
-          <a class="nav-cta" href="contact.html">Demander un devis</a>
-          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu" data-i18n-attr="aria-label:nav.menu_aria">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -332,37 +333,37 @@
     </div>
   </header>
   <div class="drawer" id="drawer">
-    <a href="index.html">Accueil</a>
-    <a href="experiences.html">Expériences</a>
-    <a href="services.html">Services</a>
-    <a href="portfolio.html">Portfolio</a>
-    <a href="photos.html">Photographie</a>
-    <a href="contact.html">Contact</a>
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
   <main>
     <section class="gal-hero"><div class="container">
-      <h1>Galerie <span class="gold">Photo</span></h1>
-      <p>Photographies sportives, portraits et moments d'exception.</p>
+      <h1 data-i18n-html="photos.title">Galerie <span class="gold">Photo</span></h1>
+      <p data-i18n="photos.sub">Photographies sportives, portraits et moments d'exception.</p>
     </div></section>
 
     <section class="container" style="padding-bottom:80px">
       <div class="gal-controls">
         <div class="gal-controls-top">
           <div class="gal-tabs">
-            <button class="gal-tab active" data-view="timeline">Galerie</button>
-            <button class="gal-tab" data-view="albums">Albums</button>
+            <button class="gal-tab active" data-view="timeline" data-i18n="photos.tab_gallery">Galerie</button>
+            <button class="gal-tab" data-view="albums" data-i18n="photos.tab_albums">Albums</button>
           </div>
           <button class="btn-private-album" id="btn-private">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Album privé
+            <span data-i18n="photos.btn_private">Album privé</span>
           </button>
         </div>
         <div class="gal-search-row" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:760px;margin:0 auto">
-          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." style="flex:1;min-width:240px" />
-          <select class="gal-search" id="gal-album-filter" style="max-width:220px;cursor:pointer" aria-label="Filtrer par album">
-            <option value="">Tous les albums</option>
-            <option value="none">Sans album</option>
+          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." style="flex:1;min-width:240px" data-i18n-attr="placeholder:photos.search_placeholder" />
+          <select class="gal-search" id="gal-album-filter" style="max-width:220px;cursor:pointer" aria-label="Filtrer par album" data-i18n-attr="aria-label:photos.filter_album_aria">
+            <option value="" data-i18n="photos.filter_all">Tous les albums</option>
+            <option value="none" data-i18n="photos.filter_none">Sans album</option>
           </select>
         </div>
       </div>
@@ -376,7 +377,7 @@
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
             <button id="back-albums-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:14px;padding:0">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-              Tous les albums
+              <span data-i18n="photos.back_albums">Tous les albums</span>
             </button>
             <h2 id="album-section-title" style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:600"></h2>
           </div>
@@ -384,7 +385,7 @@
         </div>
         <div class="gal-empty hidden" id="albums-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <p>Aucun album disponible.</p>
+          <p data-i18n="photos.empty_albums">Aucun album disponible.</p>
         </div>
       </div>
 
@@ -396,7 +397,7 @@
         </div>
         <div class="gal-empty hidden" id="timeline-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-          <p>Aucune photo publique pour l'instant.</p>
+          <p data-i18n="photos.empty_photos">Aucune photo publique pour l'instant.</p>
         </div>
       </div>
 
@@ -405,8 +406,8 @@
   </main>
 
   <footer class="footer"><div class="container"><div class="footer-inner">
-    <p>© <span id="year"></span> MS Comm' — Tous droits réservés</p>
-    <div class="footer-links"><a href="index.html">Accueil</a><a href="portfolio.html">Portfolio</a><a href="contact.html">Contact</a></div>
+    <p data-i18n="footer.copyright">© <span id="year"></span> MS Comm' — Tous droits réservés</p>
+    <div class="footer-links"><a href="index.html" data-i18n="nav.home">Accueil</a><a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a><a href="contact.html" data-i18n="nav.contact">Contact</a></div>
   </div></div></footer>
 
   <!-- ===== LIGHTBOX ===== -->
@@ -430,12 +431,12 @@
       <div class="lb-actions">
         <button class="lb-btn lb-btn-share" id="lb-share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Partager
+          <span data-i18n="photos.btn_share">Partager</span>
         </button>
         <div class="dl-dropdown-wrap" id="lb-dl-wrap">
           <button class="lb-btn lb-btn-dl" id="lb-dl-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Télécharger
+            <span data-i18n="photos.btn_download">Télécharger</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="dl-dropdown hidden" id="lb-dl-dropdown"></div>
@@ -454,7 +455,7 @@
   <!-- ===== CART PANEL ===== -->
   <div class="cart-panel" id="cart-panel">
     <div class="cart-panel-header">
-      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Panier</h3>
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span data-i18n="photos.cart_title">Panier</span></h3>
       <button class="cart-close" id="cart-close">✕</button>
     </div>
     <div class="cart-items" id="cart-items"></div>
@@ -466,17 +467,17 @@
   <div class="g-overlay" id="access-modal">
     <div class="g-modal">
       <div class="g-modal-hdr">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Album privé</h3>
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span data-i18n="photos.modal_private_title">Album privé</span></h3>
         <button class="g-modal-close" onclick="closeAccessModal()">✕</button>
       </div>
       <div class="g-modal-body">
-        <p style="color:var(--muted);font-size:14px;text-align:center">Entrez le code reçu par email pour accéder à votre galerie.</p>
-        <input class="code-input" id="code-input" type="text" placeholder="ABC123" maxlength="10" autocomplete="off" />
+        <p style="color:var(--muted);font-size:14px;text-align:center" data-i18n="photos.modal_private_desc">Entrez le code reçu par email pour accéder à votre galerie.</p>
+        <input class="code-input" id="code-input" type="text" placeholder="ABC123" maxlength="10" autocomplete="off" data-i18n-attr="placeholder:photos.modal_private_placeholder" />
         <div class="code-err" id="code-err"></div>
       </div>
       <div class="g-modal-ftr">
-        <button class="btn-g-ghost" onclick="closeAccessModal()">Annuler</button>
-        <button class="btn-g-gold" id="submit-code-btn">Accéder</button>
+        <button class="btn-g-ghost" onclick="closeAccessModal()" data-i18n="photos.btn_cancel">Annuler</button>
+        <button class="btn-g-gold" id="submit-code-btn" data-i18n="photos.btn_access">Accéder</button>
       </div>
     </div>
   </div>
@@ -485,7 +486,7 @@
   <div class="g-overlay" id="print-modal">
     <div class="g-modal">
       <div class="g-modal-hdr">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Commander une impression</h3>
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span data-i18n="photos.modal_print_title">Commander une impression</span></h3>
         <button class="g-modal-close" onclick="document.getElementById('print-modal').classList.remove('open')">✕</button>
       </div>
       <div class="g-modal-body">
@@ -493,8 +494,8 @@
           <div id="print-preview" style="width:120px;height:90px;border-radius:8px;overflow:hidden;background:#111;flex-shrink:0"><img id="print-img" src="" alt="" style="width:100%;height:100%;object-fit:cover" /></div>
           <div><div id="print-photo-title" style="font-weight:600;margin-bottom:8px"></div><div id="print-options" style="display:flex;flex-direction:column;gap:8px"></div></div>
         </div>
-        <p style="color:var(--muted);font-size:12.5px;background:rgba(255,255,255,.04);padding:10px 14px;border-radius:8px;border:1px solid var(--border)">Cette fonctionnalité est en cours de développement. Pour commander, contactez-nous en précisant la photo souhaitée.</p>
-        <a href="contact.html" class="lb-btn lb-btn-dl" style="display:inline-flex;text-decoration:none">Contacter MS Comm'</a>
+        <p style="color:var(--muted);font-size:12.5px;background:rgba(255,255,255,.04);padding:10px 14px;border-radius:8px;border:1px solid var(--border)" data-i18n-html="photos.modal_print_desc">Cette fonctionnalité est en cours de développement. Pour commander, contactez-nous en précisant la photo souhaitée.</p>
+        <a href="contact.html" class="lb-btn lb-btn-dl" style="display:inline-flex;text-decoration:none" data-i18n="photos.btn_contact_mscomm">Contacter MS Comm'</a>
       </div>
     </div>
   </div>

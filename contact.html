@@ -39,6 +39,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js" defer></script>
 
   <!-- JSON-LD Schema.org -->
@@ -77,20 +78,20 @@
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
           <div class="brand-text">
             <strong>MS Comm'</strong>
-            <span>Prestataire de services de communication</span>
+            <span data-i18n="brand.sub">Prestataire de services de communication</span>
           </div>
         </a>
         <nav class="nav">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html">Photographie</a>
-          <a href="contact.html" class="active">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+          <a href="contact.html" class="active" data-i18n="nav.contact">Contact</a>
         </nav>
         <div style="display:flex;align-items:center;gap:10px">
-          <a class="nav-cta" href="contact.html">Demander un devis</a>
-          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu" data-i18n-attr="aria-label:nav.menu_aria">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -99,19 +100,19 @@
   </header>
 
   <div class="drawer" id="drawer">
-    <a href="index.html">Accueil</a>
-    <a href="experiences.html">Expériences</a>
-    <a href="services.html">Services</a>
-    <a href="portfolio.html">Portfolio</a>
-    <a href="photos.html">Photographie</a>
-    <a href="contact.html">Contact</a>
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
   <main>
 
     <div class="page-header">
-      <h1>Me <span class="gold">Contacter</span></h1>
-      <p>Et si on écrivait la suite ensemble ? <br>Décrivez votre projet et je vous répondrai rapidement.</p>
+      <h1 data-i18n-html="contact.title">Me <span class="gold">Contacter</span></h1>
+      <p data-i18n-html="contact.sub">Et si on écrivait la suite ensemble ? <br>Décrivez votre projet et je vous répondrai rapidement.</p>
       <div id="packBanner" class="pack-banner" style="display:none"></div>
     </div>
 
@@ -121,8 +122,8 @@
 
           <!-- Infos -->
           <div class="contact-info reveal-left">
-            <h3>Discutons de votre <span class="gold">projet</span></h3>
-            <p>
+            <h3 data-i18n-html="contact.info.title">Discutons de votre <span class="gold">projet</span></h3>
+            <p data-i18n-html="contact.info.sub">
               Que vous ayez besoin d'un visuel ponctuel, d'un pack complet ou d'un accompagnement
               sur le long terme, je suis là pour vous aider à briller. <br>N'hésitez pas à me contacter !
             </p>
@@ -166,25 +167,25 @@
 
           <!-- Formulaire -->
           <div class="contact-form reveal-right">
-            <h3>Envoyer un message</h3>
+            <h3 data-i18n="contact.form.title">Envoyer un message</h3>
             <form id="contactForm">
-              <label>
+              <label data-i18n="contact.form.label_name">
                 Nom
                 <input name="name" autocomplete="name" placeholder="Votre nom" required />
               </label>
-              <label>
+              <label data-i18n="contact.form.label_email">
                 Email
                 <input name="email" type="email" autocomplete="email" placeholder="votre@email.com" required />
               </label>
-              <label>
+              <label data-i18n="contact.form.label_subject">
                 Sujet
                 <input name="subject" placeholder="Ex : Demande de devis Pack Sportif" />
               </label>
-              <label>
+              <label data-i18n="contact.form.label_message">
                 Message
                 <textarea name="message" placeholder="Décrivez votre projet, vos objectifs, délais et budget estimé..." required></textarea>
               </label>
-              <button class="btn btn-gold" type="submit" style="width:100%">Envoyer le message</button>
+              <button class="btn btn-gold" type="submit" style="width:100%" data-i18n="contact.form.btn">Envoyer le message</button>
               <div id="formHint" style="font-size:12px;color:var(--muted-2);text-align:center" aria-live="polite"></div>
             </form>
           </div>
@@ -193,7 +194,7 @@
 
         <!-- Carte de visite 3D -->
         <div class="card3d-section reveal">
-          <h3 style="text-align:center;font-family:var(--font-display);font-size:clamp(20px,2vw,28px);margin-bottom:24px">Ma carte de <span class="gold">visite</span></h3>
+          <h3 style="text-align:center;font-family:var(--font-display);font-size:clamp(20px,2vw,28px);margin-bottom:24px" data-i18n-html="contact.card3d.title">Ma carte de <span class="gold">visite</span></h3>
           <div class="card3d-wrap">
             <div class="card3d" id="card3d">
               <div class="card3d-face card3d-front">
@@ -214,8 +215,8 @@
       <div class="container">
         <div class="section-header reveal">
           <div class="section-line"></div>
-          <h2>Suivez <span class="gold">MS Comm'</span></h2>
-          <p>Retrouvez mes dernières créations et actualités sur les réseaux sociaux.</p>
+          <h2 data-i18n-html="contact.socials.title">Suivez <span class="gold">MS Comm'</span></h2>
+          <p data-i18n="contact.socials.sub">Retrouvez mes dernières créations et actualités sur les réseaux sociaux.</p>
           <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
             <a class="btn btn-outline-gold" href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener">Instagram — MS Comm'</a>
             <a class="btn btn-outline-gold" href="https://www.instagram.com/melododo2001/" target="_blank" rel="noopener">Instagram — Melody Sok</a>
@@ -234,22 +235,22 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <img src="assets/data/logo_black-removebg.png" alt="MS" />
-          <span>MS Comm'</span>
+          <span data-i18n="footer.tagline">MS Comm' — Communication sportive, média & événementiel</span>
         </div>
         <div class="footer-links">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html">Photographie</a>
-          <a href="contact.html">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </div>
-        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+        <div class="footer-copy" data-i18n="footer.copyright">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
       </div>
     </div>
   </footer>
 
-  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut" data-i18n-attr="aria-label:footer.scroll_top_aria">
     <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-7 7m7-7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 

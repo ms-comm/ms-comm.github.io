@@ -36,6 +36,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js" defer></script>
 
   <!-- JSON-LD Schema.org -->
@@ -78,20 +79,20 @@
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
           <div class="brand-text">
             <strong>MS Comm'</strong>
-            <span>Prestataire de services de communication</span>
+            <span data-i18n="brand.sub">Prestataire de services de communication</span>
           </div>
         </a>
         <nav class="nav">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html" class="active">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html">Photographie</a>
-          <a href="contact.html">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" class="active" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </nav>
         <div style="display:flex;align-items:center;gap:10px">
-          <a class="nav-cta" href="contact.html">Demander un devis</a>
-          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu" data-i18n-attr="aria-label:nav.menu_aria">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -100,19 +101,19 @@
   </header>
 
   <div class="drawer" id="drawer">
-    <a href="index.html">Accueil</a>
-    <a href="experiences.html">Expériences</a>
-    <a href="services.html">Services</a>
-    <a href="portfolio.html">Portfolio</a>
-    <a href="photos.html">Photographie</a>
-    <a href="contact.html">Contact</a>
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
   <main>
 
     <div class="page-header">
-      <h1>Mes <span class="gold">Expériences</span></h1>
-      <p>4 ans de projets marquants dans le sport, les médias et l'événementiel.</p>
+      <h1 data-i18n-html="exp.title">Mes <span class="gold">Expériences</span></h1>
+      <p data-i18n="exp.sub">4 ans de projets marquants dans le sport, les médias et l'événementiel.</p>
     </div>
 
     <section class="section">
@@ -291,11 +292,11 @@
       <div class="container">
         <div class="section-header reveal">
           <div class="section-line"></div>
-          <h2>Envie de <span class="gold">collaborer</span> ?</h2>
-          <p>Découvrez mes services ou contactez-moi pour discuter de votre projet.</p>
+          <h2 data-i18n-html="exp.cta.title">Envie de <span class="gold">collaborer</span> ?</h2>
+          <p data-i18n="exp.cta.sub">Découvrez mes services ou contactez-moi pour discuter de votre projet.</p>
           <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-            <a class="btn btn-gold" href="contact.html">Me contacter</a>
-            <a class="btn btn-outline-gold" href="services.html">Voir mes services</a>
+            <a class="btn btn-gold" href="contact.html" data-i18n="exp.cta.btn_contact">Me contacter</a>
+            <a class="btn btn-outline-gold" href="services.html" data-i18n="exp.cta.btn_services">Voir mes services</a>
           </div>
         </div>
       </div>
@@ -308,22 +309,22 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <img src="assets/data/logo_black-removebg.png" alt="MS" />
-          <span>MS Comm'</span>
+          <span data-i18n="footer.tagline">MS Comm' — Communication sportive, média & événementiel</span>
         </div>
         <div class="footer-links">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html">Photographie</a>
-          <a href="contact.html">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </div>
-        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+        <div class="footer-copy" data-i18n="footer.copyright">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
       </div>
     </div>
   </footer>
 
-  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
+  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut" data-i18n-attr="aria-label:footer.scroll_top_aria">
     <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-7 7m7-7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 
