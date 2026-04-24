@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
-  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/i18n.js" defer></script>
   <script src="https://js.stripe.com/v3/"></script>
   <style>
 :root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --green:#22c55e; --red:#ef4444; }
@@ -67,45 +67,45 @@
       <div class="topbar-inner">
         <a class="brand" href="index.html">
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm'" />
-          <div class="brand-text"><strong>MS Comm'</strong><span data-i18n="brand.sub">Prestataire de services de communication</span></div>
+          <div class="brand-text"><strong>MS Comm'</strong><span>Prestataire de services de communication</span></div>
         </a>
         <nav class="nav">
-          <a href="index.html" data-i18n="nav.home">Accueil</a>
-          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
-          <a href="contact.html" data-i18n="nav.contact">Contact</a>
+          <a href="index.html">Accueil</a>
+          <a href="photos.html">Photographie</a>
+          <a href="contact.html">Contact</a>
         </nav>
-        <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu" data-i18n-attr="aria-label:nav.menu_aria">
+        <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
     </div>
   </header>
   <div class="drawer" id="drawer">
-    <a href="index.html" data-i18n="nav.home">Accueil</a><a href="photos.html" data-i18n="nav.photos">Photographie</a><a href="contact.html" data-i18n="nav.contact">Contact</a>
+    <a href="index.html">Accueil</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a>
   </div>
 
   <main>
     <div class="checkout-page">
       <div class="container">
         <div style="margin-bottom:28px">
-          <a href="photos.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color=''" data-i18n="checkout.back_gallery">
+          <a href="photos.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color=''">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
             Retour à la galerie
           </a>
-          <h1 style="font-family:'Poppins',sans-serif;font-size:clamp(1.5rem,3vw,2rem);margin-top:12px" data-i18n-html="checkout.title">Récapitulatif & <span class="gold">Paiement</span></h1>
+          <h1 style="font-family:'Poppins',sans-serif;font-size:clamp(1.5rem,3vw,2rem);margin-top:12px">Récapitulatif & <span class="gold">Paiement</span></h1>
         </div>
 
         <!-- SUCCESS -->
         <div class="success-screen" id="success-screen">
           <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <h2 data-i18n="checkout.success_title">Commande reçue !</h2>
-          <p id="success-email-status" data-i18n="checkout.success_desc">Un email contenant votre lien de téléchargement vous a été envoyé.</p>
+          <h2>Commande reçue !</h2>
+          <p id="success-email-status">Un email contenant votre lien de téléchargement vous a été envoyé.</p>
           <a id="success-download-btn" href="#" class="pay-btn" style="display:inline-flex;max-width:360px;margin:0 auto 14px;text-decoration:none">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span data-i18n="checkout.btn_download">Télécharger mes photos (.zip)</span>
+            Télécharger mes photos (.zip)
           </a>
           <br>
-          <a href="photos.html" style="display:inline-block;margin-top:8px;color:var(--muted);font-size:13px;text-decoration:none" data-i18n="checkout.back_gallery_short">← Retour à la galerie</a>
+          <a href="photos.html" style="display:inline-block;margin-top:8px;color:var(--muted);font-size:13px;text-decoration:none">← Retour à la galerie</a>
         </div>
 
         <!-- CHECKOUT FORM -->
@@ -114,17 +114,17 @@
             <!-- LEFT: form -->
             <div>
               <div class="co-block">
-                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-i18n="checkout.section_contacts">Vos coordonnées</span></h3>
+                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Vos coordonnées</h3>
                 <div class="form-row-2">
-                  <div class="form-field"><label data-i18n="checkout.label_firstname">Prénom</label><input type="text" id="f-first" placeholder="Marie" /></div>
-                  <div class="form-field"><label data-i18n="checkout.label_lastname">Nom</label><input type="text" id="f-last" placeholder="Dupont" /></div>
+                  <div class="form-field"><label>Prénom</label><input type="text" id="f-first" placeholder="Marie" /></div>
+                  <div class="form-field"><label>Nom</label><input type="text" id="f-last" placeholder="Dupont" /></div>
                 </div>
-                <div class="form-field"><label data-i18n="checkout.label_email">Email *</label><input type="email" id="f-email" placeholder="marie.dupont@email.com" /></div>
-                <div class="form-field"><label data-i18n="checkout.label_phone">Téléphone</label><input type="tel" id="f-phone" placeholder="+33 6 12 34 56 78" /></div>
+                <div class="form-field"><label>Email *</label><input type="email" id="f-email" placeholder="marie.dupont@email.com" /></div>
+                <div class="form-field"><label>Téléphone</label><input type="tel" id="f-phone" placeholder="+33 6 12 34 56 78" /></div>
               </div>
 
               <div class="co-block">
-                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span data-i18n="checkout.section_payment">Paiement</span></h3>
+                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Paiement</h3>
 
                 <div id="debug-banner" class="debug-banner" style="display:none">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -134,7 +134,7 @@
                 <!-- Stripe Elements container (only visible when Stripe is active) -->
                 <div id="stripe-section" style="display:none">
                   <div class="form-field">
-                    <label data-i18n="checkout.label_card">Carte bancaire</label>
+                    <label>Carte bancaire</label>
                     <div id="stripe-payment-element"><!-- Stripe injects here --></div>
                   </div>
                   <div id="stripe-error" class="stripe-error"></div>
@@ -144,12 +144,12 @@
 
                 <button class="pay-btn" id="pay-btn">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span id="pay-btn-label" data-i18n-html="checkout.btn_pay">Payer <span id="pay-total-label">0.00€</span></span>
+                  <span id="pay-btn-label">Payer <span id="pay-total-label">0.00€</span></span>
                 </button>
 
                 <div class="pay-secure">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span data-i18n="checkout.secure_payment">Paiement sécurisé — Stripe, chiffrement SSL 256 bits</span>
+                  Paiement sécurisé — Stripe, chiffrement SSL 256 bits
                 </div>
                 <div class="payment-logos">
                   <span class="pay-logo">VISA</span>
@@ -164,7 +164,7 @@
             <!-- RIGHT: summary -->
             <div>
               <div class="co-block" style="position:sticky;top:90px">
-                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span data-i18n="checkout.section_selection">Votre sélection</span></h3>
+                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Votre sélection</h3>
                 <div id="co-items"></div>
                 <div id="co-totals"></div>
               </div>
@@ -176,8 +176,8 @@
   </main>
 
   <footer class="footer"><div class="container"><div class="footer-inner">
-    <p data-i18n="footer.copyright">© <span id="year"></span> MS Comm' — Tous droits réservés</p>
-    <div class="footer-links"><a href="index.html" data-i18n="nav.home">Accueil</a><a href="photos.html" data-i18n="nav.photos">Photographie</a><a href="contact.html" data-i18n="nav.contact">Contact</a></div>
+    <p>© <span id="year"></span> MS Comm' — Tous droits réservés</p>
+    <div class="footer-links"><a href="index.html">Accueil</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a></div>
   </div></div></footer>
 
   <script>

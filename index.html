@@ -39,8 +39,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
-  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/i18n.js" defer></script>
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
   <!-- JSON-LD Schema.org -->
@@ -89,22 +89,22 @@
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
           <div class="brand-text">
             <strong>MS Comm'</strong>
-            <span data-i18n="brand.sub">Prestataire de services de communication</span>
+            <span>Prestataire de services de communication</span>
           </div>
         </a>
 
         <nav class="nav">
-          <a href="index.html" class="active" data-i18n="nav.home">Accueil</a>
-          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
-          <a href="services.html" data-i18n="nav.services">Services</a>
-          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
-          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
-          <a href="contact.html" data-i18n="nav.contact">Contact</a>
+          <a href="index.html" class="active">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="photos.html">Photographie</a>
+          <a href="contact.html">Contact</a>
         </nav>
 
         <div style="display:flex;align-items:center;gap:10px">
-          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
-          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu" data-i18n-attr="aria-label:nav.menu_aria">
+          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -113,12 +113,12 @@
   </header>
 
   <div class="drawer" id="drawer">
-    <a href="index.html" data-i18n="nav.home">Accueil</a>
-    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
-    <a href="services.html" data-i18n="nav.services">Services</a>
-    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
-    <a href="photos.html" data-i18n="nav.photos">Photographie</a>
-    <a href="contact.html" data-i18n="nav.contact">Contact</a>
+    <a href="index.html">Accueil</a>
+    <a href="experiences.html">Expériences</a>
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="photos.html">Photographie</a>
+    <a href="contact.html">Contact</a>
   </div>
 
   <main>
@@ -134,21 +134,452 @@
           </div>
 
           <div class="hero-content reveal-right">
-            <div class="hero-label"><span class="dot"></span> <span data-i18n="home.hero.label">Melody</span></div>
+            <div class="hero-label"><span class="dot"></span> Melody</div>
 
-            <h1 class="hero-quote" data-i18n-html="home.hero.quote">
+            <h1 class="hero-quote">
               <span class="gold">Votre image,</span> notre mission.<br>
               <span class="gold">Votre histoire,</span> notre création.
             </h1>
 
-            <p class="hero-sub" data-i18n="home.hero.sub">
+            <p class="hero-sub">
               Réseaux sociaux, montage vidéo, photographie, identité visuelle, événementiel…
               Je vous accompagne pour faire briller votre univers.
             </p>
 
             <div class="hero-btns">
-              <a class="btn btn-gold" href="services.html" data-i18n="home.hero.btn_services">Découvrir mes services</a>
-              <a class="btn btn-outline-gold" href="contact.html" data-i18n="home.hero.btn_contact">Parlons de votre projet</a>
+              <a class="btn btn-gold" href="services.html">Découvrir mes services</a>
+              <a class="btn btn-outline-gold" href="contact.html">Parlons de votre projet</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATS ===== -->
+    <section class="section has-glow">
+      <div class="container">
+        <div class="stats-bar reveal stagger">
+          <div class="stat-item">
+            <strong>4+</strong>
+            <span>Années d'expérience</span>
+          </div>
+          <div class="stat-item">
+            <strong>6</strong>
+            <span>Projets marquants</span>
+          </div>
+          <div class="stat-item">
+            <strong>24h / 48h</strong>
+            <span>Réactivité</span>
+          </div>
+          <div class="stat-item">
+            <strong>100%</strong>
+            <span>Créativité & passion</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== À PROPOS ===== -->
+    <section class="section has-glow" id="about">
+      <div class="container">
+        <div class="about-split">
+          <div class="about-image reveal-left">
+            <img src="assets/data/Melody_image_1.jpeg" alt="Melody en événement sportif" />
+          </div>
+          <div class="about-text reveal-right">
+            <h2>Bienvenue chez <span class="gold">MS Comm'</span></h2>
+            <p>
+              Je suis Melody. Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs
+              à développer une communication qui leur ressemble et qui attire leur audience.
+            </p>
+            <p>
+              Passionnée de création, je mets mon expertise au service de votre image pour vous aider
+              à vous démarquer et à faire grandir vos projets.
+            </p>
+            <p>
+              Mon objectif ? Vous faire briller, quel que soit votre univers : sport, musique, restauration, beauté…
+            </p>
+            <p>
+              Et j'ai à cœur de construire des collaborations durables, basées sur la confiance et des résultats concrets.
+            </p>
+            <div class="skills">
+              <span class="skill-tag">Réseaux sociaux</span>
+              <span class="skill-tag">Montage vidéo</span>
+              <span class="skill-tag">Photographie</span>
+              <span class="skill-tag">Identité visuelle</span>
+              <span class="skill-tag">Création de contenu</span>
+              <span class="skill-tag">Événementiel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== APERÇU EXPÉRIENCES ===== -->
+    <section class="section has-glow">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Mes <span class="gold">Expériences</span></h2>
+          <p>4 ans de projets dans le sport, les médias, et l'événementiel.</p>
+        </div>
+
+        <div class="exp-grid reveal stagger">
+
+          <div class="exp-card">
+            <div class="exp-card-head">
+              <div class="exp-icon">🚀</div>
+              <div class="exp-meta">
+                <h3>Auto-entrepreneur</h3>
+                <div class="company">MS Comm'</div>
+                <div class="dates">août 2025 — aujourd'hui</div>
+              </div>
+            </div>
+            <p>Prestations de communication : templates, chartes graphiques, réseaux sociaux, photos et vidéos.</p>
+            <div class="exp-tags">
+              <span class="exp-tag">Communication</span>
+              <span class="exp-tag">Identité visuelle</span>
+              <span class="exp-tag">Réseaux sociaux</span>
+            </div>
+          </div>
+
+          <div class="exp-card">
+            <div class="exp-card-head">
+              <div class="exp-icon">🏟️</div>
+              <div class="exp-meta">
+                <h3>Responsable communication marketing</h3>
+                <div class="company">Paris 13 Tennis de Table</div>
+                <div class="dates">juin 2024 — aujourd'hui · 1 an 10 mois</div>
+              </div>
+            </div>
+            <p>Pilotage de la communication digitale et globale du club : gestion des réseaux sociaux, création de contenus engageants (matchs, compétitions, événements). Développement de partenariats et actions de sponsoring.</p>
+            <div class="exp-tags">
+              <span class="exp-tag">Réseaux sociaux</span>
+              <span class="exp-tag">Création de contenu</span>
+              <span class="exp-tag">Production photo/vidéo</span>
+              <span class="exp-tag">Événementiel</span>
+              <span class="exp-tag">Sponsoring</span>
+            </div>
+          </div>
+
+          <div class="exp-card">
+            <div class="exp-card-head">
+              <div class="exp-icon">🏓</div>
+              <div class="exp-meta">
+                <h3>Community Manager</h3>
+                <div class="company">Alexis Lebrun · Top 20 mondial</div>
+                <div class="dates">oct. 2021 — août 2023</div>
+              </div>
+            </div>
+            <p>Page professionnelle d'un pongiste de haut niveau. Création de contenu, photographie, rédaction.</p>
+            <div class="exp-tags">
+              <span class="exp-tag">Réseaux sociaux</span>
+              <span class="exp-tag">Montage vidéo</span>
+              <span class="exp-tag">Couverture sportive</span>
+              <span class="exp-tag">Community management</span>
+              <span class="exp-tag">Image de marque</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="text-align:center;margin-top:32px" class="reveal">
+          <a class="btn btn-outline-gold" href="experiences.html">Voir toutes mes expériences →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== APERÇU PORTFOLIO ===== -->
+    <section class="section has-glow" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Mes <span class="gold">Réalisations</span></h2>
+          <p>Affiches, posts, articles, journaux, vidéos — un aperçu de mon travail.</p>
+        </div>
+
+        <div class="preview-grid reveal stagger">
+
+          <a class="preview-card" href="portfolio.html">
+            <div class="preview-thumb">
+              <img src="assets/data/affiche_paris13_1.jpeg" alt="Affiche Paris 13 TT" />
+            </div>
+            <div class="preview-body">
+              <h3>Paris 13 Tennis de Table</h3>
+              <p>Affiches de matchs, stories, contenus jour de compétition et réseaux sociaux.</p>
+              <span class="preview-link">Voir le projet →</span>
+            </div>
+          </a>
+
+          <a class="preview-card" href="portfolio.html">
+            <div class="preview-thumb">
+              <img src="assets/data/MsComm_affiche_6.jpeg" alt="Alexis Lebrun" />
+            </div>
+            <div class="preview-body">
+              <h3>Alexis Lebrun</h3>
+              <p>Communication digitale, vidéos, visuels et couverture sportive d'un athlète olympique.</p>
+              <span class="preview-link">Voir le projet →</span>
+            </div>
+          </a>
+
+          <a class="preview-card" href="portfolio.html">
+            <div class="preview-thumb">
+              <img src="assets/data/MsComm_affiche_1.jpeg" alt="Créations MS Comm'" />
+            </div>
+            <div class="preview-body">
+              <h3>MS Comm' — Créations</h3>
+              <p>Affiches, flyers, cartes de visite et identité visuelle pour divers clients.</p>
+              <span class="preview-link">Voir le projet →</span>
+            </div>
+          </a>
+
+        </div>
+
+        <div style="text-align:center;margin-top:32px" class="reveal">
+          <a class="btn btn-outline-gold" href="portfolio.html">Voir tout le portfolio →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA SERVICES ===== -->
+    <section class="section has-glow">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Ce que je <span class="gold">propose</span></h2>
+          <p class="services-intro-line">Templates, chartes graphiques, flyers, affiches, photos, réels, gestion de réseaux sociaux… <br>Des solutions adaptées à chaque univers.</p>
+        </div>
+
+        <div class="services-grid reveal stagger">
+          <div class="service-card">
+            <h3>À la carte</h3>
+            <div class="price">dès 10€</div>
+            <div class="price-note">par prestation</div>
+            <ul class="service-list">
+              <li>Template Story / Publication</li>
+              <li>Photographie</li>
+              <li>Montage vidéo</li>
+              <li>Création d'affiches</li>
+            </ul>
+            <a class="btn" href="services.html">En savoir plus</a>
+          </div>
+
+          <div class="service-card featured">
+            <h3>Packs de lancement</h3>
+            <div class="price">dès 95€</div>
+            <div class="price-note">par pack</div>
+            <ul class="service-list">
+              <li>Pack Réseaux Sociaux Starter</li>
+              <li>Pack Réseaux Sociaux Boost</li>
+              <li>Pack Identité Visuelle</li>
+            </ul>
+            <a class="btn btn-gold" href="services.html">En savoir plus</a>
+          </div>
+
+          <div class="service-card">
+            <h3>Packs spéciaux</h3>
+            <div class="price">dès 170€</div>
+            <div class="price-note">par univers</div>
+            <ul class="service-list">
+              <li>Pack Sportif</li>
+              <li>Pack Beauté / Bien-être</li>
+              <li>Pack Restaurant</li>
+              <li>Pack Événement</li>
+            </ul>
+            <a class="btn" href="services.html">En savoir plus</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== AVIS CLIENTS ===== -->
+    <section class="section has-glow testimonials-section" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-line"></div>
+          <h2>Ils m'ont fait <span class="gold">confiance</span></h2>
+           <p>Des retours clients authentiques.</p>
+          <p>Leurs mots, ma plus belle carte de visite.</p>
+        </div>
+
+        <div class="testimonials-controls reveal" aria-label="Contrôles des avis">
+          <button class="testimonial-nav" id="testimonialsPrev" type="button" aria-label="Avis précédent">←</button>
+          <button class="testimonial-nav" id="testimonialsNext" type="button" aria-label="Avis suivant">→</button>
+        </div>
+
+        <div class="testimonials-rail-wrap reveal">
+          <div class="testimonials-rail" id="testimonialsRail" tabindex="0" aria-label="Avis clients, défilement horizontal">
+            <div class="testimonials-inner" id="testimonialsInner">
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Alexis_Lebrun.jpeg" alt="Alexis Lebrun" />
+                <div>
+                  <h3>Alexis LEBRUN</h3>
+                </div>
+              </div>
+              <p>J'ai travaillé avec Melody pour la gestion de mes réseaux sociaux. Elle a toujours livré un travail impeccable et dans les délais. Je recommande à 100% !!</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_maniak.jpeg" alt="Léa Maniak" />
+                <div>
+                  <h3>Léa - Maniak</h3>
+                </div>
+              </div>
+              <p>Melody a fait un travail remarquable sur l'identité visuelle de mon entreprise de nettoyage. Elle a su comprendre mes besoins, me guider avec des conseils clairs et pertinents, et apporter une touche créative qui me correspond parfaitement. En plus de ses compétences, c'est une personne à l'écoute, réactive et toujours bienveillante. Je recommande vivement ses services !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Thomas_Sale.jpeg" alt="Thomas Salle" />
+                <div>
+                  <h3>Thomas SALLE</h3>
+                </div>
+              </div>
+              <p>Excellente entreprise de communication : professionnelle, créative et à l'écoute. Je recommande vivement !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">HL</span>
+                <div>
+                  <h3>Harry LENG</h3>
+                </div>
+              </div>
+              <p>J'ai fait appel à Melody pour l'affiche de l'événement de fanfare de mon école. Elle a été très réactive et m'a rendu un travail qualité. Je recommande !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">OH</span>
+                <div>
+                  <h3>Oumehani HOSENALLY</h3>
+                </div>
+              </div>
+              <p>Melody a monté mes vidéos pour mon compte de pâtisseries. J'ai reçu le montage largement dans les délais avec un travail très professionnel ! Merci beaucoup pour ton travail !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">JT</span>
+                <div>
+                  <h3>Jeremy TAN</h3>
+                </div>
+              </div>
+              <p>Melody a réalisé le montage de mon vlog et de plusieurs réels sur mon compte Instagram en respectant totalement mes instructions ! Merci beaucoup MS Comm' !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Thomas_guignat.jpeg" alt="Thomas Guignat" />
+                <div>
+                  <h3>Thomas GUIGNAT</h3>
+                </div>
+              </div>
+              <p>Un travail professionnel, communication régulière et rapide, un réel accompagnement dans la démarche. Je recommande ++++ n'attendez plus, c'est à vous de jouer !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Arnaud_Broton.jpeg" alt="Arno Brotons" />
+                <div>
+                  <h3>Arno BROTONS</h3>
+                </div>
+              </div>
+              <p>J'ai travaillé avec MS Comm' pour la réalisation d'un de mes vlogs pour les réseaux sociaux. Rendu professionnel et très rapide ! Merci Melody 😁</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">MP</span>
+                <div>
+                  <h3>Mélina PHENG</h3>
+                </div>
+              </div>
+              <p>J'avais besoin de communication pour ma compétition de natation. Melody a assuré mon compte durant l'échéance de manière très professionnelle, merci !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Lois_Adam.jpeg" alt="Loïs Adam" />
+                <div>
+                  <h3>Loïs ADAM</h3>
+                </div>
+              </div>
+              <p>Une professionnelle qui prend son travail à cœur. Melody maîtrise à la perfection la communication sur les réseaux sociaux avec une qualité irréprochable. Je recommande ses services !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">AN</span>
+                <div>
+                  <h3>Arnaud NICOLAZZI</h3>
+                </div>
+              </div>
+              <p>Très bon travail de Mélody. Elle a répondu rapidement à ma demande. Elle m'a fait un travail de qualité. Elle est professionnelle, je la recommande vivement.</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">RL</span>
+                <div>
+                  <h3>Roseline LUONG</h3>
+                </div>
+              </div>
+              <p>Très satisfaite du travail de Melody ! Disponible, professionnelle et toujours avec le sourire !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Florian_Bourrasseau.jpeg" alt="Florian Bourrassaud" />
+                <div>
+                  <h3>Florian BOURRASSAUD</h3>
+                </div>
+              </div>
+              <p>Travail au top. Très bon potentiel 🙏🏼</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">VH</span>
+                <div>
+                  <h3>Victor HUYGUES-LACOUR</h3>
+                </div>
+              </div>
+              <p>Super accompagnement !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/profile_Leo_Cohen.jpeg" alt="Léo Cohen" />
+                <div>
+                  <h3>Léo COHEN</h3>
+                </div>
+              </div>
+              <p>Très satisfait de mon expérience, Mélody est à l'écoute et très professionnelle. Le résultat est encore mieux que ce que j'imaginais, je recommande !</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <span class="testimonial-avatar">SP</span>
+                <div>
+                  <h3>Sophie PHENG</h3>
+                </div>
+              </div>
+              <p>J'ai fait confiance à Melody pour me faire 3 montages de réels pour mon Instagram. Le travail a été fait rapidement et avec beaucoup de professionnalisme ! Je recommande 👍</p>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="testimonial-head">
+                <img class="testimonial-photo" src="assets/data/Profile_Felix_Lebrun.jpeg" alt="Félix Lebrun" />
+                <div>
+                  <h3>Félix LEBRUN</h3>
+                </div>
+              </div>
+              <p>Super content du travail de Melody, investie, passionnée et de confiance. Je recommande fortement !</p>
+            </article>
             </div>
           </div>
         </div>
@@ -160,11 +591,11 @@
       <div class="container">
         <div class="section-header reveal">
           <div class="section-line"></div>
-          <h2 data-i18n-html="home.cta.title">Prêt·e à <span class="gold">briller</span> ?</h2>
-          <p data-i18n="home.cta.sub">Décrivez votre projet et je vous répondrai rapidement. Ensemble, faisons rayonner votre image.</p>
+          <h2>Prêt·e à <span class="gold">briller</span> ?</h2>
+          <p>Décrivez votre projet et je vous répondrai rapidement. Ensemble, faisons rayonner votre image.</p>
           <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-            <a class="btn btn-gold" href="contact.html" data-i18n="home.cta.btn_contact">Me contacter</a>
-            <a class="btn btn-outline-gold" href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener" data-i18n="home.cta.btn_instagram">Suivre sur Instagram</a>
+            <a class="btn btn-gold" href="contact.html">Me contacter</a>
+            <a class="btn btn-outline-gold" href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener">Suivre sur Instagram</a>
           </div>
         </div>
       </div>
@@ -178,22 +609,22 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <img src="assets/data/logo_black-removebg.png" alt="MS" />
-          <span data-i18n="footer.tagline">MS Comm' — Communication sportive, média & événementiel</span>
+          <span>MS Comm'</span>
         </div>
         <div class="footer-links">
-          <a href="index.html" data-i18n="nav.home">Accueil</a>
-          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
-          <a href="services.html" data-i18n="nav.services">Services</a>
-          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
-          <a href="photos.html" data-i18n="nav.photos">Photographie</a>
-          <a href="contact.html" data-i18n="nav.contact">Contact</a>
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="photos.html">Photographie</a>
+          <a href="contact.html">Contact</a>
         </div>
-        <div class="footer-copy" data-i18n="footer.copyright">&copy; <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
       </div>
     </div>
   </footer>
 
-  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut" data-i18n-attr="aria-label:footer.scroll_top_aria">
+  <button class="scroll-top" id="scrollTop" aria-label="Retour en haut">
     <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-7 7m7-7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 

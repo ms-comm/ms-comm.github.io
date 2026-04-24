@@ -255,32 +255,6 @@ main {
   justify-content: center;
 }
 
-.lang-switcher {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--stroke);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s;
-  padding: 0;
-  overflow: hidden;
-}
-
-.lang-switcher svg {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
-}
-
-.lang-switcher:hover {
-  border-color: var(--gold);
-  background: rgba(198, 155, 0, 0.1);
-}
-
 /* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;
@@ -2179,4 +2153,89 @@ textarea:focus {
   .footer-links {
     justify-content: center;
   }
+}
+
+/* ===== Language switcher (FR · EN) — injected by assets/js/i18n.js =====
+ *  Two small pills. The active language is gold, the inactive one dimmed;
+ *  clicking the dimmed one switches language.
+ *
+ *  Desktop (>960px): the switcher is injected as a direct last-child of
+ *    `.topbar-inner` and anchored to the true right edge via
+ *    `margin-left: auto`. The original flex layout of brand/nav/CTA is
+ *    preserved because `.nav` and the CTA wrapper keep their implicit
+ *    positions (brand at start, nav centred, CTA just left of the
+ *    switcher).
+ *  Mobile (≤960px): the JS re-parents it inside the CTA wrapper just
+ *    before the hamburger, so the layout stays compact. */
+/* Desktop (>960px): the switcher lives as a direct child of `.topbar`
+   (outside `.container`) and is absolutely positioned against the header's
+   right edge. Because `.topbar` spans the full viewport width while the
+   inner `.container` is centred and narrower, we also reserve a gutter on
+   the right of `.topbar-inner` (`padding-right`) so the "Demander un
+   devis" CTA never slides underneath the switcher at intermediate widths.
+   `.topbar` is already `position: fixed`, which creates the positioning
+   context we need, so no extra override is required. */
+@media (min-width: 961px) {
+  .topbar > .lang-switch {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+  }
+  .topbar .topbar-inner { padding-right: 100px; }
+}
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(198, 155, 0, 0.25);
+  border-radius: 999px;
+  padding: 3px 6px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  line-height: 1;
+  transition: border-color .2s, background .2s;
+}
+.lang-switch:hover {
+  border-color: var(--gold);
+  background: rgba(198, 155, 0, 0.08);
+}
+.lang-switch .lang-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 4px 6px;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.4);
+  font: inherit;
+  cursor: pointer;
+  transition: color .15s, background .15s, transform .12s;
+}
+.lang-switch .lang-opt:hover {
+  color: var(--gold-2);
+}
+.lang-switch .lang-opt.active {
+  color: var(--gold-2);
+  background: rgba(198, 155, 0, 0.18);
+  cursor: default;
+}
+.lang-switch .lang-opt:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.lang-switch .lang-sep {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+  user-select: none;
+}
+@media (max-width: 520px) {
+  .lang-switch { padding: 2px 4px; font-size: 11px; }
+  .lang-switch .lang-opt { min-width: 20px; padding: 3px 5px; }
 }

@@ -334,6 +334,7 @@ Fonctionnalités :
 | 2026-03 | Suppression `Disallow: /assets/data/` dans robots.txt (bloquait crawl images Google) |
 | 2026-04 | Ajout JSON-LD Schema.org sur toutes les pages + canonical URLs + manifest.json |
 | 2026-04 | SEO complet `experiences.html` (manquait OG, Twitter, keywords, geo) |
+| 2026-04 | Ajout i18n FR/EN (`assets/js/i18n.js`) — drapeau langue dans la topbar à droite, détection auto (`navigator.language` `fr*` → FR, sinon EN), préférence stockée dans `localStorage['mscomm_lang']`. Dictionnaire intégré, traduit les text nodes + attributs `placeholder/alt/aria-label/title` + `<title>` + meta description. MutationObserver pour contenu dynamique (galerie photos, panier). |
 
 ---
 
