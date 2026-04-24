@@ -614,20 +614,36 @@ function justifiedFlexStyle(p) {
 }
 
 /* ===== SERVER ===== */
+async function pingServer(timeoutMs) {
+  return fetch(`${API}/api/health`, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
+}
+
 async function init() {
+  const banner = document.getElementById('offline-banner');
+  const msgEl  = document.getElementById('offline-banner-msg');
+  /* Show a "waking up" message while the Fly.io machine cold-starts (up to ~15s).
+     We retry twice with a longer timeout before giving up. */
   try {
-    await fetch(`${API}/api/health`, { signal: AbortSignal.timeout(3000) });
-    document.getElementById('offline-banner').classList.remove('show');
+    await pingServer(3000);
+    banner.classList.remove('show');
   } catch {
-    /* Tailored message when opened via file:// (fetch is often blocked there) */
-    const msgEl = document.getElementById('offline-banner-msg');
-    if (msgEl && window.location.protocol === 'file:') {
-      msgEl.innerHTML =
-        `⚠️ Ouvre le site via <strong><a href="http://localhost:3000/photos.html" style="color:#ffd25a">http://localhost:3000/photos.html</a></strong> ` +
-        `(pas par double-clic) — les navigateurs bloquent les requêtes fetch depuis <code>file://</code>.`;
+    if (msgEl) msgEl.innerHTML = '⏳ Réveil du serveur photo en cours… (première visite peut prendre 10-15 secondes)';
+    banner.classList.add('show');
+    try {
+      await pingServer(20000);
+      banner.classList.remove('show');
+    } catch {
+      if (msgEl) {
+        if (window.location.protocol === 'file:') {
+          msgEl.innerHTML =
+            `⚠️ Ouvre le site via <strong><a href="http://localhost:3000/photos.html" style="color:#ffd25a">http://localhost:3000/photos.html</a></strong> ` +
+            `(pas par double-clic) — les navigateurs bloquent les requêtes fetch depuis <code>file://</code>.`;
+        } else {
+          msgEl.innerHTML = "⚠️ Le serveur photo est momentanément indisponible. Réessayez dans quelques instants.";
+        }
+      }
+      return;
     }
-    document.getElementById('offline-banner').classList.add('show');
-    return;
   }
   const [albums, photos, settings] = await Promise.all([
     fetch(`${API}/api/public/albums`).then(r => r.json()).catch(() => []),
