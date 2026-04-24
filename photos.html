@@ -1,0 +1,1420 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>MS Comm' | Galerie Photo — Photographie Sportive & Événementielle</title>
+  <meta name="description" content="Découvrez la galerie photo de MS Comm' : photographies sportives, portraits, événements. Téléchargement disponible. Accès galerie privée pour les clients." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="MS Comm' | Galerie Photo" />
+  <meta property="og:description" content="Galerie photo MS Comm' — photographies sportives, portraits et événements." />
+  <meta property="og:image" content="https://ms-comm.github.io/assets/data/logo_white-removebg.png" />
+  <link rel="canonical" href="https://ms-comm.github.io/photos.html" />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/main.js" defer></script>
+  <style>
+/* ===== GALLERY PAGE ===== */
+:root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --red:#ef4444; --green:#22c55e; }
+.hidden { display: none !important; }
+
+.offline-banner { display:none; background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; text-align:center; padding:12px 20px; font-size:13px; position:sticky; top:70px; z-index:50; }
+.offline-banner.show { display:block; }
+
+.gal-hero { padding:72px 0 40px; text-align:center; }
+.gal-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); margin-bottom:10px; }
+.gal-hero p { color:var(--muted); font-size:15px; max-width:54ch; margin:0 auto; }
+
+/* toolbar */
+.gal-controls { margin-bottom:20px; }
+.gal-controls-top { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.gal-search { width:100%; max-width:560px; display:block; margin:0 auto; background:#141414; border:1px solid var(--border); border-radius:10px; color:#f0f0f0; padding:10px 14px; font-size:14px; outline:none; transition:border-color .2s; }
+.gal-search:focus { border-color:var(--gold); }
+.gal-tabs { display:flex; gap:3px; background:#141414; border:1px solid var(--border); border-radius:10px; padding:3px; }
+.gal-tab { padding:6px 14px; border-radius:7px; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; transition:all .15s; }
+.gal-tab.active { background:var(--gold); color:#0a0a0a; }
+.btn-private-album { display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:9px; border:1px solid var(--border); background:#141414; color:var(--muted); font-size:13px; cursor:pointer; transition:all .15s; }
+.btn-private-album:hover { border-color:var(--gold); color:#f0f0f0; }
+.btn-private-album svg { width:15px; height:15px; }
+.gal-content-box { background:rgba(255,255,255,.015); border:1px solid var(--border); border-radius:18px; padding:28px 24px; }
+
+/* albums */
+.albums-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:18px; }
+.album-card { background:#141414; border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; transition:border-color .2s,transform .2s; }
+.album-card:hover { border-color:rgba(198,155,0,.5); transform:translateY(-3px); }
+.album-cover { aspect-ratio:16/9; overflow:hidden; background:#111; position:relative; }
+.album-cover img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+.album-card:hover .album-cover img { transform:scale(1.06); }
+.album-cover-ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.1); }
+.album-cover-ph svg { width:48px; height:48px; }
+.album-badge { position:absolute; top:8px; right:8px; background:rgba(0,0,0,.7); border-radius:20px; padding:3px 10px; font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; }
+.album-badge svg { width:11px; height:11px; }
+.album-share-btn { position:absolute; top:8px; left:8px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.15); color:#f0f0f0; cursor:pointer; display:none; align-items:center; justify-content:center; padding:0; transition:all .15s; z-index:2; }
+.album-card:hover .album-share-btn { display:flex; }
+.album-share-btn:hover { background:var(--gold); color:#0a0a0a; border-color:var(--gold); }
+.album-body { padding:12px 14px; }
+.album-name { font-weight:600; font-size:14px; margin-bottom:5px; }
+.album-info { display:flex; align-items:center; gap:8px; }
+.album-count { color:var(--muted); font-size:12px; }
+.badge-pub { background:rgba(34,197,94,.1); color:#86efac; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:600; }
+.badge-paid-t { background:rgba(198,155,0,.15); color:var(--gold-2); padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:600; }
+.badge-priv { background:rgba(148,163,184,.1); color:#94a3b8; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:600; }
+
+/* timeline */
+/* The date-nav sidebar is `position: fixed` on desktop (see below) so it
+   stays visible at the edge of the viewport regardless of scroll depth.
+   That means we don't need a flex two-column layout anymore — we just
+   reserve the right edge with `padding-right` so the photos grid never
+   runs underneath the floating nav. On <=900px the nav is hidden and the
+   padding is dropped. */
+.timeline-wrap { position:relative; padding-right:140px; }
+.timeline-photos { min-width:0; }
+.tl-section { margin-bottom:36px; }
+.tl-month-label { font-size:12px; font-weight:700; color:var(--gold-2); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+.tl-month-label > span:first-child { flex-shrink:0; }
+.tl-month-label::before { content:''; order:2; flex:1; height:1px; background:rgba(198,155,0,.15); }
+.tl-albums { order:3; font-size:11px; font-weight:600; color:var(--gold); letter-spacing:.5px; text-transform:none; background:rgba(198,155,0,.1); border:1px solid rgba(198,155,0,.2); padding:3px 10px; border-radius:20px; white-space:nowrap; flex-shrink:0; transition:all .15s; }
+.tl-albums[style*="cursor:pointer"]:hover { background:rgba(198,155,0,.2); color:var(--gold-2); }
+/* ═══════════════════════════════════════════════════════════════════════
+ *  Gallery layout — Flickr-style justified rows (no black gaps)
+ *
+ *  CSS-only implementation:
+ *   - `.photos-masonry` is a flex-wrap container.
+ *   - Each `.masonry-item` declares a `flex-basis` proportional to its
+ *     natural aspect ratio (set inline from `p.width` / `p.height`).
+ *   - `flex-grow: 1` lets every item in the same row stretch together to
+ *     completely fill the row width — no black gaps on either end.
+ *   - The pseudo-element `::after` with a huge `flex-grow` consumes any
+ *     leftover space on the last row so the real items DON'T stretch
+ *     unnaturally when the row is partially filled.
+ *   - `object-fit: cover` absorbs the tiny aspect-ratio discrepancy caused
+ *     by the per-row stretch, without visible cropping for typical photos.
+ *
+ *  Row height is set via the `.masonry-item { height: … }` rule and drops
+ *  on narrow viewports to keep thumbnails reasonably sized on mobile. */
+.photos-masonry { display:flex; flex-wrap:wrap; gap:6px; font-size:0; }
+.photos-masonry::after { content:''; flex-grow:1000000000; }
+.masonry-item { flex-grow:1; height:220px; border-radius:8px; overflow:hidden; cursor:pointer; position:relative; background:#111; }
+.masonry-item img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s; }
+.masonry-item:hover img { transform:scale(1.03); }
+.masonry-overlay { position:absolute; inset:0; background:rgba(0,0,0,0); display:flex; align-items:center; justify-content:center; opacity:0; transition:all .2s; }
+.masonry-item:hover .masonry-overlay { background:rgba(0,0,0,.35); opacity:1; }
+.masonry-overlay svg { width:28px; height:28px; color:#fff; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  Date-nav sidebar — persistent, always visible while scrolling
+ *
+ *  We use `position: fixed` (not sticky) because sticky breaks when the
+ *  page has nested scroll contexts or very tall content: the sidebar
+ *  would "release" and scroll away past the last photo of the timeline.
+ *  Fixed anchors it to the viewport edge so Melody can jump to any month
+ *  no matter how deep the user has scrolled.
+ *
+ *  Anchored on the right side with a soft gold-tinted glass panel so it
+ *  stays legible over any photo beneath it. A blurred backdrop falls back
+ *  to a solid dark color on browsers without backdrop-filter. */
+.date-nav {
+  position: fixed;
+  top: 100px;
+  right: 24px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding: 10px 8px;
+  background: rgba(14, 14, 14, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(198, 155, 0, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.date-nav::-webkit-scrollbar { width:4px; }
+.date-nav::-webkit-scrollbar-thumb { background:rgba(198,155,0,.25); border-radius:3px; }
+.date-nav-item { display:flex; align-items:center; gap:6px; cursor:pointer; padding:5px 10px; border-radius:8px; font-size:11.5px; font-weight:600; color:var(--muted); transition:all .15s; white-space:nowrap; }
+.date-nav-item:hover, .date-nav-item.active { color:var(--gold-2); background:rgba(198,155,0,.15); }
+.date-nav-item .dot { width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+.date-nav-item.active .dot { background:var(--gold-2); }
+
+/* ─── Purchased-photo badge ───────────────────────────────────────────
+ *  Displayed on thumbnails (masonry/grid/filmstrip) when the current
+ *  visitor has already bought this photo (token present in localStorage
+ *  under `mscomm_tokens`). Clicking the thumbnail opens the lightbox and
+ *  the existing `hasToken` branch of `buildDlDropdown` automatically
+ *  shows the direct-download resolution list. `pointer-events:none`
+ *  keeps clicks bubbling through to the underlying item. */
+.owned-badge { position:absolute; top:8px; left:8px; background:var(--gold); color:#0a0a0a; font-size:10.5px; font-weight:700; letter-spacing:.4px; padding:4px 9px; border-radius:16px; display:flex; align-items:center; gap:4px; z-index:2; pointer-events:none; box-shadow:0 2px 8px rgba(0,0,0,.5); }
+.owned-badge svg { width:12px; height:12px; }
+
+/* grid view */
+.all-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+.grid-photo { background:#141414; border:1px solid var(--border); border-radius:9px; overflow:hidden; cursor:pointer; transition:border-color .2s,transform .2s; }
+.grid-photo:hover { border-color:rgba(198,155,0,.4); transform:translateY(-2px); }
+.grid-img { aspect-ratio:1; overflow:hidden; background:#111; }
+.grid-img img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+.grid-photo:hover .grid-img img { transform:scale(1.05); }
+.grid-body { padding:8px 12px; }
+.grid-title { font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.grid-dl { font-size:11px; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
+.grid-dl svg { width:12px; height:12px; }
+
+/* ===== LIGHTBOX ===== */
+.lb-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:400; flex-direction:column; }
+.lb-overlay.open { display:flex; }
+.lb-top { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; flex-shrink:0; }
+.lb-top-title { font-size:14px; font-weight:600; color:rgba(255,255,255,.8); }
+.lb-close { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.1); border:none; color:#f0f0f0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+.lb-close:hover { background:rgba(255,255,255,.2); }
+.lb-close svg { width:18px; height:18px; }
+.lb-main { flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.lb-img-wrap { max-width:90vw; max-height:calc(100vh - 200px); position:relative; display:flex; align-items:center; justify-content:center; }
+.lb-img-wrap img { max-width:100%; max-height:calc(100vh - 200px); object-fit:contain; border-radius:4px; display:block; }
+.lb-nav { position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.15); color:#f0f0f0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.lb-nav:hover { background:rgba(255,255,255,.15); }
+.lb-nav svg { width:20px; height:20px; }
+.lb-nav-prev { left:-60px; }
+.lb-nav-next { right:-60px; }
+.lb-info { flex-shrink:0; padding:12px 20px 8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; border-top:1px solid rgba(255,255,255,.06); }
+.lb-info-left { display:flex; flex-direction:column; gap:3px; }
+.lb-photo-title { font-size:15px; font-weight:600; }
+.lb-photo-meta { font-size:12px; color:var(--muted); display:flex; gap:14px; flex-wrap:wrap; }
+.lb-photo-meta span { display:flex; align-items:center; gap:4px; }
+.lb-photo-meta svg { width:12px; height:12px; }
+.lb-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.lb-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all .15s; }
+.lb-btn svg { width:15px; height:15px; flex-shrink:0; }
+.lb-btn-dl { background:var(--gold); color:#0a0a0a; }
+.lb-btn-dl:hover { background:var(--gold-2); }
+.lb-btn-cart { background:rgba(34,197,94,.15); color:#86efac; border:1px solid rgba(34,197,94,.3); }
+.lb-btn-cart:hover { background:rgba(34,197,94,.25); }
+.lb-btn-print { background:rgba(255,255,255,.08); color:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.1); }
+.lb-btn-print:hover { background:rgba(255,255,255,.14); color:#f0f0f0; }
+.lb-btn-share { background:rgba(255,255,255,.06); color:var(--muted); border:1px solid rgba(255,255,255,.08); }
+.lb-btn-share:hover { color:#f0f0f0; }
+/* download dropdown */
+.dl-dropdown-wrap { position:relative; }
+.dl-dropdown { position:absolute; bottom:calc(100% + 6px); right:0; background:#141414; border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:4px; min-width:220px; box-shadow:0 12px 32px rgba(0,0,0,.6); z-index:420; }
+.dl-sep { height:1px; background:rgba(255,255,255,.07); margin:4px 0; }
+.dl-opt-print .dl-opt-label svg { color:#a78bfa; }
+.dl-opt-cart .dl-opt-label svg { color:#86efac; }
+.dl-opt { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; border-radius:7px; cursor:pointer; font-size:13px; transition:background .15s; }
+.dl-opt:hover { background:rgba(255,255,255,.05); }
+.dl-opt-label { display:flex; align-items:center; gap:7px; color:rgba(255,255,255,.8); }
+.dl-opt-label svg { width:14px; height:14px; color:var(--gold-2); }
+.dl-opt-res { font-size:11px; color:var(--muted); }
+/* "Débloque toutes les résolutions…" hint sitting between the buy CTA and
+   the locked resolution list for paid-not-yet-purchased photos. */
+.dl-hint { font-size:10.5px; color:var(--muted); padding:8px 12px 4px; text-transform:uppercase; letter-spacing:.6px; }
+/* Resolution rows displayed beneath the buy CTA — visually disabled (lock
+   icon, dimmed text) so the user understands they're locked behind the
+   single "Acheter" action above. A click still adds the photo to the cart
+   so any row is a valid entry point to the checkout flow. */
+.dl-opt-locked { opacity:.65; }
+.dl-opt-locked:hover { opacity:.9; background:rgba(198,155,0,.06); }
+.dl-opt-locked .dl-opt-label svg { color:var(--muted); }
+
+/* filmstrip */
+.lb-filmstrip { height:68px; background:rgba(0,0,0,.6); border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; padding:0 20px; gap:6px; overflow-x:auto; scroll-behavior:smooth; flex-shrink:0; }
+.lb-filmstrip::-webkit-scrollbar { height:3px; }
+.lb-filmstrip::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:2px; }
+.film-item { width:54px; height:54px; flex-shrink:0; border-radius:5px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .15s,opacity .15s; opacity:.55; }
+.film-item.active { border-color:var(--gold); opacity:1; }
+.film-item:hover { opacity:.85; }
+.film-item img { width:100%; height:100%; object-fit:cover; }
+
+/* ===== CART ===== */
+.cart-btn { position:fixed; top:80px; right:24px; z-index:100; background:var(--gold); color:#0a0a0a; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; display:none; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(0,0,0,.4); transition:transform .2s; }
+.cart-btn.show { display:flex; }
+.cart-btn:hover { transform:scale(1.08); }
+.cart-btn svg { width:20px; height:20px; margin-bottom:2px; }
+.cart-badge { position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; font-size:10px; font-weight:700; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.cart-panel { position:fixed; top:0; right:-420px; width:400px; height:100vh; background:#111; border-left:1px solid var(--border); z-index:600; display:flex; flex-direction:column; transition:right .28s ease; box-shadow:-8px 0 32px rgba(0,0,0,.5); }
+.cart-panel.open { right:0; }
+.cart-panel-header { display:flex; align-items:center; justify-content:space-between; padding:20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.cart-panel-header h3 { font-family:'Poppins',sans-serif; font-size:17px; display:flex; align-items:center; gap:8px; }
+.cart-panel-header h3 svg { width:18px; height:18px; }
+.cart-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; padding:4px 8px; border-radius:6px; transition:all .15s; }
+.cart-close:hover { color:#f0f0f0; background:rgba(255,255,255,.08); }
+.cart-items { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.cart-item { display:flex; align-items:center; gap:10px; background:#141414; border:1px solid var(--border); border-radius:9px; padding:10px 12px; }
+.cart-item-thumb { width:48px; height:48px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+.cart-item-info { flex:1; min-width:0; }
+.cart-item-title { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cart-item-price { font-size:12px; color:var(--gold-2); margin-top:3px; font-weight:600; }
+.cart-item-remove { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; border-radius:5px; transition:color .15s; }
+.cart-item-remove:hover { color:#fca5a5; }
+.cart-item-remove svg { width:14px; height:14px; }
+.cart-footer { flex-shrink:0; padding:16px; border-top:1px solid var(--border); }
+.discount-tiers { margin-bottom:12px; }
+.discount-tier { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; border-radius:7px; font-size:12px; margin-bottom:4px; background:rgba(255,255,255,.03); border:1px solid var(--border); }
+.discount-tier.active { background:rgba(34,197,94,.08); border-color:rgba(34,197,94,.2); color:#86efac; }
+.discount-tier.active .tier-check { display:inline-flex; }
+.tier-check { display:none; }
+.tier-check svg { width:13px; height:13px; }
+.promo-row { display:flex; gap:8px; margin-bottom:12px; }
+.promo-input { flex:1; background:#141414; border:1px solid var(--border); border-radius:8px; color:#f0f0f0; padding:9px 12px; font-size:13px; outline:none; transition:border-color .2s; }
+.promo-input:focus { border-color:var(--gold); }
+.promo-apply-btn { background:rgba(198,155,0,.15); color:var(--gold-2); border:1px solid rgba(198,155,0,.3); border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer; transition:all .15s; }
+.promo-apply-btn:hover { background:rgba(198,155,0,.25); }
+.cart-totals { margin-bottom:14px; }
+.cart-total-row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; color:var(--muted); }
+.cart-total-row.total { color:#f0f0f0; font-weight:700; font-size:16px; border-top:1px solid var(--border); padding-top:10px; margin-top:4px; }
+.cart-total-row.discount { color:#86efac; }
+.cart-empty { text-align:center; padding:48px 20px; color:var(--muted); font-size:13px; }
+.cart-empty svg { width:40px; height:40px; margin-bottom:10px; opacity:.3; display:block; margin:0 auto 10px; }
+.checkout-btn { width:100%; background:var(--gold); color:#0a0a0a; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:700; cursor:pointer; transition:background .15s; }
+.checkout-btn:hover { background:var(--gold-2); }
+.checkout-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+/* ===== MODALS ===== */
+.g-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:500; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); }
+.g-overlay.open { display:flex; }
+.g-modal { background:#141414; border:1px solid rgba(255,255,255,.1); border-radius:14px; width:100%; max-width:460px; animation:mIn .2s ease; }
+@keyframes mIn { from{opacity:0;transform:scale(.95) translateY(8px)} to{opacity:1;transform:none} }
+.g-modal-hdr { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.06); }
+.g-modal-hdr h3 { font-family:'Poppins',sans-serif; font-size:16px; display:flex; align-items:center; gap:8px; }
+.g-modal-hdr h3 svg { width:18px; height:18px; color:var(--gold-2); }
+.g-modal-close { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; padding:4px 8px; border-radius:6px; transition:all .15s; }
+.g-modal-close:hover { color:#f0f0f0; background:rgba(255,255,255,.08); }
+.g-modal-body { padding:22px; display:flex; flex-direction:column; gap:14px; }
+.code-input { width:100%; background:#111; border:2px solid rgba(255,255,255,.1); border-radius:10px; color:#f0f0f0; padding:14px 18px; font-size:22px; font-weight:700; letter-spacing:5px; text-align:center; outline:none; text-transform:uppercase; transition:border-color .2s; }
+.code-input:focus { border-color:var(--gold); }
+.code-input.err { border-color:var(--red); animation:shake .3s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+.code-err { color:#fca5a5; font-size:12.5px; text-align:center; min-height:16px; }
+.g-modal-ftr { padding:14px 22px; border-top:1px solid rgba(255,255,255,.06); display:flex; justify-content:flex-end; gap:10px; }
+.btn-g-ghost { background:#1c1c1c; color:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:9px 16px; font-size:13px; cursor:pointer; }
+.btn-g-gold { background:var(--gold); color:#0a0a0a; border:none; border-radius:8px; padding:9px 16px; font-size:13px; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-g-gold:hover { background:var(--gold-2); }
+
+/* empty */
+.gal-empty { text-align:center; padding:72px 20px; color:var(--muted); }
+.gal-empty svg { width:48px; height:48px; opacity:.25; display:block; margin:0 auto 12px; }
+
+@media(max-width:900px) { .date-nav { display:none; } .timeline-wrap { padding-right:0; } .masonry-item { height:180px; } }
+@media(max-width:600px) { .albums-grid { grid-template-columns:1fr 1fr; } .all-grid { grid-template-columns:1fr 1fr; } .masonry-item { height:140px; } .lb-nav-prev { left:-10px; } .lb-nav-next { right:-10px; } .cart-panel { width:100%; } }
+  </style>
+</head>
+<body>
+  <canvas id="sparkle-canvas"></canvas>
+  <div class="offline-banner" id="offline-banner">
+    <span id="offline-banner-msg">Le serveur photo n'est pas disponible — démarrez <code>node server.js</code> dans <code>photo-server/</code>.</span>
+  </div>
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
+          <div class="brand-text"><strong>MS Comm'</strong><span>Prestataire de services de communication</span></div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Accueil</a>
+          <a href="experiences.html">Expériences</a>
+          <a href="services.html">Services</a>
+          <a href="portfolio.html">Portfolio</a>
+          <a href="photos.html" class="active">Photographie</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="drawer" id="drawer">
+    <a href="index.html">Accueil</a>
+    <a href="experiences.html">Expériences</a>
+    <a href="services.html">Services</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="photos.html">Photographie</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <main>
+    <section class="gal-hero"><div class="container">
+      <h1>Galerie <span class="gold">Photo</span></h1>
+      <p>Photographies sportives, portraits et moments d'exception.</p>
+    </div></section>
+
+    <section class="container" style="padding-bottom:80px">
+      <div class="gal-controls">
+        <div class="gal-controls-top">
+          <div class="gal-tabs">
+            <button class="gal-tab active" data-view="timeline">Galerie</button>
+            <button class="gal-tab" data-view="albums">Albums</button>
+          </div>
+          <button class="btn-private-album" id="btn-private">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Album privé
+          </button>
+        </div>
+        <div class="gal-search-row" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:760px;margin:0 auto">
+          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." style="flex:1;min-width:240px" />
+          <select class="gal-search" id="gal-album-filter" style="max-width:220px;cursor:pointer" aria-label="Filtrer par album">
+            <option value="">Tous les albums</option>
+            <option value="none">Sans album</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gal-content-box">
+
+      <!-- ALBUMS -->
+      <div id="view-albums" class="hidden">
+        <div class="albums-grid" id="albums-grid"></div>
+        <div id="album-photos-section" class="hidden" style="margin-top:36px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+            <button id="back-albums-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:14px;padding:0">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              Tous les albums
+            </button>
+            <h2 id="album-section-title" style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:600"></h2>
+          </div>
+          <div class="all-grid" id="album-photos-grid"></div>
+        </div>
+        <div class="gal-empty hidden" id="albums-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <p>Aucun album disponible.</p>
+        </div>
+      </div>
+
+      <!-- TIMELINE / GALERIE -->
+      <div id="view-timeline">
+        <div class="timeline-wrap">
+          <div class="timeline-photos" id="timeline-photos"></div>
+          <div class="date-nav" id="date-nav"></div>
+        </div>
+        <div class="gal-empty hidden" id="timeline-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <p>Aucune photo publique pour l'instant.</p>
+        </div>
+      </div>
+
+      </div><!-- end gal-content-box -->
+    </section>
+  </main>
+
+  <footer class="footer"><div class="container"><div class="footer-inner">
+    <p>© <span id="year"></span> MS Comm' — Tous droits réservés</p>
+    <div class="footer-links"><a href="index.html">Accueil</a><a href="portfolio.html">Portfolio</a><a href="contact.html">Contact</a></div>
+  </div></div></footer>
+
+  <!-- ===== LIGHTBOX ===== -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-top">
+      <span class="lb-top-title" id="lb-counter"></span>
+      <button class="lb-close" id="lb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="lb-main">
+      <div class="lb-img-wrap">
+        <img id="lb-img" src="" alt="" />
+        <button class="lb-nav lb-nav-prev" id="lb-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="lb-nav lb-nav-next" id="lb-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+    <div class="lb-info">
+      <div class="lb-info-left">
+        <div class="lb-photo-title" id="lb-title"></div>
+        <div class="lb-photo-meta" id="lb-meta"></div>
+      </div>
+      <div class="lb-actions">
+        <button class="lb-btn lb-btn-share" id="lb-share">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Partager
+        </button>
+        <div class="dl-dropdown-wrap" id="lb-dl-wrap">
+          <button class="lb-btn lb-btn-dl" id="lb-dl-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dl-dropdown hidden" id="lb-dl-dropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div class="lb-filmstrip" id="lb-filmstrip"></div>
+  </div>
+
+  <!-- ===== CART BUTTON ===== -->
+  <button class="cart-btn" id="cart-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <span class="cart-badge" id="cart-badge">0</span>
+  </button>
+
+  <!-- ===== CART PANEL ===== -->
+  <div class="cart-panel" id="cart-panel">
+    <div class="cart-panel-header">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Panier</h3>
+      <button class="cart-close" id="cart-close">✕</button>
+    </div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-footer" id="cart-footer"></div>
+  </div>
+  <div id="cart-backdrop" style="display:none;position:fixed;inset:0;z-index:599;background:rgba(0,0,0,.4)" onclick="closeCart()"></div>
+
+  <!-- ===== PRIVATE ACCESS MODAL ===== -->
+  <div class="g-overlay" id="access-modal">
+    <div class="g-modal">
+      <div class="g-modal-hdr">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Album privé</h3>
+        <button class="g-modal-close" onclick="closeAccessModal()">✕</button>
+      </div>
+      <div class="g-modal-body">
+        <p style="color:var(--muted);font-size:14px;text-align:center">Entrez le code reçu par email pour accéder à votre galerie.</p>
+        <input class="code-input" id="code-input" type="text" placeholder="ABC123" maxlength="10" autocomplete="off" />
+        <div class="code-err" id="code-err"></div>
+      </div>
+      <div class="g-modal-ftr">
+        <button class="btn-g-ghost" onclick="closeAccessModal()">Annuler</button>
+        <button class="btn-g-gold" id="submit-code-btn">Accéder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PRINT MODAL ===== -->
+  <div class="g-overlay" id="print-modal">
+    <div class="g-modal">
+      <div class="g-modal-hdr">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Commander une impression</h3>
+        <button class="g-modal-close" onclick="document.getElementById('print-modal').classList.remove('open')">✕</button>
+      </div>
+      <div class="g-modal-body">
+        <div style="display:flex;gap:14px">
+          <div id="print-preview" style="width:120px;height:90px;border-radius:8px;overflow:hidden;background:#111;flex-shrink:0"><img id="print-img" src="" alt="" style="width:100%;height:100%;object-fit:cover" /></div>
+          <div><div id="print-photo-title" style="font-weight:600;margin-bottom:8px"></div><div id="print-options" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        </div>
+        <p style="color:var(--muted);font-size:12.5px;background:rgba(255,255,255,.04);padding:10px 14px;border-radius:8px;border:1px solid var(--border)">Cette fonctionnalité est en cours de développement. Pour commander, contactez-nous en précisant la photo souhaitée.</p>
+        <a href="contact.html" class="lb-btn lb-btn-dl" style="display:inline-flex;text-decoration:none">Contacter MS Comm'</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* API endpoint selection :
+   - file:// (double-clic local) OR localhost / 127.0.0.1 → local server
+   - otherwise → production server on Fly.io */
+const API = (
+  window.location.protocol === 'file:' ||
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === ''
+)
+  ? 'http://localhost:3000'
+  : 'https://ms-comm-server.fly.dev'; /* ← update with your Fly.io URL */
+
+function resolveUrl(u) {
+  if (!u) return '';
+  return /^https?:\/\//.test(u) ? u : API + u;
+}
+let allAlbums = [], allPhotos = [], pubSettings = {};
+let lbPhotos = [], lbIndex = 0;
+let targetAlbumId = null;
+let cart = JSON.parse(localStorage.getItem('mscomm_cart') || '[]');
+let promoDiscount = 0, appliedPromo = null;
+
+/* ═══════════════════════════════════════════════════════════════════════
+ *  Lazy image loading — IntersectionObserver based
+ *
+ *  With 400+ photos visible in the timeline, creating that many <img src>
+ *  tags at once made the whole page stutter: every decoded image triggered
+ *  a masonry column reflow, and even native `loading="lazy"` still reserves
+ *  decoder slots up front. To fix this we:
+ *
+ *    1. Emit `<img data-src="...">` (no `src`) so the browser does not
+ *       request/decode the file.
+ *    2. Observe it with a single shared IntersectionObserver. When the
+ *       element gets within `LAZY_MARGIN` of the viewport we flip
+ *       data-src → src and unobserve it.
+ *    3. Give each image an inline `aspect-ratio` based on its known
+ *       dimensions (or a sane default) so the layout does not jump when
+ *       the bitmap finally arrives.
+ *
+ *  Works for timeline masonry, album grid, filmstrip, album covers. */
+const LAZY_MARGIN = '600px 0px';
+const _lazyImgObserver = ('IntersectionObserver' in window)
+  ? new IntersectionObserver((entries, obs) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const img = e.target;
+        const src = img.dataset.src;
+        if (src) {
+          img.src = src;
+          img.removeAttribute('data-src');
+        }
+        obs.unobserve(img);
+      }
+    }, { rootMargin: LAZY_MARGIN, threshold: 0.01 })
+  : null;
+
+function observeLazyImages(root) {
+  if (!root) return;
+  if (!_lazyImgObserver) {
+    /* Fallback for ancient browsers: load everything immediately. */
+    root.querySelectorAll('img[data-src]').forEach(i => {
+      i.src = i.dataset.src;
+      i.removeAttribute('data-src');
+    });
+    return;
+  }
+  root.querySelectorAll('img[data-src]').forEach(i => _lazyImgObserver.observe(i));
+}
+
+/* Check if the current visitor has already purchased this photo (by
+ * looking up a per-photo token saved by the checkout flow after a
+ * successful Stripe payment). Used to surface a "Déjà acheté" badge in
+ * the gallery so returning customers immediately see their owned photos
+ * without having to open the lightbox to rediscover them. */
+function hasPurchasedPhoto(photoId) {
+  try {
+    const tokens = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
+    return !!tokens[photoId];
+  } catch { return false; }
+}
+
+/* Shared DOM snippet for the golden "Acheté" pill. Returned as an empty
+ * string when the photo isn't paid or hasn't been bought yet, so it can
+ * be unconditionally inlined into every thumbnail template. */
+function ownedBadgeHTML(p) {
+  if (p.downloadType !== 'paid' || !hasPurchasedPhoto(p.id)) return '';
+  return `<div class="owned-badge" title="Vous avez déjà acheté cette photo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    Acheté
+  </div>`;
+}
+
+/* Build an inline `flex-basis` style for a justified-row gallery item.
+ *
+ *  `.masonry-item` uses `flex-grow: 1` so items stretch together to fill
+ *  a row. flex-basis set to `aspect-ratio × rowHeight` makes items with
+ *  a wider aspect get proportionally more width. Without it, every item
+ *  would start at flex-basis:auto (= natural width of the image = 0 before
+ *  decode) and the row would become a mess of equal-width boxes.
+ *
+ *  `ROW_H` must match `.masonry-item { height: N }` in the CSS (220 px,
+ *  dropping on small viewports). We don't need to match it exactly — the
+ *  ratio between items is what matters — but keeping them in sync avoids
+ *  a brief layout jitter on first paint. */
+const GALLERY_ROW_H = 220;
+function justifiedFlexStyle(p) {
+  const w = Number(p?.width)  || 0;
+  const h = Number(p?.height) || 0;
+  const ar = (w > 0 && h > 0) ? (w / h) : (4 / 3);
+  const basis = Math.round(ar * GALLERY_ROW_H);
+  return `flex-basis:${basis}px;flex-grow:${basis}`;
+}
+
+/* ===== SERVER ===== */
+async function init() {
+  try {
+    await fetch(`${API}/api/health`, { signal: AbortSignal.timeout(3000) });
+    document.getElementById('offline-banner').classList.remove('show');
+  } catch {
+    /* Tailored message when opened via file:// (fetch is often blocked there) */
+    const msgEl = document.getElementById('offline-banner-msg');
+    if (msgEl && window.location.protocol === 'file:') {
+      msgEl.innerHTML =
+        `⚠️ Ouvre le site via <strong><a href="http://localhost:3000/photos.html" style="color:#ffd25a">http://localhost:3000/photos.html</a></strong> ` +
+        `(pas par double-clic) — les navigateurs bloquent les requêtes fetch depuis <code>file://</code>.`;
+    }
+    document.getElementById('offline-banner').classList.add('show');
+    return;
+  }
+  const [albums, photos, settings] = await Promise.all([
+    fetch(`${API}/api/public/albums`).then(r => r.json()).catch(() => []),
+    fetch(`${API}/api/public/photos`).then(r => r.json()).catch(() => []),
+    fetch(`${API}/api/public/settings/public`).then(r => r.json()).catch(() => ({}))
+  ]);
+  allAlbums = albums; allPhotos = photos; pubSettings = settings;
+  /* Populate the album filter dropdown (sorted alphabetically) */
+  const filter = document.getElementById('gal-album-filter');
+  if (filter) {
+    const opts = [...allAlbums]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(a => `<option value="${a.id}">${a.name}</option>`)
+      .join('');
+    filter.innerHTML = `<option value="">Tous les albums</option><option value="none">Sans album</option>${opts}`;
+  }
+  renderCartFooter();
+
+  /* ---- Deep-link handling ---- */
+  const params = new URLSearchParams(window.location.search);
+  const photoParam = params.get('photo');
+  const albumParam = params.get('album');
+  const codeParam  = params.get('code');
+
+  if (codeParam) {
+    /* Pre-fill the private-access modal */
+    document.getElementById('access-modal').classList.add('open');
+    document.getElementById('code-input').value = codeParam;
+    setTimeout(submitCode, 50);
+    return;
+  }
+  if (albumParam && allAlbums.find(a => a.id === albumParam)) {
+    /* Jump straight into the album view */
+    document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));
+    document.getElementById('view-albums').classList.remove('hidden');
+    document.getElementById('view-timeline').classList.add('hidden');
+    renderAlbums();
+    openAlbum(albumParam);
+    return;
+  }
+  if (photoParam) {
+    /* Open the lightbox on the given photo inside the timeline */
+    renderView('timeline');
+    const idx = lbPhotos.findIndex(p => p.id === photoParam);
+    if (idx >= 0) setTimeout(() => openLightbox(idx), 50);
+    return;
+  }
+
+  renderView('timeline');
+}
+
+/* ===== TABS ===== */
+document.querySelectorAll('.gal-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.gal-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderView(btn.dataset.view);
+  });
+});
+
+let searchTimer;
+document.getElementById('gal-search').addEventListener('input', function() {
+  clearTimeout(searchTimer); searchTimer = setTimeout(() => {
+    const v = document.querySelector('.gal-tab.active').dataset.view;
+    renderView(v);
+  }, 250);
+});
+document.getElementById('gal-album-filter').addEventListener('change', () => {
+  const v = document.querySelector('.gal-tab.active').dataset.view;
+  renderView(v);
+});
+function filterByAlbumId(id) {
+  const sel = document.getElementById('gal-album-filter');
+  if (sel) { sel.value = id; }
+  document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'timeline'));
+  renderView('timeline');
+}
+
+/* Copy an album share link to clipboard */
+function shareAlbumPublic(id) {
+  const base = window.location.origin + window.location.pathname;
+  const url = `${base}?album=${encodeURIComponent(id)}`;
+  navigator.clipboard.writeText(url).then(() => alert('Lien copié : ' + url)).catch(() => prompt('Copiez ce lien :', url));
+}
+
+function getSearch() { return document.getElementById('gal-search').value.toLowerCase().trim(); }
+
+function renderView(view) {
+  document.getElementById('view-albums').classList.toggle('hidden', view !== 'albums');
+  document.getElementById('view-timeline').classList.toggle('hidden', view !== 'timeline');
+  document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  if (view === 'albums') renderAlbums();
+  else if (view === 'timeline') renderTimeline();
+}
+
+/* ===== ALBUMS ===== */
+let currentAlbumId = null;
+
+function renderAlbums() {
+  const search = getSearch();
+  const photosInAlbum = (albumId) => allPhotos.filter(p => p.albumId === albumId);
+  const albums = allAlbums.filter(a => {
+    if (!search) return true;
+    if (a.name.toLowerCase().includes(search)) return true;
+    if (a.type !== 'private') return photosInAlbum(a.id).some(p => p.title.toLowerCase().includes(search));
+    return false;
+  });
+  document.getElementById('album-photos-section').classList.add('hidden');
+  document.getElementById('albums-grid').style.display = '';
+  document.getElementById('albums-empty').classList.toggle('hidden', albums.length > 0);
+  currentAlbumId = null;
+  const grid = document.getElementById('albums-grid');
+  grid.innerHTML = albums.map(a => {
+    const isPrivate = a.type === 'private';
+    const typeLabel = isPrivate ? 'Privé' : a.type === 'paid' ? 'Payant' : 'Public';
+    const typeClass = isPrivate ? 'badge-priv' : a.type === 'paid' ? 'badge-paid-t' : 'badge-pub';
+    const clickFn  = isPrivate ? `openPrivateAlbum('${a.id}')` : `openAlbum('${a.id}')`;
+    const lockBadge = isPrivate ? `<div class="album-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>` : '';
+    const coverPh = `<div class="album-cover-ph">${isPrivate
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`
+    }</div>`;
+    return `<div class="album-card" onclick="${clickFn}">
+      <div class="album-cover">
+        ${a.coverPreviewUrl ? `<img data-src="${resolveUrl(a.coverPreviewUrl)}" alt="${a.name}" loading="lazy" />` : coverPh}
+        ${lockBadge}
+        <button class="album-share-btn" onclick="event.stopPropagation();shareAlbumPublic('${a.id}')" title="Copier le lien de partage" aria-label="Partager l'album">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+      </div>
+      <div class="album-body">
+        <div class="album-name">${a.name}</div>
+        <div class="album-info"><span class="album-count">${a.photoCount} photo${a.photoCount>1?'s':''}</span><span class="${typeClass}" style="margin-left:8px">${typeLabel}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  observeLazyImages(grid);
+}
+
+function openPrivateAlbum(id) {
+  targetAlbumId = id;
+  const album = allAlbums.find(a => a.id === id);
+  document.getElementById('code-input').value = '';
+  document.getElementById('code-err').textContent = '';
+  document.getElementById('code-input').classList.remove('err');
+  document.getElementById('access-modal').classList.add('open');
+  setTimeout(() => document.getElementById('code-input').focus(), 100);
+}
+
+/* Album view state for progressive photo rendering.
+ * Keeping a batch size of 80 keeps the initial paint cheap (only ~80 <img>
+ * elements created), and further batches are appended when a bottom
+ * sentinel enters the viewport. */
+const ALBUM_PAGE_SIZE = 80;
+let _albumPhotosAll = [];
+let _albumCursor    = 0;
+let _albumSentinelObserver = null;
+
+function openAlbum(id) {
+  const album = allAlbums.find(a => a.id === id);
+  if (!album) return;
+  const search = getSearch();
+  const photos = allPhotos.filter(p => p.albumId === id && (!search || p.title.toLowerCase().includes(search)));
+  document.getElementById('albums-grid').style.display = 'none';
+  document.getElementById('album-photos-section').classList.remove('hidden');
+  document.getElementById('album-section-title').textContent = album.name;
+
+  const grid = document.getElementById('album-photos-grid');
+  grid.innerHTML = '';
+  _albumPhotosAll = photos;
+  _albumCursor    = 0;
+  lbPhotos        = photos;
+  currentAlbumId  = id;
+
+  if (!photos.length) {
+    grid.innerHTML = '<p style="color:var(--muted);grid-column:1/-1">Aucune photo dans cet album.</p>';
+    return;
+  }
+  appendNextAlbumBatch();
+}
+
+function appendNextAlbumBatch() {
+  const grid   = document.getElementById('album-photos-grid');
+  const photos = _albumPhotosAll;
+  if (!grid || _albumCursor >= photos.length) return;
+
+  /* Remove any previous sentinel before appending fresh content. */
+  const oldSentinel = grid.querySelector('.album-sentinel');
+  if (oldSentinel) {
+    if (_albumSentinelObserver) _albumSentinelObserver.unobserve(oldSentinel);
+    oldSentinel.remove();
+  }
+
+  const end   = Math.min(_albumCursor + ALBUM_PAGE_SIZE, photos.length);
+  const chunk = photos.slice(_albumCursor, end);
+  const html  = chunk.map((p, i) => gridPhotoHTML(p, photos, _albumCursor + i)).join('');
+  grid.insertAdjacentHTML('beforeend', html);
+  observeLazyImages(grid);
+
+  _albumCursor = end;
+
+  /* Install a sentinel at the very end if more photos remain. */
+  if (_albumCursor < photos.length) {
+    const sentinel = document.createElement('div');
+    sentinel.className = 'album-sentinel';
+    sentinel.style.cssText = 'grid-column:1/-1;height:1px';
+    grid.appendChild(sentinel);
+    if (!_albumSentinelObserver) {
+      _albumSentinelObserver = new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting)) appendNextAlbumBatch();
+      }, { rootMargin: '800px 0px' });
+    }
+    _albumSentinelObserver.observe(sentinel);
+  }
+}
+
+document.getElementById('back-albums-btn').addEventListener('click', () => {
+  document.getElementById('albums-grid').style.display = '';
+  document.getElementById('album-photos-section').classList.add('hidden');
+  currentAlbumId = null;
+  lbPhotos = allPhotos;
+});
+
+function gridPhotoHTML(p, arr, idx) {
+  const imgSrc = resolveUrl(p.downloadType === 'free' ? p.previewUrl : p.watermarkedUrl);
+  const isPaid = p.downloadType === 'paid';
+  const dlIcon = p.downloadType === 'free'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`
+    : isPaid
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+  /* Once a visitor has paid, the "price" line turns into a subtle
+     "Télécharger" cue so they understand the photo is already unlocked
+     and can be downloaded directly from the lightbox. */
+  const owned = isPaid && hasPurchasedPhoto(p.id);
+  const dlText = owned
+    ? 'Télécharger'
+    : (p.downloadType === 'free' ? 'Gratuit' : isPaid ? `${p.price}€` : 'Aperçu');
+  return `<div class="grid-photo" onclick="openLightbox(${idx})">
+    <div class="grid-img" style="position:relative">
+      ${ownedBadgeHTML(p)}
+      <img data-src="${imgSrc}" alt="${p.title}" loading="lazy" />
+    </div>
+    <div class="grid-body">
+      <div class="grid-title">${p.title}</div>
+      <div class="grid-dl"${owned ? ' style="color:var(--gold-2);font-weight:600"' : ''}>${dlIcon}${dlText}</div>
+    </div>
+  </div>`;
+}
+
+/* ===== TIMELINE ===== */
+function renderTimeline() {
+  const search = getSearch();
+  const albumFilter = document.getElementById('gal-album-filter')?.value || '';
+  const photos = allPhotos.filter(p => {
+    if (albumFilter === 'none' && p.albumId) return false;
+    if (albumFilter && albumFilter !== 'none' && p.albumId !== albumFilter) return false;
+    if (!search) return true;
+    if (p.title.toLowerCase().includes(search)) return true;
+    const alb = p.albumId ? allAlbums.find(a => a.id === p.albumId) : null;
+    return !!(alb && alb.name.toLowerCase().includes(search));
+  });
+  document.getElementById('timeline-empty').classList.toggle('hidden', photos.length > 0);
+
+  const byMonth = {};
+  photos.forEach(p => {
+    const d = new Date(p.takenAt || p.createdAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(p);
+  });
+  const keys = Object.keys(byMonth).sort((a,b) => b.localeCompare(a));
+
+  const tlEl = document.getElementById('timeline-photos');
+  const navEl = document.getElementById('date-nav');
+  const monthNames = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+
+  /* Progressive rendering: drop everything in `_tlPending` and paint the
+     first N sections up front, then stream additional sections whenever
+     the bottom sentinel enters the viewport. This keeps the initial DOM
+     tiny (typically 1-3 months visible) and scales to thousands of
+     photos without the browser stalling on layout. */
+  _tlKeys         = keys;
+  _tlByMonth      = byMonth;
+  _tlMonthNames   = monthNames;
+  _tlCursor       = 0;
+  tlEl.innerHTML  = '';
+
+  /* Date-nav sidebar stays complete — it's dirt cheap (one row per month). */
+  navEl.innerHTML = keys.map(k => {
+    const [y, m] = k.split('-');
+    const label = `${monthNames[parseInt(m)-1]} ${y}`;
+    const count = byMonth[k].length;
+    return `<div class="date-nav-item" id="nav-${k}" onclick="scrollToMonth('${k}')">
+      <div class="dot"></div><span>${label}</span><span style="color:var(--muted);font-size:10px">${count}</span>
+    </div>`;
+  }).join('');
+
+  lbPhotos = photos;
+  appendNextTimelineBatch();
+  setupTimelineScroll(keys);
+}
+
+/* Timeline progressive-rendering state — kept outside renderTimeline so
+   the sentinel callback can reach it without capturing a closure. */
+let _tlKeys = [], _tlByMonth = {}, _tlMonthNames = [];
+let _tlCursor = 0;
+let _tlSentinelObserver = null;
+
+function appendNextTimelineBatch() {
+  const tlEl = document.getElementById('timeline-photos');
+  if (!tlEl || _tlCursor >= _tlKeys.length) return;
+
+  /* Budget each batch by photo count, not month count, so users with
+     40-photo months and users with 400-photo months get similar paint
+     budgets (~200 photos per batch). */
+  const PAINT_BUDGET = 200;
+  const batchKeys = [];
+  let painted = 0;
+  while (_tlCursor < _tlKeys.length && (painted < PAINT_BUDGET || batchKeys.length === 0)) {
+    const k = _tlKeys[_tlCursor++];
+    batchKeys.push(k);
+    painted += _tlByMonth[k].length;
+  }
+
+  /* Evict any existing sentinel before appending new sections. */
+  const oldSentinel = tlEl.querySelector('.tl-sentinel');
+  if (oldSentinel) {
+    if (_tlSentinelObserver) _tlSentinelObserver.unobserve(oldSentinel);
+    oldSentinel.remove();
+  }
+
+  const html = batchKeys.map(k => {
+    const [y, m]      = k.split('-');
+    const label       = `${_tlMonthNames[parseInt(m)-1]} ${y}`;
+    const monthPhotos = _tlByMonth[k];
+    const albumIds    = [...new Set(monthPhotos.map(p => p.albumId).filter(Boolean))];
+    const albumNames  = albumIds
+      .map(id => allAlbums.find(a => a.id === id)?.name)
+      .filter(Boolean);
+    const singleAlbumClick = albumIds.length === 1 ? ` onclick="filterByAlbumId('${albumIds[0]}')" style="cursor:pointer"` : '';
+    const albumBadge = albumNames.length
+      ? `<span class="tl-albums" title="${albumNames.join(', ')}"${singleAlbumClick}>${albumNames.length === 1 ? albumNames[0] : albumNames.slice(0,2).join(' · ') + (albumNames.length > 2 ? ` +${albumNames.length-2}` : '')}</span>`
+      : '';
+    const albumIdsJson = JSON.stringify(albumIds);
+    return `<div class="tl-section" id="tl-${k}" data-album-ids='${albumIdsJson}'>
+      <div class="tl-month-label"><span>${label}</span>${albumBadge}</div>
+      <div class="photos-masonry">${monthPhotos.map(p => {
+        const imgSrc = resolveUrl(p.downloadType === 'free' ? p.previewUrl : p.watermarkedUrl);
+        return `<div class="masonry-item" style="${justifiedFlexStyle(p)}" onclick="openLightboxGlobal('${p.id}')">
+          ${ownedBadgeHTML(p)}
+          <img data-src="${imgSrc}" alt="${p.title}" loading="lazy" />
+          <div class="masonry-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('');
+
+  tlEl.insertAdjacentHTML('beforeend', html);
+  observeLazyImages(tlEl);
+
+  /* Re-wire scroll-spy and lightbox sentinel for the newly appended months. */
+  for (const k of batchKeys) {
+    const el = document.getElementById(`tl-${k}`);
+    if (el && _tlScrollObserver) _tlScrollObserver.observe(el);
+  }
+
+  /* Bottom sentinel to trigger the next batch. */
+  if (_tlCursor < _tlKeys.length) {
+    const sentinel = document.createElement('div');
+    sentinel.className = 'tl-sentinel';
+    sentinel.style.cssText = 'height:1px';
+    tlEl.appendChild(sentinel);
+    if (!_tlSentinelObserver) {
+      _tlSentinelObserver = new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting)) appendNextTimelineBatch();
+      }, { rootMargin: '900px 0px' });
+    }
+    _tlSentinelObserver.observe(sentinel);
+  }
+}
+
+function scrollToMonth(key) {
+  /* The target month section may not exist in the DOM yet because the
+     timeline is rendered progressively in batches. Flush batches until the
+     target key has been painted (cheap — images are still lazy-loaded). */
+  const targetIdx = _tlKeys.indexOf(key);
+  if (targetIdx >= 0) {
+    let guard = 200; /* safety fuse — prevents infinite loops if append fails */
+    while (targetIdx >= _tlCursor && guard-- > 0) appendNextTimelineBatch();
+  }
+  const el = document.getElementById(`tl-${key}`);
+  if (el) {
+    /* Respect the sticky navbar height (~76 px) so the month label isn't
+       hidden behind it. `scroll-margin-top` would be cleaner but we lack a
+       single element for that across responsive breakpoints. */
+    const top = el.getBoundingClientRect().top + window.pageYOffset - 76;
+    window.scrollTo({ top, behavior: 'smooth' });
+    /* Immediate highlight while the smooth scroll is still in flight so the
+       sidebar feedback feels snappy. The IntersectionObserver will refresh
+       the highlight when the actual scroll ends. */
+    document.querySelectorAll('.date-nav-item').forEach(el => el.classList.toggle('active', el.id === `nav-${key}`));
+  }
+}
+
+/* Scroll-spy observer is kept globally so progressive batches can register
+   their newly-appended month sections against the same instance. */
+let _tlScrollObserver = null;
+function setupTimelineScroll(keys) {
+  if (_tlScrollObserver) _tlScrollObserver.disconnect();
+  _tlScrollObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const key = e.target.id.replace('tl-', '');
+        document.querySelectorAll('.date-nav-item').forEach(el => el.classList.toggle('active', el.id === `nav-${key}`));
+      }
+    });
+  }, { threshold: 0.3 });
+  keys.forEach(k => { const el = document.getElementById(`tl-${k}`); if (el) _tlScrollObserver.observe(el); });
+}
+
+function openLightboxGlobal(photoId) {
+  const idx = lbPhotos.findIndex(p => p.id === photoId);
+  if (idx >= 0) openLightbox(idx);
+}
+
+/* ===== LIGHTBOX ===== */
+function openLightbox(idx) {
+  lbIndex = idx;
+  renderLightbox();
+  document.getElementById('lb-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lb-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+}
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+document.getElementById('lb-prev').addEventListener('click', () => { lbIndex = (lbIndex - 1 + lbPhotos.length) % lbPhotos.length; renderLightbox(); });
+document.getElementById('lb-next').addEventListener('click', () => { lbIndex = (lbIndex + 1) % lbPhotos.length; renderLightbox(); });
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lb-overlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') { lbIndex = (lbIndex - 1 + lbPhotos.length) % lbPhotos.length; renderLightbox(); }
+  if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % lbPhotos.length; renderLightbox(); }
+  if (e.key === 'Escape') closeLightbox();
+});
+
+function renderLightbox() {
+  const p = lbPhotos[lbIndex];
+  if (!p) return;
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+  const withWm = p.downloadType !== 'free';
+  document.getElementById('lb-img').src = resolveUrl(withWm ? p.watermarkedUrl : p.previewUrl);
+  /* Paid label explicitly mentions watermark state in the meta line */
+  const paidNote = p.downloadType === 'paid'
+    ? '<span style="color:var(--gold-2)">Payant · téléchargement sans filigrane</span>'
+    : '';
+  document.getElementById('lb-img').alt = p.title;
+  document.getElementById('lb-counter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
+  document.getElementById('lb-title').textContent = p.title;
+
+  const meta = [];
+  if (p.width && p.height) meta.push(`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${p.width}×${p.height}</span>`);
+  const dateStr = p.takenAt || p.createdAt;
+  if (dateStr) meta.push(`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${p.takenAt ? 'Prise le ' : 'Ajoutée le '}${new Date(dateStr).toLocaleDateString('fr-FR')}</span>`);
+  if (paidNote) meta.push(paidNote);
+  document.getElementById('lb-meta').innerHTML = meta.join('');
+
+  buildDlDropdown(p);
+  renderFilmstrip();
+}
+
+function buildDlDropdown(p) {
+  const withWm  = p.downloadType === 'free-watermark';
+  const paid    = p.downloadType === 'paid';
+  const tokens  = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
+  const hasToken = paid && !!tokens[p.id];
+  const maxDim  = (p.width && p.height) ? Math.max(p.width, p.height) : Infinity;
+  const resolutions = [
+    { label: 'Original', res: 'original', sub: p.width && p.height ? `${p.width}\u00d7${p.height}` : 'Pleine r\u00e9solution' },
+    { label: '4K \u2014 4096 px', res: '4096', sub: '4K', min: 4096 },
+    { label: '2K \u2014 2048 px', res: '2048', sub: '2K', min: 2048 },
+    { label: 'HD \u2014 1080 px', res: '1080', sub: 'HD', min: 1080 }
+  ].filter(r => !r.min || maxDim > r.min);
+
+  let html = '';
+  if (paid && !hasToken) {
+    /* ── Paid photo, not yet purchased ────────────────────────────────────
+     *
+     *  UX contract: buying a paid photo unlocks ALL resolutions in one go.
+     *  So we offer a single "Acheter" CTA at the photo's price, and then
+     *  list the resolutions underneath WITHOUT prices (each row just adds
+     *  the photo to the cart — same outcome: one purchase = all resolutions
+     *  available after checkout via the emailed token).
+     *
+     *  We deliberately DO NOT offer a "télécharger filigrané gratuitement"
+     *  option anymore — the previous UI cluttered the menu and diluted the
+     *  purchase CTA. Visitors who just want a filigraned preview already
+     *  see it on the page. */
+    html += `
+      <div class="dl-opt dl-opt-cart" onclick="addToCartAndClose()">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Acheter sans filigrane
+        </div>
+        <span class="dl-opt-res" style="color:var(--gold-2);font-weight:700">${p.price}\u20ac</span>
+      </div>
+      <div class="dl-hint">Débloque toutes les résolutions disponibles :</div>`;
+    /* Resolutions listed as informational rows — no individual price. A
+       click still routes to the cart so the interaction stays predictable
+       regardless of which line the user taps. */
+    html += resolutions.map(r => `
+      <div class="dl-opt dl-opt-locked" onclick="addToCartAndClose()">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          ${r.label}
+        </div>
+        <span class="dl-opt-res">${r.sub}</span>
+      </div>`).join('');
+  } else {
+    html += resolutions.map(r => `
+      <div class="dl-opt" onclick="downloadPhoto('${p.id}','${p.ext}','${encodeURIComponent(p.title)}','${r.res}')">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          ${r.label}${withWm ? ' <small style="color:var(--muted);font-weight:400">(filigrane)</small>' : ''}
+        </div>
+        <span class="dl-opt-res">${r.sub}</span>
+      </div>`).join('');
+  }
+
+  if (pubSettings.printEnabled !== false) {
+    html += `<div class="dl-sep"></div>
+      <div class="dl-opt dl-opt-print" onclick="openPrintModalAndClose()">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimer
+        </div>
+        <span class="dl-opt-res">${pubSettings.printPrice || 10}\u20ac</span>
+      </div>`;
+  }
+
+  document.getElementById('lb-dl-dropdown').innerHTML = html;
+}
+
+function addToCartAndClose() {
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+  addToCart(lbPhotos[lbIndex]);
+}
+
+function openPrintModalAndClose() {
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+  openPrintModal(lbPhotos[lbIndex]);
+}
+
+document.getElementById('lb-dl-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('lb-dl-dropdown').classList.toggle('hidden');
+});
+document.getElementById('lb-dl-dropdown').addEventListener('click', e => e.stopPropagation());
+document.addEventListener('click', () => document.getElementById('lb-dl-dropdown').classList.add('hidden'));
+
+function downloadPhoto(id, ext, title, resolution) {
+  const tokens = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
+  const token  = tokens[id] ? `&token=${tokens[id]}` : '';
+  const url    = `${API}/api/public/photos/${id}/download?resolution=${resolution}${token}`;
+  const a      = document.createElement('a');
+  a.href = url; a.download = `${decodeURIComponent(title)}.jpg`; a.click();
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+}
+
+document.getElementById('lb-share').addEventListener('click', () => {
+  const url = window.location.href.split('?')[0] + '?photo=' + lbPhotos[lbIndex]?.id;
+  navigator.clipboard.writeText(url).then(() => {
+    document.getElementById('lb-share').textContent = 'Lien copié !';
+    setTimeout(() => { document.getElementById('lb-share').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Partager`; }, 2000);
+  });
+});
+
+function renderFilmstrip() {
+  const strip = document.getElementById('lb-filmstrip');
+  strip.innerHTML = lbPhotos.map((p, i) => `
+    <div class="film-item ${i === lbIndex ? 'active' : ''}" id="film-${i}" onclick="lbIndex=${i};renderLightbox()">
+      <img data-src="${resolveUrl(p.previewUrl)}" alt="${p.title}" loading="lazy" />
+    </div>`).join('');
+  observeLazyImages(strip);
+  const active = document.getElementById(`film-${lbIndex}`);
+  if (active) active.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+}
+
+function openPrintModal(p) {
+  document.getElementById('print-img').src = resolveUrl(p.watermarkedUrl);
+  document.getElementById('print-photo-title').textContent = p.title;
+  const opts = [];
+  if (pubSettings.printEnabled !== false) opts.push(`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px">Impression papier — <strong>${pubSettings.printPrice || 10}\u20ac</strong></div>`);
+  if (pubSettings.frameEnabled !== false) opts.push(`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px">Cadre & impression — <strong>${pubSettings.framePrice || 20}\u20ac</strong></div>`);
+  document.getElementById('print-options').innerHTML = opts.join('');
+  document.getElementById('print-modal').classList.add('open');
+}
+
+/* ===== CART ===== */
+function addToCart(p) {
+  if (!cart.find(c => c.id === p.id)) {
+    cart.push({ id: p.id, title: p.title, price: p.price, previewUrl: p.previewUrl, watermarkedUrl: p.watermarkedUrl });
+    saveCart();
+    renderCartPanel();
+    openCart();
+  }
+}
+
+function saveCart() { localStorage.setItem('mscomm_cart', JSON.stringify(cart)); }
+
+function getDiscount() {
+  const tiers = (pubSettings.discountTiers || []).sort((a,b) => b.minPhotos - a.minPhotos);
+  const match = tiers.find(t => cart.length >= t.minPhotos);
+  return match ? match.percent : 0;
+}
+
+function openCart() {
+  document.getElementById('cart-panel').classList.add('open');
+  document.getElementById('cart-backdrop').style.display = 'block';
+}
+function closeCart() {
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('cart-backdrop').style.display = 'none';
+}
+document.getElementById('cart-btn').addEventListener('click', openCart);
+document.getElementById('cart-close').addEventListener('click', closeCart);
+
+function renderCartPanel() {
+  const items = document.getElementById('cart-items');
+  const badgeEl = document.getElementById('cart-badge');
+  const btnEl = document.getElementById('cart-btn');
+  badgeEl.textContent = cart.length;
+  btnEl.classList.toggle('show', cart.length > 0);
+
+  if (!cart.length) {
+    items.innerHTML = `<div class="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Votre panier est vide</div>`;
+    document.getElementById('cart-footer').innerHTML = '';
+    return;
+  }
+
+  items.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <img class="cart-item-thumb" src="${resolveUrl(item.watermarkedUrl)}" alt="${item.title}" onerror="this.src='${resolveUrl(item.previewUrl)}'" />
+      <div class="cart-item-info">
+        <div class="cart-item-title">${item.title}</div>
+        <div class="cart-item-price">${item.price}\u20ac</div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+
+  renderCartFooter();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(c => c.id !== id);
+  promoDiscount = 0; appliedPromo = null;
+  saveCart(); renderCartPanel();
+}
+
+function renderCartFooter() {
+  const footer = document.getElementById('cart-footer');
+  if (!cart.length) { footer.innerHTML = ''; return; }
+  const subtotal = cart.reduce((s, c) => s + c.price, 0);
+  const discPct = getDiscount();
+  const tierDiscount = discPct > 0 ? Math.round(subtotal * discPct / 100 * 100) / 100 : 0;
+  const afterTier = subtotal - tierDiscount;
+  const total = Math.max(0, afterTier - promoDiscount);
+  const tiers = (pubSettings.discountTiers || []).sort((a,b) => a.minPhotos - b.minPhotos);
+
+  footer.innerHTML = `
+    ${tiers.length ? `<div class="discount-tiers">${tiers.map(t => `
+      <div class="discount-tier ${cart.length >= t.minPhotos ? 'active' : ''}">
+        <span>${t.minPhotos}+ photos — -${t.percent}%</span>
+        <span class="tier-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg></span>
+      </div>`).join('')}</div>` : ''}
+    <div class="promo-row">
+      <input class="promo-input" id="promo-input" placeholder="Code promo" value="${appliedPromo || ''}" />
+      <button class="promo-apply-btn" onclick="applyPromo()">Appliquer</button>
+    </div>
+    <div id="promo-status" style="font-size:12px;color:#86efac;margin-bottom:8px"></div>
+    <div class="cart-totals">
+      <div class="cart-total-row"><span>Sous-total</span><span>${subtotal.toFixed(2)}€</span></div>
+      ${discPct > 0 ? `<div class="cart-total-row discount"><span>Remise ${discPct}% (${cart.length} photos)</span><span>-${tierDiscount.toFixed(2)}€</span></div>` : ''}
+      ${promoDiscount > 0 ? `<div class="cart-total-row discount"><span>Code promo</span><span>-${promoDiscount.toFixed(2)}€</span></div>` : ''}
+      <div class="cart-total-row total"><span>Total</span><span>${total.toFixed(2)}€</span></div>
+    </div>
+    <button class="checkout-btn" onclick="goCheckout()">Procéder au paiement</button>`;
+}
+
+async function applyPromo() {
+  const code = document.getElementById('promo-input')?.value?.trim();
+  if (!code) return;
+  const subtotal = cart.reduce((s, c) => s + c.price, 0);
+  try {
+    const res = await fetch(`${API}/api/public/validate-promo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, total: subtotal, photoCount: cart.length })
+    });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('promo-status').textContent = data.error; document.getElementById('promo-status').style.color = '#fca5a5'; return; }
+    promoDiscount = data.discount;
+    appliedPromo = code;
+    document.getElementById('promo-status').textContent = `Code "${code}" appliqué — -${data.discount.toFixed(2)}€`;
+    document.getElementById('promo-status').style.color = '#86efac';
+    renderCartFooter();
+  } catch { document.getElementById('promo-status').textContent = 'Erreur réseau'; }
+}
+
+function goCheckout() {
+  const subtotal    = cart.reduce((s, c) => s + c.price, 0);
+  const discPct     = getDiscount();
+  const tierDiscount = discPct > 0 ? Math.round(subtotal * discPct / 100 * 100) / 100 : 0;
+  const total       = Math.max(0, subtotal - tierDiscount - promoDiscount);
+  const params      = new URLSearchParams({ total: total.toFixed(2), count: cart.length });
+  localStorage.setItem('mscomm_checkout', JSON.stringify({
+    cart, total, promoDiscount, tierDiscount, discPct,
+    promoCode: appliedPromo
+  }));
+  window.location.href = `checkout.html?${params}`;
+}
+
+/* ===== PRIVATE ACCESS ===== */
+document.getElementById('btn-private').addEventListener('click', () => {
+  targetAlbumId = null;
+  document.getElementById('code-input').value = '';
+  document.getElementById('code-err').textContent = '';
+  document.getElementById('code-input').classList.remove('err');
+  document.getElementById('access-modal').classList.add('open');
+  setTimeout(() => document.getElementById('code-input').focus(), 100);
+});
+document.getElementById('code-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitCode(); });
+document.getElementById('submit-code-btn').addEventListener('click', submitCode);
+
+async function submitCode() {
+  const code = document.getElementById('code-input').value.trim();
+  const btn = document.getElementById('submit-code-btn');
+  if (!code) return;
+  btn.disabled = true; btn.textContent = '…';
+  document.getElementById('code-err').textContent = '';
+  try {
+    /* Server-side lookup across all private albums in a single call */
+    const res = await fetch(`${API}/api/public/verify-private-code`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) {
+      document.getElementById('code-input').classList.add('err');
+      document.getElementById('code-err').textContent = 'Code incorrect.';
+      setTimeout(() => document.getElementById('code-input').classList.remove('err'), 500);
+      return;
+    }
+    const found = await res.json();
+    closeAccessModal();
+    const privatePhotos = (found.photos || []).map(p => ({
+      ...p,
+      downloadType: p.downloadType || 'free-watermark',
+      watermarkedUrl: p.watermarkedUrl || `/storage/watermarked/${p.id}.jpg`,
+      previewUrl: p.previewUrl || `/storage/previews/${p.id}.jpg`
+    }));
+    lbPhotos = privatePhotos;
+    document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
+    document.getElementById('albums-grid').style.display = 'none';
+    document.getElementById('album-photos-section').classList.remove('hidden');
+    document.getElementById('album-photos-grid').innerHTML = privatePhotos.length
+      ? privatePhotos.map((p, i) => gridPhotoHTML(p, privatePhotos, i)).join('')
+      : '<p style="color:var(--muted);grid-column:1/-1">Aucune photo dans cet album.</p>';
+    document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));
+    document.getElementById('view-albums').classList.remove('hidden');
+    document.getElementById('view-timeline').classList.add('hidden');
+  } catch { document.getElementById('code-err').textContent = 'Erreur serveur.'; }
+  finally { btn.disabled = false; btn.textContent = 'Accéder'; }
+}
+
+function closeAccessModal() { document.getElementById('access-modal').classList.remove('open'); targetAlbumId = null; }
+
+/* ===== ESC / BACKDROP ===== */
+document.querySelectorAll('.g-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+
+/* ===== INIT ===== */
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
+renderCartPanel();
+init();
+  </script>
+</body>
+</html>

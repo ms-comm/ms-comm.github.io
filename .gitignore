@@ -1,0 +1,45 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  Root .gitignore — ms-comm/ms-comm.github.io (GitHub Pages static site)
+# ═══════════════════════════════════════════════════════════════════════
+#
+#  This repository is served as a PUBLIC static site by GitHub Pages.
+#  The `photo-server/` backend (Node.js + Express + admin panel + secrets)
+#  is deployed SEPARATELY on Fly.io and MUST NOT be committed here — it
+#  would both bloat the repo and expose admin surface / source code that
+#  has no reason to be public.
+#
+#  Keep this file at the root; `photo-server/` also has its own
+#  `.gitignore` that protects its local secrets (db/*.json, .env, …) in
+#  case the folder is ever accidentally added to another repo.
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Backend (deployed separately, never on GitHub Pages) ──────────────
+photo-server/
+
+# ── Environment / secrets ────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Node ──────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS cruft ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editors ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Build / cache ────────────────────────────────────────────────────
+dist/
+build/
+.cache/
+*.log

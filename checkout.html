@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>MS Comm' — Récapitulatif & Paiement</title>
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/main.js" defer></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+:root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --green:#22c55e; --red:#ef4444; }
+
+.checkout-page { padding:80px 0 80px; }
+.checkout-grid { display:grid; grid-template-columns:1fr 380px; gap:32px; align-items:flex-start; }
+.co-block { background:#141414; border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+.co-block h3 { font-family:'Poppins',sans-serif; font-size:15px; font-weight:600; color:var(--gold-2); border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.co-block h3 svg { width:16px; height:16px; }
+.form-field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.form-field label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+.form-field input, .form-field select, .form-field textarea { background:#111; border:1px solid var(--border); border-radius:9px; color:#f0f0f0; padding:11px 14px; font-size:14px; outline:none; transition:border-color .2s; font-family:inherit; }
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color:var(--gold); }
+.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.co-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.co-item:last-child { border-bottom:none; }
+.co-item-thumb { width:52px; height:52px; border-radius:7px; object-fit:cover; background:#111; flex-shrink:0; }
+.co-item-info { flex:1; min-width:0; }
+.co-item-title { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.co-item-price { font-size:12px; color:var(--gold-2); margin-top:3px; font-weight:600; }
+.co-total-row { display:flex; justify-content:space-between; font-size:13.5px; padding:7px 0; color:var(--muted); }
+.co-total-row.subtotal-row { border-top:1px solid var(--border); padding-top:12px; margin-top:4px; }
+.co-total-row.discount { color:#86efac; }
+.co-total-row.final { font-size:20px; font-weight:700; color:#f0f0f0; border-top:1px solid var(--border); padding-top:14px; margin-top:6px; }
+.pay-btn { width:100%; background:var(--gold); color:#0a0a0a; border:none; border-radius:11px; padding:15px; font-size:16px; font-weight:700; cursor:pointer; transition:background .15s; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:16px; }
+.pay-btn:hover { background:var(--gold-2); }
+.pay-secure { display:flex; align-items:center; justify-content:center; gap:6px; color:var(--muted); font-size:12px; margin-top:10px; }
+.pay-secure svg { width:14px; height:14px; color:var(--green); }
+.payment-logos { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
+.pay-logo { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); border-radius:7px; padding:6px 14px; font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.5px; }
+.success-screen { display:none; text-align:center; padding:60px 20px; }
+.success-icon { width:72px; height:72px; background:rgba(34,197,94,.1); border:2px solid rgba(34,197,94,.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+.success-icon svg { width:36px; height:36px; color:var(--green); }
+.success-screen h2 { font-family:'Poppins',sans-serif; font-size:24px; margin-bottom:10px; }
+.success-screen p { color:var(--muted); font-size:15px; max-width:40ch; margin:0 auto 24px; }
+
+.debug-banner { background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.3); border-radius:10px; padding:12px 16px; margin-bottom:18px; font-size:13px; color:#fca5a5; display:flex; align-items:center; gap:10px; }
+.debug-banner svg { width:16px; height:16px; flex-shrink:0; }
+.debug-banner strong { color:#fff; }
+
+/* Stripe Elements container — Stripe injects its own iframe here */
+#stripe-payment-element { background:#111; border:1px solid var(--border); border-radius:9px; padding:14px; min-height:48px; transition:border-color .2s; }
+#stripe-payment-element.StripeElement--focus { border-color:var(--gold); }
+.stripe-error { color:#fca5a5; font-size:12.5px; margin-top:8px; min-height:16px; }
+.pay-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+@media(max-width:900px) { .checkout-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <canvas id="sparkle-canvas"></canvas>
+  <header class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm'" />
+          <div class="brand-text"><strong>MS Comm'</strong><span>Prestataire de services de communication</span></div>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Accueil</a>
+          <a href="photos.html">Photographie</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+        <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <div class="drawer" id="drawer">
+    <a href="index.html">Accueil</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a>
+  </div>
+
+  <main>
+    <div class="checkout-page">
+      <div class="container">
+        <div style="margin-bottom:28px">
+          <a href="photos.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='#f0f0f0'" onmouseout="this.style.color=''">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+            Retour à la galerie
+          </a>
+          <h1 style="font-family:'Poppins',sans-serif;font-size:clamp(1.5rem,3vw,2rem);margin-top:12px">Récapitulatif & <span class="gold">Paiement</span></h1>
+        </div>
+
+        <!-- SUCCESS -->
+        <div class="success-screen" id="success-screen">
+          <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <h2>Commande reçue !</h2>
+          <p id="success-email-status">Un email contenant votre lien de téléchargement vous a été envoyé.</p>
+          <a id="success-download-btn" href="#" class="pay-btn" style="display:inline-flex;max-width:360px;margin:0 auto 14px;text-decoration:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger mes photos (.zip)
+          </a>
+          <br>
+          <a href="photos.html" style="display:inline-block;margin-top:8px;color:var(--muted);font-size:13px;text-decoration:none">← Retour à la galerie</a>
+        </div>
+
+        <!-- CHECKOUT FORM -->
+        <div id="checkout-content">
+          <div class="checkout-grid">
+            <!-- LEFT: form -->
+            <div>
+              <div class="co-block">
+                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Vos coordonnées</h3>
+                <div class="form-row-2">
+                  <div class="form-field"><label>Prénom</label><input type="text" id="f-first" placeholder="Marie" /></div>
+                  <div class="form-field"><label>Nom</label><input type="text" id="f-last" placeholder="Dupont" /></div>
+                </div>
+                <div class="form-field"><label>Email *</label><input type="email" id="f-email" placeholder="marie.dupont@email.com" /></div>
+                <div class="form-field"><label>Téléphone</label><input type="tel" id="f-phone" placeholder="+33 6 12 34 56 78" /></div>
+              </div>
+
+              <div class="co-block">
+                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Paiement</h3>
+
+                <div id="debug-banner" class="debug-banner" style="display:none">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <div><strong>Mode DEBUG activé</strong> — aucun paiement réel ne sera effectué. Les photos seront téléchargeables gratuitement.</div>
+                </div>
+
+                <!-- Stripe Elements container (only visible when Stripe is active) -->
+                <div id="stripe-section" style="display:none">
+                  <div class="form-field">
+                    <label>Carte bancaire</label>
+                    <div id="stripe-payment-element"><!-- Stripe injects here --></div>
+                  </div>
+                  <div id="stripe-error" class="stripe-error"></div>
+                </div>
+
+                <div id="pay-error" style="color:#fca5a5;font-size:12.5px;margin-top:4px"></div>
+
+                <button class="pay-btn" id="pay-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span id="pay-btn-label">Payer <span id="pay-total-label">0.00€</span></span>
+                </button>
+
+                <div class="pay-secure">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Paiement sécurisé — Stripe, chiffrement SSL 256 bits
+                </div>
+                <div class="payment-logos">
+                  <span class="pay-logo">VISA</span>
+                  <span class="pay-logo">MC</span>
+                  <span class="pay-logo">AMEX</span>
+                  <span class="pay-logo">Apple Pay</span>
+                  <span class="pay-logo">Google Pay</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: summary -->
+            <div>
+              <div class="co-block" style="position:sticky;top:90px">
+                <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Votre sélection</h3>
+                <div id="co-items"></div>
+                <div id="co-totals"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer"><div class="container"><div class="footer-inner">
+    <p>© <span id="year"></span> MS Comm' — Tous droits réservés</p>
+    <div class="footer-links"><a href="index.html">Accueil</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a></div>
+  </div></div></footer>
+
+  <script>
+const API = (
+  window.location.protocol === 'file:' ||
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === ''
+)
+  ? 'http://localhost:3000'
+  : 'https://ms-comm-server.fly.dev'; /* ← update with your Fly.io URL */
+
+function resolveUrl(u) {
+  if (!u) return '';
+  return /^https?:\/\//.test(u) ? u : API + u;
+}
+
+const data = JSON.parse(localStorage.getItem('mscomm_checkout') || '{"cart":[],"total":0,"promoDiscount":0,"tierDiscount":0,"discPct":0}');
+
+document.getElementById('year').textContent = new Date().getFullYear();
+document.getElementById('pay-total-label').textContent = parseFloat(data.total || 0).toFixed(2) + '€';
+
+const itemsEl = document.getElementById('co-items');
+const totalsEl = document.getElementById('co-totals');
+
+if (data.cart && data.cart.length) {
+  itemsEl.innerHTML = data.cart.map(item => `
+    <div class="co-item">
+      <img class="co-item-thumb" src="${resolveUrl(item.watermarkedUrl)}" alt="${item.title}" onerror="this.src='${resolveUrl(item.previewUrl)}'" />
+      <div class="co-item-info">
+        <div class="co-item-title">${item.title}</div>
+        <div class="co-item-price">${item.price}€</div>
+      </div>
+    </div>`).join('');
+
+  const subtotal = data.cart.reduce((s, c) => s + c.price, 0);
+  totalsEl.innerHTML = `
+    <div class="co-total-row subtotal-row"><span>Sous-total (${data.cart.length} photos)</span><span>${subtotal.toFixed(2)}€</span></div>
+    ${data.discPct > 0 ? `<div class="co-total-row discount"><span>Remise ${data.discPct}%</span><span>-${data.tierDiscount.toFixed(2)}€</span></div>` : ''}
+    ${data.promoDiscount > 0 ? `<div class="co-total-row discount"><span>Code promo</span><span>-${data.promoDiscount.toFixed(2)}€</span></div>` : ''}
+    <div class="co-total-row final"><span>Total</span><span>${parseFloat(data.total).toFixed(2)}€</span></div>`;
+} else {
+  itemsEl.innerHTML = '<p style="color:var(--muted);font-size:13px">Aucun article.</p>';
+}
+
+/* ============================================================================
+   PAYMENT FLOW
+   -------------------------------------------------------------------------
+   1. GET /api/public/settings/public  → decides which mode to use
+   2. Debug mode  → POST /api/orders          (server creates completed order)
+   3. Stripe mode → POST /api/orders/create-payment-intent
+                    → stripe.confirmPayment() redirect-less
+                    → POST /api/orders/confirm (finalize, get tokens)
+   =========================================================================== */
+
+let stripe = null;         /* Stripe JS instance */
+let stripeElements = null; /* Elements instance  */
+let pubSettings = {};
+let currentOrderId = null;
+
+async function initPayment() {
+  try {
+    const res = await fetch(`${API}/api/public/settings/public`);
+    pubSettings = await res.json();
+  } catch {
+    pubSettings = {};
+  }
+  const debugMode = pubSettings.paymentDebugMode === true;
+  const stripeOn  = pubSettings.stripeEnabled === true && !!pubSettings.stripePublishableKey;
+
+  if (debugMode) {
+    document.getElementById('debug-banner').style.display = 'flex';
+    document.getElementById('pay-btn-label').innerHTML = `Télécharger (mode debug)`;
+    return;
+  }
+
+  if (!stripeOn) {
+    document.getElementById('pay-error').textContent =
+      '⚠️ Paiement indisponible : Stripe n\'est pas configuré. Contactez le support.';
+    document.getElementById('pay-btn').disabled = true;
+    return;
+  }
+
+  /* Stripe init — create a PaymentIntent to get a client_secret */
+  if (!data.cart || !data.cart.length) {
+    document.getElementById('pay-error').textContent = 'Panier vide';
+    document.getElementById('pay-btn').disabled = true;
+    return;
+  }
+
+  try {
+    stripe = Stripe(pubSettings.stripePublishableKey);
+  } catch (err) {
+    document.getElementById('pay-error').textContent = 'Impossible de charger Stripe : ' + err.message;
+    return;
+  }
+
+  /* Customer info is required before creating the intent (for email & order row).
+     We lazily create the intent once the user fills the email field. To keep it
+     simple, we create it right now using whatever email is in the field, then
+     update the metadata later if needed. But the intent needs the final amount
+     fixed at creation — OK since the cart is immutable from here. */
+  const emailPlaceholder = document.getElementById('f-email').value.trim() || 'pending@checkout';
+
+  try {
+    const resp = await fetch(`${API}/api/orders/create-payment-intent`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: { email: emailPlaceholder },
+        cart:          data.cart,
+        promoCode:     data.promoCode     || null,
+        promoDiscount: data.promoDiscount || 0,
+        tierDiscount:  data.tierDiscount  || 0,
+        discPct:       data.discPct       || 0
+      })
+    });
+    const body = await resp.json();
+    if (!resp.ok) throw new Error(body.error || 'Erreur serveur');
+    currentOrderId = body.orderId;
+
+    /* Mount Stripe Elements (Payment Element — unified card/IBAN/etc.) */
+    stripeElements = stripe.elements({
+      clientSecret: body.clientSecret,
+      appearance: {
+        theme: 'night',
+        variables: {
+          colorPrimary: '#c69b00',
+          colorBackground: '#111111',
+          colorText: '#f0f0f0',
+          colorDanger: '#ef4444',
+          fontFamily: 'system-ui, sans-serif',
+          borderRadius: '8px'
+        }
+      }
+    });
+    const paymentElement = stripeElements.create('payment', { layout: 'tabs' });
+    paymentElement.mount('#stripe-payment-element');
+    document.getElementById('stripe-section').style.display = 'block';
+  } catch (err) {
+    document.getElementById('pay-error').textContent = 'Initialisation du paiement échouée : ' + err.message;
+    document.getElementById('pay-btn').disabled = true;
+  }
+}
+
+/* Click handler — routes to debug or Stripe flow */
+document.getElementById('pay-btn').addEventListener('click', async () => {
+  const email = document.getElementById('f-email').value.trim();
+  const errEl = document.getElementById('pay-error');
+  errEl.textContent = '';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Email valide requis';
+    return;
+  }
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="animation:spin .7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Traitement en cours…`;
+
+  try {
+    if (pubSettings.paymentDebugMode) {
+      await submitDebugOrder(email);
+    } else {
+      await submitStripePayment(email);
+    }
+  } catch (err) {
+    errEl.textContent = err.message || 'Erreur lors du paiement. Réessayez.';
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+});
+
+/* Debug flow: create an order without Stripe, get tokens immediately. */
+async function submitDebugOrder(email) {
+  const resp = await fetch(`${API}/api/orders`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(buildCustomerPayload(email))
+  });
+  const result = await resp.json();
+  if (!resp.ok) throw new Error(result.error || 'Erreur serveur');
+  finalizeSuccess(result);
+}
+
+/* Stripe flow: confirm the intent, then call /confirm to finalize. */
+async function submitStripePayment(email) {
+  if (!stripe || !stripeElements || !currentOrderId) {
+    throw new Error('Stripe n\'est pas initialisé. Rechargez la page.');
+  }
+
+  /* Confirm payment without redirection (we keep the user on this page). */
+  const { error, paymentIntent } = await stripe.confirmPayment({
+    elements: stripeElements,
+    redirect: 'if_required',
+    confirmParams: {
+      return_url: window.location.href,
+      receipt_email: email
+    }
+  });
+
+  if (error) {
+    document.getElementById('stripe-error').textContent = error.message || 'Paiement refusé';
+    throw new Error(error.message || 'Paiement refusé');
+  }
+  if (paymentIntent && paymentIntent.status !== 'succeeded') {
+    throw new Error('Paiement non confirmé (' + paymentIntent.status + ')');
+  }
+
+  /* Finalize server-side — retrieve the download tokens */
+  const resp = await fetch(`${API}/api/orders/confirm`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId: currentOrderId })
+  });
+  const result = await resp.json();
+  if (!resp.ok) throw new Error(result.error || 'Finalisation échouée');
+  finalizeSuccess(result);
+}
+
+function buildCustomerPayload(email) {
+  return {
+    customer: {
+      email,
+      firstName: document.getElementById('f-first').value.trim(),
+      lastName:  document.getElementById('f-last').value.trim(),
+      phone:     document.getElementById('f-phone').value.trim()
+    },
+    cart:          data.cart || [],
+    promoCode:     data.promoCode     || null,
+    promoDiscount: data.promoDiscount || 0,
+    tierDiscount:  data.tierDiscount  || 0,
+    discPct:       data.discPct       || 0
+  };
+}
+
+/**
+ * Render the success screen. We accept the full server response so we can
+ * wire the direct-download button and adjust the email status line based on
+ * whether SMTP was actually used (result.emailSent).
+ */
+function finalizeSuccess(result) {
+  const downloadTokens = result.downloadTokens || {};
+  const existing = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
+  localStorage.setItem('mscomm_tokens', JSON.stringify({ ...existing, ...downloadTokens }));
+  localStorage.removeItem('mscomm_cart');
+  localStorage.removeItem('mscomm_checkout');
+
+  /* Wire the direct ZIP download link. Even when email is down, the user can
+     grab their photos immediately via this button. */
+  const btn = document.getElementById('success-download-btn');
+  if (result.downloadUrl) {
+    btn.href = result.downloadUrl;
+    btn.setAttribute('download', '');
+  } else {
+    btn.style.display = 'none';
+  }
+
+  /* Adjust the email status line: success, not-sent (SMTP off), or pending. */
+  const statusEl = document.getElementById('success-email-status');
+  if (result.emailSent) {
+    statusEl.innerHTML = `
+      Un <strong style="color:var(--gold-2)">email contenant votre lien de téléchargement</strong>
+      vient de vous être envoyé. Vous pouvez aussi télécharger tout de suite :`;
+  } else {
+    statusEl.innerHTML = `
+      <span style="color:var(--gold-2)">Téléchargez vos photos ci-dessous.</span><br>
+      <span style="font-size:13px;color:var(--muted)">
+        L'envoi par email n'a pas pu être effectué — conservez ce lien ou le bouton actif.
+      </span>`;
+  }
+
+  document.getElementById('checkout-content').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+}
+
+/* Boot the payment layer as soon as the DOM is ready. */
+initPayment();
+  </script>
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</body>
+</html>

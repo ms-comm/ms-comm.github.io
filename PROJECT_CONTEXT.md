@@ -1,7 +1,7 @@
 # PROJECT CONTEXT — MS Comm' Website
 
 > **⚠️ À lire au début de chaque session.** Ce fichier doit être mis à jour dès qu'un changement significatif est apporté au projet.  
-> Dernière mise à jour : **27 avril 2026**
+> Dernière mise à jour : **24 avril 2026**
 
 ---
 
@@ -43,6 +43,8 @@ Clubs sportifs, athlètes, événements sportifs, restaurants, beautés, musique
 
 ## 3. Structure des fichiers
 
+### Site vitrine principal (racine)
+
 ```
 Melody/
 ├── index.html              # Page d'accueil (héro, stats, expériences aperçu, portfolio aperçu, services aperçu, témoignages, CTA)
@@ -50,6 +52,8 @@ Melody/
 ├── portfolio.html          # Portfolio complet (print, réseaux sociaux, vidéos, photos, articles)
 ├── experiences.html        # Parcours professionnel complet
 ├── contact.html            # Formulaire de contact + infos + carte de visite 3D + réseaux
+├── photos.html             # Galerie photo publique (albums, timeline, lightbox, téléchargement)
+├── checkout.html           # Page de paiement Stripe (panier, promo, validation)
 ├── sitemap.xml             # Sitemap SEO (5 URLs, dernière MAJ 27/03/2026)
 ├── robots.txt              # Autorise tout sauf *.tmp et *.log
 ├── manifest.json           # PWA manifest (thème or #c69b00, fond #0d0d0d)
@@ -60,7 +64,59 @@ Melody/
 │   ├── js/
 │   │   └── main.js         # JS unique (~399 lignes)
 │   └── data/               # Tous les médias (images, vidéos)
+├── photo-server/           # Serveur galerie photo + panel admin (voir section 3.2)
 └── PROJECT_CONTEXT.md      # Ce fichier
+```
+
+### Serveur galerie photo (photo-server/)
+
+```
+photo-server/
+├── server.js               # Point d'entrée Express (session, CORS, routes)
+├── package.json            # Dépendances Node.js
+├── nodemon.json            # Config nodemon (ignore db/, storage/)
+├── fly.toml                # Config Fly.io (déploiement production)
+├── .gitignore              # Ignore db/, storage/, node_modules/
+├── .env.example            # Template variables d'environnement
+├── README.md               # Documentation déploiement
+├── FLICKR_INTEGRATION_CONTEXT.md  # Documentation complète intégration Flickr
+│
+├── routes/                 # Routes API Express
+│   ├── auth.js             # POST /login, /logout, /check, /change-password
+│   ├── adminPhotos.js      # CRUD photos + upload Flickr/local (multer + sharp)
+│   ├── adminAlbums.js      # CRUD albums + sync photosets Flickr
+│   ├── adminPromoCodes.js  # CRUD codes promo
+│   ├── adminSettings.js    # Réglages (prix, filigrane, SMTP, clés Flickr)
+│   ├── adminOrders.js      # Gestion commandes + tokens download
+│   └── publicApi.js        # API publique (albums, photos, verify-code, download-zip)
+│
+├── services/               # Services métier
+│   ├── db.js               # Lecture/écriture JSON (photos.json, albums.json, settings.json, orders.json, promo-codes.json)
+│   ├── imageProcessor.js   # Sharp : preview 1200px + watermark SVG/image + resize
+│   ├── emailService.js     # Nodemailer : envoi code accès client
+│   └── flickrService.js    # OAuth 1.0a + Flickr API (upload, download, photoset, delete)
+│
+├── middleware/             # Middleware Express
+│   └── requireAuth.js      # Vérification session admin (401 JSON pour API)
+│
+├── db/                     # Bases de données JSON
+│   ├── photos.json         # Base photos (id, title, flickr*Id, albumId, downloadType, price, etc.)
+│   ├── albums.json         # Base albums (id, name, type, code, flickrSetId, coverId, maxDownload, etc.)
+│   ├── settings.json       # Config (prix défaut, SMTP, filigrane, clés Flickr, discountTiers, etc.)
+│   ├── orders.json         # Commandes (id, items, total, promo, tokens, createdAt)
+│   └── promo-codes.json    # Codes promo (id, code, type, value, maxUses, uses, active)
+│
+├── storage/                # Stockage local (gitignored)
+│   ├── originals/          # Photos HD originales (si Flickr non configuré)
+│   ├── previews/           # Miniatures 1200px
+│   └── watermarked/        # Versions avec filigrane
+│
+└── admin/                  # Panel admin (SPA)
+    ├── index.html          # Interface admin (dashboard, photos, albums, réglages)
+    ├── css/
+    │   └── admin.css       # Styles admin (thème dark MS Comm')
+    └── js/
+        └── admin.js        # Logique admin (CRUD, upload, Flickr config, autosave)
 ```
 
 ---
@@ -281,7 +337,70 @@ Fonctionnalités :
 
 ---
 
-## 11. À faire / idées futures
+## 11. Galerie Photo & Panel Admin (ajouté 2026-04)
+
+### Infrastructure
+- **Serveur photo** : `photo-server/` — Node.js + Express sur port `3000`
+- **Démarrage** : `node server.js` (ou `npm run dev` avec nodemon) dans `photo-server/`
+- **Panel admin** : `http://localhost:3000/admin` — identifiants stockés hors du repo (voir `photo-server/db/settings.json`, gitignored)
+- **API publique** : `http://localhost:3000/api/public/...`
+
+### Structure photo-server/
+```
+photo-server/
+├── server.js               # Point d'entrée Express
+├── package.json
+├── routes/
+│   ├── auth.js             # POST /login, /logout, /check, /change-password
+│   ├── adminPhotos.js      # CRUD photos + upload (multer + sharp)
+│   ├── adminAlbums.js      # CRUD albums + envoi email code
+│   ├── adminSettings.js    # Réglages (prix, filigrane, SMTP)
+│   └── publicApi.js        # API publique (albums, photos, verify-code, download-zip)
+├── services/
+│   ├── db.js               # Lecture/écriture JSON (photos.json, albums.json, settings.json)
+│   ├── imageProcessor.js   # Sharp : preview 1200px + watermark SVG/image
+│   └── emailService.js     # Nodemailer : envoi code accès client
+├── middleware/
+│   └── requireAuth.js      # Vérification session admin
+├── db/
+│   ├── photos.json         # Base photos
+│   ├── albums.json         # Base albums
+│   └── settings.json       # Config (prix défaut, SMTP, filigrane)
+├── storage/
+│   ├── originals/          # Photos HD originales (gitignored)
+│   ├── previews/           # Miniatures 1200px (gitignored)
+│   └── watermarked/        # Versions avec filigrane (gitignored)
+└── admin/
+    ├── index.html          # SPA panel admin (YouTube Studio-like)
+    ├── css/admin.css       # Styles admin (thème dark MS Comm')
+    └── js/admin.js         # Logique admin (dashboard, photos, albums, upload, réglages)
+```
+
+### Page publique photos.html
+- Vue Albums (timeline par année) / Timeline (toutes photos) / Grille
+- **Galerie justifiée** (`flex` + `flex-grow`) — zéro trou noir entre photos orientées verticalement / horizontalement
+- **Rendu progressif** par batch (~200 photos / mois, sentinel `IntersectionObserver` en bas) + **lazy-loading** des `<img data-src>` → tient 2000+ photos sans jank
+- Sidebar de dates sticky, cliquable pour sauter à un mois (force le rendu des batches intermédiaires avant le scroll)
+- Barre de recherche par titre ou album
+- Accès albums privés par code (modal)
+- Interface de sélection + téléchargement ZIP
+- Bannière d'erreur si serveur hors ligne
+- Lightbox pour photos avec filigrane
+
+### Types de téléchargement
+
+| Type              | Upload Flickr                                                        | Download public                                                                         |
+|-------------------|----------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| `free`            | 1× public original (AUCUNE copie filigranée)                         | Original sans filigrane (pas de re-processing serveur)                                  |
+| `free-watermark`  | 1× privé original + 1× public copie filigranée `__wm`                 | Copie filigranée Flickr telle quelle (filigrane cuit à l'upload, jamais re-appliqué)    |
+| `paid`            | 1× privé original (parké dans `__MSCOMM_ORIGINALS__`) + 1× public `__wm` | Sans token → copie filigranée ; avec token valide → original sans filigrane             |
+| Album `private`   | N’importe quel type ci-dessus                                        | Accès code → sélection max N photos → ZIP HD                                            |
+
+> **Principe clé** : le filigrane est appliqué **une seule fois à l'upload** et stocké comme copie publique distincte sur Flickr. Les downloads ne passent **jamais** par `sharp.applyWatermark` en temps réel (sauf fallback legacy pour les anciennes photos qui n'ont qu'un `flickrOriginalId`). Conséquence : ce que l'utilisateur télécharge est bit-pour-bit identique à l'aperçu affiché.
+
+---
+
+## 12. À faire / idées futures
 
 > Mettre à jour cette section selon les échanges avec Melody.
 
@@ -290,3 +409,5 @@ Fonctionnalités :
 - [ ] Page CGV (mentionnée dans les footnotes des tarifs)
 - [ ] Intégration Google Analytics ou Plausible pour suivi trafic
 - [ ] Formulaire contact → backend (actuellement statique, pas d'envoi réel)
+- [ ] Configurer SMTP Gmail dans Réglages admin pour l'envoi des codes clients
+- [ ] Mettre à jour l'URL du site dans l'email d'envoi de code (contact.html → URL de prod)
