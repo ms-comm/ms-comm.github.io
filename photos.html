@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/faces.js" defer></script>
   <style>
 /* ===== GALLERY PAGE ===== */
 :root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --red:#ef4444; --green:#22c55e; }
@@ -164,11 +165,23 @@
 .grid-dl { font-size:11px; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
 .grid-dl svg { width:12px; height:12px; }
 
+/* ===== MES ACHATS ===== */
+.gal-tab-badge { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; margin-left:6px; border-radius:9px; background:var(--gold); color:#0a0a0a; font-size:10.5px; font-weight:700; }
+.gal-tab.active .gal-tab-badge { background:#0a0a0a; color:var(--gold); }
+.purchased-header { padding:8px 4px 18px; border-bottom:1px dashed var(--border); margin-bottom:18px; }
+.purchased-sub { color:var(--muted); font-size:13px; margin:0; }
+
 /* ===== LIGHTBOX ===== */
 .lb-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:400; flex-direction:column; }
 .lb-overlay.open { display:flex; }
 .lb-top { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; flex-shrink:0; }
 .lb-top-title { font-size:14px; font-weight:600; color:rgba(255,255,255,.8); }
+.lb-top-actions { display:flex; align-items:center; gap:10px; }
+.lb-icon-btn { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.1); border:none; color:#f0f0f0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s, color .15s; padding:0; }
+.lb-icon-btn:hover { background:rgba(255,255,255,.2); }
+.lb-icon-btn svg { width:18px; height:18px; }
+.lb-icon-btn[aria-pressed="false"] { color:#888; background:rgba(255,255,255,.05); }
+.lb-icon-btn[aria-pressed="false"]:hover { color:#f0f0f0; }
 .lb-close { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.1); border:none; color:#f0f0f0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
 .lb-close:hover { background:rgba(255,255,255,.2); }
 .lb-close svg { width:18px; height:18px; }
@@ -353,6 +366,10 @@
           <div class="gal-tabs">
             <button class="gal-tab active" data-view="timeline">Galerie</button>
             <button class="gal-tab" data-view="albums">Albums</button>
+            <button class="gal-tab" data-view="faces">Visages</button>
+            <button class="gal-tab" data-view="purchased" id="tab-purchased" style="display:none">
+              Mes achats <span id="tab-purchased-count" class="gal-tab-badge"></span>
+            </button>
           </div>
           <button class="btn-private-album" id="btn-private">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -401,6 +418,26 @@
         </div>
       </div>
 
+      <!-- VISAGES (NEW) -->
+      <div id="view-faces" class="hidden"></div>
+
+      <!-- MES ACHATS (NEW) — listing of photos the visitor has purchased,
+           keyed by the per-photo download tokens stored in localStorage. -->
+      <div id="view-purchased" class="hidden">
+        <div class="purchased-header">
+          <h2 style="margin:0 0 6px;color:var(--gold-2)">Mes achats</h2>
+          <p class="purchased-sub">
+            Toutes les photos que vous avez déjà achetées sur ce navigateur.
+            Cliquez pour rouvrir et retélécharger sans payer à nouveau.
+          </p>
+        </div>
+        <div class="photos-masonry" id="purchased-grid"></div>
+        <div class="gal-empty hidden" id="purchased-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <p>Aucun achat sur ce navigateur. Vos commandes y apparaîtront automatiquement après paiement.</p>
+        </div>
+      </div>
+
       </div><!-- end gal-content-box -->
     </section>
   </main>
@@ -414,7 +451,13 @@
   <div class="lb-overlay" id="lb-overlay">
     <div class="lb-top">
       <span class="lb-top-title" id="lb-counter"></span>
-      <button class="lb-close" id="lb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <div class="lb-top-actions">
+        <button class="lb-icon-btn" id="lb-faces-toggle" title="Afficher / masquer les visages détectés"
+                aria-pressed="true" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="lb-close" id="lb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
     </div>
     <div class="lb-main">
       <div class="lb-img-wrap">
@@ -652,6 +695,15 @@ async function init() {
     fetch(`${API}/api/public/settings/public`).then(r => r.json()).catch(() => ({}))
   ]);
   allAlbums = albums; allPhotos = photos; pubSettings = settings;
+  /* Show "Mes achats" if the visitor owns at least one photo (token in localStorage). */
+  refreshPurchasedTab();
+  /* Hide the Visages tab if the admin disabled it (per /settings/public). */
+  if (pubSettings && pubSettings.showFacesPage === false) {
+    const facesTabBtn = document.querySelector('.gal-tab[data-view="faces"]');
+    if (facesTabBtn) facesTabBtn.style.display = 'none';
+    const facesView = document.getElementById('view-faces');
+    if (facesView) facesView.style.display = 'none';
+  }
   /* Populate the album filter dropdown (sorted alphabetically) */
   const filter = document.getElementById('gal-album-filter');
   if (filter) {
@@ -735,9 +787,84 @@ function getSearch() { return document.getElementById('gal-search').value.toLowe
 function renderView(view) {
   document.getElementById('view-albums').classList.toggle('hidden', view !== 'albums');
   document.getElementById('view-timeline').classList.toggle('hidden', view !== 'timeline');
+  const facesEl = document.getElementById('view-faces');
+  if (facesEl) facesEl.classList.toggle('hidden', view !== 'faces');
+  const purchasedEl = document.getElementById('view-purchased');
+  if (purchasedEl) purchasedEl.classList.toggle('hidden', view !== 'purchased');
   document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'albums') renderAlbums();
   else if (view === 'timeline') renderTimeline();
+  else if (view === 'faces') renderFacesView();
+  else if (view === 'purchased') renderPurchased();
+}
+
+/* Render the "Mes achats" view: every photo whose ID has a download token
+ * stored in localStorage by the Stripe checkout flow. We reuse the same
+ * masonry/lightbox pipeline as the main timeline so the user gets identical
+ * navigation, downloading and sharing affordances.                          */
+function renderPurchased() {
+  const grid  = document.getElementById('purchased-grid');
+  const empty = document.getElementById('purchased-empty');
+  if (!grid) return;
+
+  const tokens = (() => { try { return JSON.parse(localStorage.getItem('mscomm_tokens') || '{}'); } catch { return {}; } })();
+  const photos = allPhotos.filter(p => tokens[p.id]);
+
+  empty.classList.toggle('hidden', photos.length > 0);
+  grid.innerHTML = photos.map(p => {
+    const imgSrc = resolveUrl(p.downloadType === 'free' ? p.previewUrl : p.watermarkedUrl);
+    return `<div class="masonry-item" style="${justifiedFlexStyle(p)}" onclick="openLightboxGlobal('${p.id}')">
+      ${ownedBadgeHTML(p)}
+      <img data-src="${imgSrc}" alt="${p.title}" loading="lazy" />
+      <div class="masonry-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    </div>`;
+  }).join('');
+
+  /* Make sure the lightbox knows which set we're navigating in so prev/next
+   * stay within the purchased subset rather than the full gallery. */
+  lbPhotos = photos;
+  observeLazyImages(grid);
+}
+
+/* Show the "Mes achats" tab whenever the visitor owns at least one photo
+ * stored in this browser. Called once after settings load + on demand from
+ * checkout success handlers (so the tab appears without a refresh). */
+function refreshPurchasedTab() {
+  const tab     = document.getElementById('tab-purchased');
+  const badge   = document.getElementById('tab-purchased-count');
+  if (!tab) return;
+  let count = 0;
+  try {
+    const tokens = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
+    /* Only count tokens whose photo still exists in the public catalog;
+     * deleted/private photos shouldn't inflate the badge. */
+    const ids = new Set((allPhotos || []).map(p => p.id));
+    count = Object.keys(tokens).filter(id => ids.has(id)).length;
+  } catch {}
+  tab.style.display = count > 0 ? '' : 'none';
+  if (badge) badge.textContent = count > 0 ? String(count) : '';
+}
+window.refreshPurchasedTab = refreshPurchasedTab;
+
+/* Faces tab — lazy-init the persons grid the first time it's opened. */
+let _facesViewInited = false;
+function renderFacesView() {
+  if (!window.MSFaces) return;
+  if (_facesViewInited) return;
+  _facesViewInited = true;
+  MSFaces.init({ apiBase: API, resolveUrl });
+  MSFaces.renderPersonsView(document.getElementById('view-faces'), {
+    onPhotoClick: (photoId) => {
+      /* Switch back to timeline view, scroll to photo and open the lightbox.
+       * Falls back to a global lookup if the photo isn't in the timeline yet. */
+      renderView('timeline');
+      const photo = allPhotos.find(p => p.id === photoId);
+      if (!photo) return;
+      lbPhotos = [...allPhotos];
+      const idx = lbPhotos.findIndex(p => p.id === photoId);
+      if (idx >= 0) setTimeout(() => openLightbox(idx), 80);
+    }
+  });
 }
 
 /* ===== ALBUMS ===== */
@@ -1116,7 +1243,56 @@ function renderLightbox() {
 
   buildDlDropdown(p);
   renderFilmstrip();
+
+  /* Lazy face overlay — degrades silently if no faces or API offline.
+   * Skipped entirely when the admin disabled the Visages feature. */
+  const facesToggle = document.getElementById('lb-faces-toggle');
+  if (window.MSFaces && pubSettings.showFacesPage !== false) {
+    MSFaces.init({ apiBase: API, resolveUrl });
+    MSFaces.attachOverlay(document.getElementById('lb-img'), p.id, {
+      onPersonClick: (personId) => {
+        closeLightbox();
+        renderView('faces');
+        /* Wait for the faces view to render then trigger the person detail. */
+        setTimeout(() => {
+          if (window.MSFaces && typeof MSFaces.loadPersonDetail === 'function') {
+            const card = document.querySelector(`.ms-person-card[data-person-id="${personId}"]`);
+            if (card) card.click();
+          }
+        }, 150);
+      }
+    });
+    /* Show + sync the eye toggle. Preference is persisted across photos in
+     * the same lightbox session via localStorage. */
+    if (facesToggle) {
+      facesToggle.style.display = '';
+      const visible = localStorage.getItem('mscomm_show_faces') !== '0';
+      applyFacesVisibility(visible);
+    }
+  } else if (facesToggle) {
+    facesToggle.style.display = 'none';
+  }
 }
+
+/* Toggle the visibility of every face-overlay SVG inside the open
+ * lightbox. We work on .ms-face-overlay (the class set by faces.js) so
+ * we don't depend on its internal DOM. */
+function applyFacesVisibility(visible) {
+  const wrap = document.getElementById('lb-img-wrap') || document.querySelector('.lb-img-wrap');
+  if (!wrap) return;
+  wrap.querySelectorAll('.ms-face-overlay').forEach(el => {
+    el.style.display = visible ? '' : 'none';
+  });
+  const btn = document.getElementById('lb-faces-toggle');
+  if (btn) btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+}
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('#lb-faces-toggle');
+  if (!btn) return;
+  const next = btn.getAttribute('aria-pressed') !== 'true';  /* invert */
+  localStorage.setItem('mscomm_show_faces', next ? '1' : '0');
+  applyFacesVisibility(next);
+});
 
 function buildDlDropdown(p) {
   const withWm  = p.downloadType === 'free-watermark';

@@ -2239,3 +2239,230 @@ textarea:focus {
   .lang-switch { padding: 2px 4px; font-size: 11px; }
   .lang-switch .lang-opt { min-width: 20px; padding: 3px 5px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FACES — public faces overlay & visages tab (added 2026-04, Phase D)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Face overlay shown on top of the lightbox image — gradient strokes that
+ * stay readable on every photo + a centered name label. The overlay is
+ * sized to the actual rendered <img> rect (object-fit:contain leaves
+ * letterbox bands which we exclude). */
+.ms-face-overlay {
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 5;
+  transition: opacity .25s;
+}
+.ms-face-overlay.empty { opacity: 0; }
+.ms-face-overlay .ms-face-group {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.ms-face-overlay .ms-face-group:hover { transform: scale(1.02); }
+.ms-face-overlay .ms-face-circle {
+  fill: none;
+  stroke: rgba(198, 155, 0, 0.85);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+  transition: stroke-width .15s, fill .15s;
+}
+.ms-face-overlay .ms-face-group:hover .ms-face-circle {
+  fill: rgba(198, 155, 0, 0.10);
+  stroke-width: 3;
+  stroke: var(--gold-2, #ffd25a);
+}
+.ms-face-overlay .ms-face-label {
+  font-size: 4.5px;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.9);
+  text-align: center;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 1px;
+}
+
+/* ─── Visages tab ───────────────────────────────────────────────────── */
+.ms-faces-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 8px 0 24px;
+}
+.ms-faces-search {
+  display: flex; justify-content: center;
+}
+.ms-faces-search-input {
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text, #f0f0f0);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s, background .15s;
+}
+.ms-faces-search-input:focus {
+  border-color: var(--gold, #c69b00);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ms-faces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.ms-faces-loading,
+.ms-faces-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--muted, rgba(255, 255, 255, 0.5));
+  font-size: 14px;
+}
+
+.ms-person-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+  background: var(--bg-card, #141414);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.ms-person-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold, #c69b00);
+  box-shadow: 0 8px 24px rgba(198, 155, 0, 0.18);
+}
+.ms-person-thumb {
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid rgba(198, 155, 0, 0.25);
+  flex-shrink: 0;
+}
+.ms-person-thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(198, 155, 0, 0.10);
+  color: var(--gold, #c69b00);
+  font-size: 36px;
+  font-weight: 600;
+  font-family: 'Playfair Display', serif;
+}
+.ms-person-name {
+  font-weight: 600;
+  font-size: 14.5px;
+  text-align: center;
+  word-break: break-word;
+}
+.ms-person-count {
+  font-size: 12px;
+  color: var(--muted, rgba(255, 255, 255, 0.5));
+}
+
+.ms-faces-pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0 16px;
+}
+.ms-faces-pager-btn {
+  background: transparent;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  color: var(--text, #f0f0f0);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color .15s, color .15s;
+}
+.ms-faces-pager-btn:hover:not(:disabled) {
+  border-color: var(--gold, #c69b00);
+  color: var(--gold-2, #ffd25a);
+}
+.ms-faces-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ms-faces-pager-info {
+  font-size: 12.5px;
+  color: var(--muted, rgba(255, 255, 255, 0.5));
+}
+
+/* ─── Person detail (within Visages tab) ────────────────────────────── */
+.ms-faces-detail.hidden { display: none; }
+.ms-faces-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.ms-person-back {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--muted, rgba(255, 255, 255, 0.5));
+  cursor: pointer;
+  font-size: 13.5px;
+  padding: 4px 0;
+  transition: color .15s;
+}
+.ms-person-back:hover { color: var(--gold-2, #ffd25a); }
+.ms-person-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0 6px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+}
+.ms-person-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  margin: 0 0 4px;
+}
+.ms-person-subtitle {
+  color: var(--muted, rgba(255, 255, 255, 0.5));
+  font-size: 13px;
+}
+.ms-person-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.ms-person-photo-card {
+  aspect-ratio: 1;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color .15s, transform .15s;
+}
+.ms-person-photo-card:hover {
+  border-color: var(--gold, #c69b00);
+  transform: scale(1.03);
+}
+
+@media (max-width: 720px) {
+  .ms-faces-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .ms-person-photos { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+}

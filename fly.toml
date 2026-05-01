@@ -1,0 +1,38 @@
+app            = "ms-comm-server"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "photo-server/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  DATA_DIR = "/data"
+
+[http_service]
+  internal_port        = 3000
+  force_https          = true
+  auto_stop_machines   = "stop"
+  auto_start_machines  = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type       = "requests"
+    hard_limit = 200
+    soft_limit = 100
+
+[[vm]]
+  memory       = "512mb"
+  cpu_kind     = "shared"
+  cpus         = 1
+  swap_size_mb = 512
+
+[[http_service.checks]]
+  interval     = "30s"
+  timeout      = "5s"
+  grace_period = "10s"
+  method       = "GET"
+  path         = "/healthz"
+
+[[mounts]]
+  source       = "ms_comm_data"
+  destination  = "/data"

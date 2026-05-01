@@ -36,6 +36,20 @@
     "Demander un devis": "Request a quote",
     "Menu": "Menu",
 
+    /* ═══ Faces tab (photos.html) ═══ */
+    "Galerie": "Gallery",
+    "Albums": "Albums",
+    "Visages": "Faces",
+    "Rechercher un nom…": "Search a name…",
+    "Chargement…": "Loading…",
+    "Aucun visage publié pour l'instant.": "No faces published yet.",
+    "Aucun visage ne correspond à cette recherche.": "No face matches this search.",
+    "Aucune personne pour l'instant.": "No people yet.",
+    "Personne introuvable.": "Person not found.",
+    "← Retour aux visages": "← Back to faces",
+    "← Précédent": "← Previous",
+    "Suivant →": "Next →",
+
     /* ═══ Footer ═══ */
     "MS Comm' — Melody. Tous droits réservés.": "MS Comm' — Melody. All rights reserved.",
     "MS Comm' — Tous droits réservés": "MS Comm' — All rights reserved",
