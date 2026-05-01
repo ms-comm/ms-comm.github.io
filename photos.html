@@ -659,7 +659,12 @@ function justifiedFlexStyle(p) {
 
 /* ===== SERVER ===== */
 async function pingServer(timeoutMs) {
-  return fetch(`${API}/api/health`, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
+  const res = await fetch(`${API}/api/public/settings/public`, {
+    signal: AbortSignal.timeout(timeoutMs),
+    cache: 'no-store'
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res;
 }
 
 async function init() {
