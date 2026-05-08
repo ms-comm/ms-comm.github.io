@@ -1304,29 +1304,16 @@ function buildDlDropdown(p) {
   const paid    = p.downloadType === 'paid';
   const tokens  = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
   const hasToken = paid && !!tokens[p.id];
-  const maxDim  = (p.width && p.height) ? Math.max(p.width, p.height) : Infinity;
-  /* ── Which sources actually expose multiple resolutions on Flickr? ───
-   *  Flickr only renders its CDN-sized URLs (`_h`, `_k`, `_4k`…) for
-   *  PUBLIC photos. Watermarked copies live in a public album, so they
-   *  support HD/2K/4K downloads. Non-watermarked originals live in the
-   *  private `__MSCOMM_ORIGINALS__` album and Flickr returns 410 on every
-   *  sized variant — only `_o` works there. To avoid misleading the user
-   *  we only advertise multi-res when we're actually going to serve the
-   *  public watermarked source:
-   *    - paid+noToken (watermarked preview) → multi-res OK
-   *    - free-watermark                    → multi-res OK
-   *    - free / paid+token (private _o)    → Original only */
-  const multiResAvailable = (paid && !hasToken) || withWm;
-  const allResolutions = [
-    { label: 'Original', res: 'original', sub: p.width && p.height ? `${p.width}\u00d7${p.height}` : 'Pleine r\u00e9solution' },
-    { label: '4K \u2014 4096 px', res: '4096', sub: '4K', min: 4096 },
-    { label: '2K \u2014 2048 px', res: '2048', sub: '2K', min: 2048 },
-    { label: 'HD \u2014 1080 px', res: '1080', sub: 'HD', min: 1080 }
-  ].filter(r => !r.min || maxDim >= r.min);
-  const resolutions    = multiResAvailable ? allResolutions : allResolutions.filter(r => r.res === 'original');
-  /* Locked rows (paid, not purchased) preview what the buyer will get
-     post-checkout → served from `flickrOriginalId` (private) → Original only. */
-  const lockedResolutions = allResolutions.filter(r => r.res === 'original');
+  /* ── Resolution choice disabled ──────────────────────────────────────
+   *  Flickr's CDN-sized URLs (`_h`, `_k`, `_4k`…) are only rendered for
+   *  PUBLIC photos. Private originals in `__MSCOMM_ORIGINALS__` return
+   *  410 on every sized variant — only `_o` works. Public watermark
+   *  copies theoretically expose sized URLs but in practice Flickr has
+   *  been returning 410 on those too for this library. Rather than
+   *  mislead visitors with HD/2K/4K buttons that all fall back to the
+   *  original, we only offer "Original". */
+  const resolutions       = [{ label: 'Original', res: 'original', sub: p.width && p.height ? `${p.width}\u00d7${p.height}` : 'Pleine r\u00e9solution' }];
+  const lockedResolutions = resolutions;
 
   let html = '';
   if (paid && !hasToken) {
