@@ -480,8 +480,8 @@
     <div class="lb-info">
       <div class="lb-info-left">
         <div class="lb-photo-title" id="lb-title"></div>
-        <div class="lb-copyright" id="lb-copyright" style="display:none">Les images présentées sur ce site sont protégées par le droit d'auteur. Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés. Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.</div>
         <div class="lb-photo-meta" id="lb-meta"></div>
+        <div class="lb-copyright" id="lb-copyright">Les images présentées sur ce site sont protégées par le droit d'auteur. Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés. Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.</div>
       </div>
       <div class="lb-actions">
         <button class="lb-btn lb-btn-share" id="lb-share">
@@ -1274,7 +1274,7 @@ function renderLightbox() {
   document.getElementById('lb-counter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
   document.getElementById('lb-title').textContent = p.title;
   const lbCopyright = document.getElementById('lb-copyright');
-  if (lbCopyright) lbCopyright.style.display = (p.downloadType === 'free-watermark') ? '' : 'none';
+  if (lbCopyright) lbCopyright.style.display = '';
 
   const meta = [];
   if (p.width && p.height) meta.push(`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${p.width}×${p.height}</span>`);
