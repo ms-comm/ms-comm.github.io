@@ -310,6 +310,17 @@
 .gal-empty { text-align:center; padding:72px 20px; color:var(--muted); }
 .gal-empty svg { width:48px; height:48px; opacity:.25; display:block; margin:0 auto 12px; }
 
+/* Copyright notice in grid cards */
+.grid-copyright { font-size:10px; color:rgba(255,255,255,.28); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Copyright notice in lightbox */
+.lb-copyright { font-size:11px; color:rgba(255,255,255,.32); margin-top:3px; line-height:1.4; }
+
+/* Copyright consent modal */
+.copyright-modal-text { font-size:13px; color:rgba(255,255,255,.72); line-height:1.65; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:14px 16px; }
+.copyright-accept-row { display:flex; align-items:flex-start; gap:10px; padding:14px 4px 0; }
+.copyright-accept-row input[type="checkbox"] { width:17px; height:17px; margin-top:2px; flex-shrink:0; accent-color:var(--gold); cursor:pointer; }
+.copyright-accept-row label { font-size:13px; color:rgba(255,255,255,.8); cursor:pointer; line-height:1.4; }
+
 @media(max-width:900px) { .date-nav { display:none; } .timeline-wrap { padding-right:0; } .masonry-item { height:180px; } }
 @media(max-width:600px) { .albums-grid { grid-template-columns:1fr 1fr; } .all-grid { grid-template-columns:1fr 1fr; } .masonry-item { height:140px; } .lb-nav-prev { left:-10px; } .lb-nav-next { right:-10px; } .cart-panel { width:100%; } }
   </style>
@@ -469,6 +480,7 @@
     <div class="lb-info">
       <div class="lb-info-left">
         <div class="lb-photo-title" id="lb-title"></div>
+        <div class="lb-copyright" id="lb-copyright" style="display:none">© MS Comm' — Crédit obligatoire</div>
         <div class="lb-photo-meta" id="lb-meta"></div>
       </div>
       <div class="lb-actions">
@@ -539,6 +551,34 @@
         </div>
         <p style="color:var(--muted);font-size:12.5px;background:rgba(255,255,255,.04);padding:10px 14px;border-radius:8px;border:1px solid var(--border)">Cette fonctionnalité est en cours de développement. Pour commander, contactez-nous en précisant la photo souhaitée.</p>
         <a href="contact.html" class="lb-btn lb-btn-dl" style="display:inline-flex;text-decoration:none">Contacter MS Comm'</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COPYRIGHT CONSENT MODAL ===== -->
+  <div class="g-overlay" id="copyright-modal">
+    <div class="g-modal" style="max-width:500px">
+      <div class="g-modal-hdr">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Droits d'auteur
+        </h3>
+        <button class="g-modal-close" id="copyright-modal-close">✕</button>
+      </div>
+      <div class="g-modal-body">
+        <div class="copyright-modal-text">
+          Les images présentées sur ce site sont protégées par le droit d'auteur.<br><br>
+          Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés.<br><br>
+          Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.
+        </div>
+        <div class="copyright-accept-row">
+          <input type="checkbox" id="copyright-accept-cb" />
+          <label for="copyright-accept-cb">J'ai lu et j'accepte les conditions d'utilisation ci-dessus</label>
+        </div>
+      </div>
+      <div class="g-modal-ftr">
+        <button class="btn-g-ghost" id="copyright-cancel-btn">Annuler</button>
+        <button class="btn-g-gold" id="copyright-confirm-btn" disabled>Télécharger</button>
       </div>
     </div>
   </div>
@@ -970,7 +1010,7 @@ function appendNextAlbumBatch() {
 
   const end   = Math.min(_albumCursor + ALBUM_PAGE_SIZE, photos.length);
   const chunk = photos.slice(_albumCursor, end);
-  const html  = chunk.map((p, i) => gridPhotoHTML(p, photos, _albumCursor + i)).join('');
+  const html  = chunk.map((p, i) => gridPhotoHTML(p, photos, _albumCursor + i, true)).join('');
   grid.insertAdjacentHTML('beforeend', html);
   observeLazyImages(grid);
 
@@ -998,7 +1038,7 @@ document.getElementById('back-albums-btn').addEventListener('click', () => {
   lbPhotos = allPhotos;
 });
 
-function gridPhotoHTML(p, arr, idx) {
+function gridPhotoHTML(p, arr, idx, hidePrice = false) {
   const imgSrc = resolveUrl(p.downloadType === 'free' ? p.previewUrl : p.watermarkedUrl);
   const isPaid = p.downloadType === 'paid';
   const dlIcon = p.downloadType === 'free'
@@ -1006,13 +1046,10 @@ function gridPhotoHTML(p, arr, idx) {
     : isPaid
       ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>`
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-  /* Once a visitor has paid, the "price" line turns into a subtle
-     "Télécharger" cue so they understand the photo is already unlocked
-     and can be downloaded directly from the lightbox. */
   const owned = isPaid && hasPurchasedPhoto(p.id);
   const dlText = owned
     ? 'Télécharger'
-    : (p.downloadType === 'free' ? 'Gratuit' : isPaid ? `${p.price}€` : 'Aperçu');
+    : (p.downloadType === 'free' ? 'Gratuit' : (isPaid && !hidePrice) ? `${p.price}€` : 'Aperçu');
   return `<div class="grid-photo" onclick="openLightbox(${idx})">
     <div class="grid-img" style="position:relative">
       ${ownedBadgeHTML(p)}
@@ -1020,6 +1057,7 @@ function gridPhotoHTML(p, arr, idx) {
     </div>
     <div class="grid-body">
       <div class="grid-title">${p.title}</div>
+      <div class="grid-copyright">© MS Comm'</div>
       <div class="grid-dl"${owned ? ' style="color:var(--gold-2);font-weight:600"' : ''}>${dlIcon}${dlText}</div>
     </div>
   </div>`;
@@ -1236,6 +1274,8 @@ function renderLightbox() {
   document.getElementById('lb-img').alt = p.title;
   document.getElementById('lb-counter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
   document.getElementById('lb-title').textContent = p.title;
+  const lbCopyright = document.getElementById('lb-copyright');
+  if (lbCopyright) lbCopyright.style.display = (p.downloadType === 'free-watermark') ? '' : 'none';
 
   const meta = [];
   if (p.width && p.height) meta.push(`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${p.width}×${p.height}</span>`);
@@ -1326,7 +1366,7 @@ function buildDlDropdown(p) {
      *  token is provided (see publicApi.js download routing matrix). */
     html += `<div class="dl-hint">Télécharger avec filigrane — gratuit :</div>`;
     html += resolutions.map(r => `
-      <div class="dl-opt" onclick="downloadPhoto('${p.id}','${p.ext}','${encodeURIComponent(p.title)}','${r.res}')">
+      <div class="dl-opt" onclick="downloadPhotoWatermarked('${p.id}','${p.ext}','${encodeURIComponent(p.title)}','${r.res}')">
         <div class="dl-opt-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           ${r.label} <small style="color:var(--muted);font-weight:400">(filigrane)</small>
@@ -1404,6 +1444,42 @@ function downloadPhoto(id, ext, title, resolution) {
   a.href = url; a.download = `${decodeURIComponent(title)}.jpg`; a.click();
   document.getElementById('lb-dl-dropdown').classList.add('hidden');
 }
+
+/* Copyright consent — shown once per day before watermarked downloads */
+let _pendingWatermarkDownload = null;
+
+function downloadPhotoWatermarked(id, ext, title, resolution) {
+  const today    = new Date().toISOString().slice(0, 10);
+  const accepted = localStorage.getItem('mscomm_copyright_date');
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+  if (accepted === today) {
+    downloadPhoto(id, ext, title, resolution);
+  } else {
+    _pendingWatermarkDownload = () => downloadPhoto(id, ext, title, resolution);
+    const modal = document.getElementById('copyright-modal');
+    document.getElementById('copyright-accept-cb').checked = false;
+    document.getElementById('copyright-confirm-btn').disabled = true;
+    modal.classList.add('open');
+  }
+}
+
+document.getElementById('copyright-accept-cb').addEventListener('change', function() {
+  document.getElementById('copyright-confirm-btn').disabled = !this.checked;
+});
+document.getElementById('copyright-confirm-btn').addEventListener('click', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  localStorage.setItem('mscomm_copyright_date', today);
+  document.getElementById('copyright-modal').classList.remove('open');
+  if (_pendingWatermarkDownload) { _pendingWatermarkDownload(); _pendingWatermarkDownload = null; }
+});
+document.getElementById('copyright-cancel-btn').addEventListener('click', () => {
+  document.getElementById('copyright-modal').classList.remove('open');
+  _pendingWatermarkDownload = null;
+});
+document.getElementById('copyright-modal-close').addEventListener('click', () => {
+  document.getElementById('copyright-modal').classList.remove('open');
+  _pendingWatermarkDownload = null;
+});
 
 document.getElementById('lb-share').addEventListener('click', () => {
   const url = window.location.href.split('?')[0] + '?photo=' + lbPhotos[lbIndex]?.id;
