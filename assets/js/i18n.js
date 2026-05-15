@@ -19,10 +19,42 @@
   const STORAGE_KEY = 'mscomm_lang';
 
   /* -----------------------------------------------------------------------
+   *  Charger les traductions depuis translations.json (éditable via admin).
+   *  Si le fetch échoue (hors ligne, fichier absent), on tombe sur le DICT
+   *  inline défini ci-dessous.
+   * --------------------------------------------------------------------- */
+  let _jsonLoaded = false;
+
+  async function _loadTranslationsJson() {
+    try {
+      const r = await fetch('/assets/data/translations.json', { cache: 'no-cache' });
+      if (!r.ok) return;
+      const data = await r.json();
+      /* Aplatir toutes les sections (sauf _meta) dans DICT */
+      Object.entries(data).forEach(([section, entries]) => {
+        if (section === '_meta' || typeof entries !== 'object') return;
+        Object.entries(entries).forEach(([fr, en]) => {
+          DICT[fr] = en;
+          /* normWS est défini plus bas dans le même IIFE — la closure fonctionne
+             car _loadTranslationsJson n'est appelé qu'après l'init complète. */
+          const norm = fr.replace(/\s+/g, ' ').trim();
+          DICT_NORM[norm] = en;
+        });
+      });
+      _jsonLoaded = true;
+      /* Re-appliquer la langue si déjà initialisé */
+      if (currentLang !== 'fr') setLang(currentLang);
+    } catch (e) {
+      /* Fallback silencieux sur le DICT inline */
+    }
+  }
+
+  /* -----------------------------------------------------------------------
    *  Dictionary: French → English
    *  Keys are the exact trimmed text content as it appears in the DOM.
    *  Matching is done after `.trim()` so leading/trailing whitespace from
    *  the HTML indentation is irrelevant.
+   *  Note: overridden at runtime by translations.json if available.
    * --------------------------------------------------------------------- */
   const DICT = {
     /* ═══ Navigation / topbar ═══ */
@@ -900,6 +932,10 @@
     buildSwitcher();
     setupObserver();
     setLang(currentLang);
+    /* Charger le JSON des traductions (éditables via admin) en arrière-plan.
+       Si la langue est EN, setLang est rappelé après le chargement pour
+       appliquer les éventuelles corrections. */
+    _loadTranslationsJson();
   }
 
   if (document.readyState === 'loading') {
