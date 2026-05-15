@@ -326,18 +326,18 @@
       <div class="topbar-inner">
         <a class="brand" href="index.html">
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
-          <div class="brand-text"><strong>MS Comm'</strong><span>Prestataire de services de communication</span></div>
+          <div class="brand-text"><strong>MS Comm'</strong><span data-i18n="nav.tagline">Prestataire de services de communication</span></div>
         </a>
         <nav class="nav">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html" class="active">Photographie</a>
-          <a href="contact.html">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" class="active" data-i18n="nav.photography">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </nav>
         <div style="display:flex;align-items:center;gap:10px">
-          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
           <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
@@ -346,38 +346,38 @@
     </div>
   </header>
   <div class="drawer" id="drawer">
-    <a href="index.html">Accueil</a>
-    <a href="experiences.html">Expériences</a>
-    <a href="services.html">Services</a>
-    <a href="portfolio.html">Portfolio</a>
-    <a href="photos.html">Photographie</a>
-    <a href="contact.html">Contact</a>
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
   <main>
     <section class="gal-hero"><div class="container">
       <h1>Galerie <span class="gold">Photo</span></h1>
-      <p>Photographies sportives, portraits et moments d'exception.</p>
+      <p data-i18n="photos.sub">Photographies sportives, portraits et moments d'exception.</p>
     </div></section>
 
     <section class="container" style="padding-bottom:80px">
       <div class="gal-controls">
         <div class="gal-controls-top">
           <div class="gal-tabs">
-            <button class="gal-tab active" data-view="timeline">Galerie</button>
-            <button class="gal-tab" data-view="albums">Albums</button>
-            <button class="gal-tab" data-view="faces">Visages</button>
+            <button class="gal-tab active" data-view="timeline" data-i18n="photos.tab.gallery">Galerie</button>
+            <button class="gal-tab" data-view="albums" data-i18n="photos.tab.albums">Albums</button>
+            <button class="gal-tab" data-view="faces" data-i18n="photos.tab.faces">Visages</button>
             <button class="gal-tab" data-view="purchased" id="tab-purchased" style="display:none">
               Mes achats <span id="tab-purchased-count" class="gal-tab-badge"></span>
             </button>
           </div>
           <button class="btn-private-album" id="btn-private">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Album privé
+            <span data-i18n="photos.private.btn">Album privé</span>
           </button>
         </div>
         <div class="gal-search-row" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:760px;margin:0 auto">
-          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." style="flex:1;min-width:240px" />
+          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." data-i18n-placeholder="photos.search.ph" style="flex:1;min-width:240px" />
           <select class="gal-search" id="gal-album-filter" style="max-width:220px;cursor:pointer" aria-label="Filtrer par album">
             <option value="">Tous les albums</option>
             <option value="none">Sans album</option>
@@ -402,7 +402,7 @@
         </div>
         <div class="gal-empty hidden" id="albums-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <p>Aucun album disponible.</p>
+          <p data-i18n="photos.empty.albums">Aucun album disponible.</p>
         </div>
       </div>
 
@@ -414,7 +414,7 @@
         </div>
         <div class="gal-empty hidden" id="timeline-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-          <p>Aucune photo publique pour l'instant.</p>
+          <p data-i18n="photos.empty.timeline">Aucune photo publique pour l'instant.</p>
         </div>
       </div>
 

@@ -24,21 +24,28 @@
    *  inline défini ci-dessous.
    * --------------------------------------------------------------------- */
   let _jsonLoaded = false;
+  let _i18nData = {}; /* key → { fr, en } — populated from translations.json _i18n section */
 
   async function _loadTranslationsJson() {
     try {
       const r = await fetch('/assets/data/translations.json?_=' + Date.now(), { cache: 'no-store' });
       if (!r.ok) return;
       const data = await r.json();
-      /* Aplatir toutes les sections (sauf _meta et _fr_overrides) dans DICT */
+      /* Aplatir toutes les sections (sauf _meta, _fr_overrides, _i18n) dans DICT */
       Object.entries(data).forEach(([section, entries]) => {
-        if (section === '_meta' || section === '_fr_overrides' || typeof entries !== 'object') return;
+        if (section === '_meta' || section === '_fr_overrides' || section === '_i18n' || typeof entries !== 'object') return;
         Object.entries(entries).forEach(([fr, en]) => {
           DICT[fr] = en;
           const norm = fr.replace(/\s+/g, ' ').trim();
           DICT_NORM[norm] = en;
         });
       });
+      /* Charger la section _i18n : clés sémantiques → { fr, en } */
+      if (data._i18n && typeof data._i18n === 'object') {
+        Object.entries(data._i18n).forEach(([key, val]) => {
+          if (val && typeof val === 'object') _i18nData[key] = val;
+        });
+      }
       /* Charger les overrides FR (textes visibles par les visiteurs francophones) */
       if (data._fr_overrides && typeof data._fr_overrides === 'object') {
         Object.entries(data._fr_overrides).forEach(([orig, display]) => {
@@ -47,7 +54,7 @@
         });
       }
       _jsonLoaded = true;
-      /* Re-appliquer la langue : traductions EN + overrides FR */
+      /* Re-appliquer la langue : data-i18n + traductions EN + overrides FR */
       setLang(currentLang);
     } catch (e) {
       /* Fallback silencieux sur le DICT inline */
@@ -686,6 +693,8 @@
          uppercase when HTML element). We uppercase-compare above; also
          handle namespaced SVG text by checking namespace. */
       if (p.namespaceURI && p.namespaceURI.indexOf('svg') !== -1) return true;
+      /* Skip text nodes inside [data-i18n] elements — applyDataI18n handles those */
+      if (p.hasAttribute && p.hasAttribute('data-i18n')) return true;
       p = p.parentNode;
     }
     return false;
@@ -918,6 +927,51 @@
   }
 
   /* -----------------------------------------------------------------------
+   *  Apply data-i18n / data-i18n-placeholder / data-i18n-aria attributes.
+   *  This is the primary translation system for statically tagged elements.
+   *  walkAndTranslate handles dynamic/legacy content; shouldSkip() prevents
+   *  it from overwriting what we set here.
+   * --------------------------------------------------------------------- */
+  function applyDataI18n(root, lang) {
+    if (!root || !Object.keys(_i18nData).length) return;
+    const els = [];
+    if (root.nodeType === 1 && root.hasAttribute) {
+      if (root.hasAttribute('data-i18n') || root.hasAttribute('data-i18n-placeholder') || root.hasAttribute('data-i18n-aria')) {
+        els.push(root);
+      }
+      if (root.querySelectorAll) {
+        root.querySelectorAll('[data-i18n],[data-i18n-placeholder],[data-i18n-aria]').forEach(el => els.push(el));
+      }
+    }
+    els.forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        const entry = _i18nData[key];
+        if (entry) {
+          const text = entry[lang] !== undefined ? entry[lang] : entry['fr'];
+          if (text !== undefined && el.textContent !== text) el.textContent = text;
+        }
+      }
+      const pKey = el.getAttribute('data-i18n-placeholder');
+      if (pKey) {
+        const entry = _i18nData[pKey];
+        if (entry) {
+          const text = entry[lang] !== undefined ? entry[lang] : entry['fr'];
+          if (text !== undefined) el.setAttribute('placeholder', text);
+        }
+      }
+      const aKey = el.getAttribute('data-i18n-aria');
+      if (aKey) {
+        const entry = _i18nData[aKey];
+        if (entry) {
+          const text = entry[lang] !== undefined ? entry[lang] : entry['fr'];
+          if (text !== undefined) el.setAttribute('aria-label', text);
+        }
+      }
+    });
+  }
+
+  /* -----------------------------------------------------------------------
    *  Public entry point
    * --------------------------------------------------------------------- */
   function setLang(lang) {
@@ -931,6 +985,7 @@
     try {
       translateDocumentChrome(currentLang);
       if (document.body) {
+        applyDataI18n(document.body, currentLang);
         walkAndTranslate(document.body, currentLang);
         /* Apply admin-defined FR overrides (even in FR mode) */
         if (Object.keys(FR_OVERRIDES).length > 0) applyFrOverrides(document.body);
@@ -951,12 +1006,14 @@
          it generates — we're already translating everything synchronously. */
       if (_translating) return;
       const hasFrOverrides = Object.keys(FR_OVERRIDES).length > 0;
-      if (currentLang === 'fr' && !hasFrOverrides) return;
+      const hasI18nData = Object.keys(_i18nData).length > 0;
+      if (currentLang === 'fr' && !hasFrOverrides && !hasI18nData) return;
       for (const m of mutations) {
         if (m.type === 'childList') {
           m.addedNodes.forEach((n) => {
+            if (hasI18nData) applyDataI18n(n, currentLang);
             if (currentLang !== 'fr') walkAndTranslate(n, currentLang);
-            else applyFrOverrides(n); /* currentLang==='fr' && hasFrOverrides (guaranteed) */
+            else if (hasFrOverrides) applyFrOverrides(n);
           });
         } else if (m.type === 'characterData') {
           if (currentLang !== 'fr') translateTextNode(m.target, currentLang);

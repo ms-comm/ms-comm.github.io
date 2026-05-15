@@ -78,19 +78,19 @@
           <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
           <div class="brand-text">
             <strong>MS Comm'</strong>
-            <span>Prestataire de services de communication</span>
+            <span data-i18n="nav.tagline">Prestataire de services de communication</span>
           </div>
         </a>
         <nav class="nav">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html">Photographie</a>
-          <a href="contact.html" class="active">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+          <a href="contact.html" class="active" data-i18n="nav.contact">Contact</a>
         </nav>
         <div style="display:flex;align-items:center;gap:10px">
-          <a class="nav-cta" href="contact.html">Demander un devis</a>
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
           <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
@@ -100,19 +100,19 @@
   </header>
 
   <div class="drawer" id="drawer">
-    <a href="index.html">Accueil</a>
-    <a href="experiences.html">Expériences</a>
-    <a href="services.html">Services</a>
-    <a href="portfolio.html">Portfolio</a>
-    <a href="photos.html">Photographie</a>
-    <a href="contact.html">Contact</a>
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
   <main>
 
     <div class="page-header">
       <h1>Me <span class="gold">Contacter</span></h1>
-      <p>Et si on écrivait la suite ensemble ? <br>Décrivez votre projet et je vous répondrai rapidement.</p>
+      <p><span data-i18n="contact.page.sub1">Et si on écrivait la suite ensemble ?</span> <br><span data-i18n="contact.page.sub2">Décrivez votre projet et je vous répondrai rapidement.</span></p>
       <div id="packBanner" class="pack-banner" style="display:none"></div>
     </div>
 
@@ -160,32 +160,32 @@
               <div class="contact-detail-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/></svg>
               </div>
-              <span>Paris · Montpellier · France</span>
+              <span data-i18n="contact.location">Paris · Montpellier · France</span>
             </div>
 
           </div>
 
           <!-- Formulaire -->
           <div class="contact-form reveal-right">
-            <h3>Envoyer un message</h3>
+            <h3 data-i18n="contact.form.title">Envoyer un message</h3>
             <form id="contactForm">
               <label>
-                Nom
-                <input name="name" autocomplete="name" placeholder="Votre nom" required />
+                <span data-i18n="contact.form.name.label">Nom</span>
+                <input name="name" autocomplete="name" placeholder="Votre nom" data-i18n-placeholder="contact.form.name.ph" required />
               </label>
               <label>
-                Email
-                <input name="email" type="email" autocomplete="email" placeholder="votre@email.com" required />
+                <span data-i18n="contact.form.email.label">Email</span>
+                <input name="email" type="email" autocomplete="email" placeholder="votre@email.com" data-i18n-placeholder="contact.form.email.ph" required />
               </label>
               <label>
-                Sujet
-                <input name="subject" placeholder="Ex : Demande de devis Pack Sportif" />
+                <span data-i18n="contact.form.subject.label">Sujet</span>
+                <input name="subject" placeholder="Ex : Demande de devis Pack Sportif" data-i18n-placeholder="contact.form.subject.ph" />
               </label>
               <label>
-                Message
-                <textarea name="message" placeholder="Décrivez votre projet, vos objectifs, délais et budget estimé..." required></textarea>
+                <span data-i18n="contact.form.message.label">Message</span>
+                <textarea name="message" placeholder="Décrivez votre projet, vos objectifs, délais et budget estimé..." data-i18n-placeholder="contact.form.message.ph" required></textarea>
               </label>
-              <button class="btn btn-gold" type="submit" style="width:100%">Envoyer le message</button>
+              <button class="btn btn-gold" type="submit" style="width:100%" data-i18n="contact.form.submit">Envoyer le message</button>
               <div id="formHint" style="font-size:12px;color:var(--muted-2);text-align:center" aria-live="polite"></div>
             </form>
           </div>
@@ -216,7 +216,7 @@
         <div class="section-header reveal">
           <div class="section-line"></div>
           <h2>Suivez <span class="gold">MS Comm'</span></h2>
-          <p>Retrouvez mes dernières créations et actualités sur les réseaux sociaux.</p>
+          <p data-i18n="contact.socials.sub">Retrouvez mes dernières créations et actualités sur les réseaux sociaux.</p>
           <div style="margin-top:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
             <a class="btn btn-outline-gold" href="https://www.instagram.com/ms_communication_france/" target="_blank" rel="noopener">Instagram — MS Comm'</a>
             <a class="btn btn-outline-gold" href="https://www.instagram.com/melododo2001/" target="_blank" rel="noopener">Instagram — Melody Sok</a>
@@ -238,12 +238,12 @@
           <span>MS Comm'</span>
         </div>
         <div class="footer-links">
-          <a href="index.html">Accueil</a>
-          <a href="experiences.html">Expériences</a>
-          <a href="services.html">Services</a>
-          <a href="portfolio.html">Portfolio</a>
-          <a href="photos.html">Photographie</a>
-          <a href="contact.html">Contact</a>
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </div>
         <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
       </div>
