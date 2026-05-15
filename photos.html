@@ -891,8 +891,6 @@ function renderAlbums() {
   const grid = document.getElementById('albums-grid');
   grid.innerHTML = albums.map(a => {
     const isPrivate = a.type === 'private';
-    const typeLabel = isPrivate ? 'Privé' : a.type === 'paid' ? 'Payant' : 'Public';
-    const typeClass = isPrivate ? 'badge-priv' : a.type === 'paid' ? 'badge-paid-t' : 'badge-pub';
     const clickFn  = isPrivate ? `openPrivateAlbum('${a.id}')` : `openAlbum('${a.id}')`;
     const lockBadge = isPrivate ? `<div class="album-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>` : '';
     const coverPh = `<div class="album-cover-ph">${isPrivate
@@ -909,7 +907,7 @@ function renderAlbums() {
       </div>
       <div class="album-body">
         <div class="album-name">${a.name}</div>
-        <div class="album-info"><span class="album-count">${a.photoCount} photo${a.photoCount>1?'s':''}</span><span class="${typeClass}" style="margin-left:8px">${typeLabel}</span></div>
+        <div class="album-info"><span class="album-count">${a.photoCount} photo${a.photoCount>1?'s':''}</span></div>
       </div>
     </div>`;
   }).join('');
