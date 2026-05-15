@@ -1057,7 +1057,6 @@ function gridPhotoHTML(p, arr, idx, hidePrice = false) {
     </div>
     <div class="grid-body">
       <div class="grid-title">${p.title}</div>
-      <div class="grid-copyright">Les images présentées sur ce site sont protégées par le droit d'auteur. Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés. Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.</div>
       <div class="grid-dl"${owned ? ' style="color:var(--gold-2);font-weight:600"' : ''}>${dlIcon}${dlText}</div>
     </div>
   </div>`;
@@ -1395,6 +1394,9 @@ function buildDlDropdown(p) {
         <span class="dl-opt-res">${r.sub}</span>
       </div>`).join('');
   } else {
+    if (hasToken) {
+      html += `<div class="dl-hint">Sans filigrane (acheté) :</div>`;
+    }
     html += resolutions.map(r => `
       <div class="dl-opt" onclick="downloadPhoto('${p.id}','${p.ext}','${encodeURIComponent(p.title)}','${r.res}')">
         <div class="dl-opt-label">
@@ -1403,6 +1405,18 @@ function buildDlDropdown(p) {
         </div>
         <span class="dl-opt-res">${r.sub}</span>
       </div>`).join('');
+    if (hasToken) {
+      html += `<div class="dl-sep"></div>
+      <div class="dl-hint">Avec filigrane (gratuit) :</div>`;
+      html += resolutions.map(r => `
+      <div class="dl-opt" onclick="downloadPhotoWatermarked('${p.id}','${p.ext}','${encodeURIComponent(p.title)}','${r.res}')">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          ${r.label} <small style="color:var(--muted);font-weight:400">(filigrane)</small>
+        </div>
+        <span class="dl-opt-res">${r.sub}</span>
+      </div>`).join('');
+    }
   }
 
   if (pubSettings.printEnabled !== false) {
