@@ -30,20 +30,25 @@
       const r = await fetch('/assets/data/translations.json?_=' + Date.now(), { cache: 'no-store' });
       if (!r.ok) return;
       const data = await r.json();
-      /* Aplatir toutes les sections (sauf _meta) dans DICT */
+      /* Aplatir toutes les sections (sauf _meta et _fr_overrides) dans DICT */
       Object.entries(data).forEach(([section, entries]) => {
-        if (section === '_meta' || typeof entries !== 'object') return;
+        if (section === '_meta' || section === '_fr_overrides' || typeof entries !== 'object') return;
         Object.entries(entries).forEach(([fr, en]) => {
           DICT[fr] = en;
-          /* normWS est défini plus bas dans le même IIFE — la closure fonctionne
-             car _loadTranslationsJson n'est appelé qu'après l'init complète. */
           const norm = fr.replace(/\s+/g, ' ').trim();
           DICT_NORM[norm] = en;
         });
       });
+      /* Charger les overrides FR (textes visibles par les visiteurs francophones) */
+      if (data._fr_overrides && typeof data._fr_overrides === 'object') {
+        Object.entries(data._fr_overrides).forEach(([orig, display]) => {
+          FR_OVERRIDES[orig.trim()]  = display;
+          FR_OVERRIDES_NORM[normWS(orig)] = display;
+        });
+      }
       _jsonLoaded = true;
-      /* Re-appliquer la langue si déjà initialisé */
-      if (currentLang !== 'fr') setLang(currentLang);
+      /* Re-appliquer la langue : traductions EN + overrides FR */
+      setLang(currentLang);
     } catch (e) {
       /* Fallback silencieux sur le DICT inline */
     }
@@ -632,6 +637,12 @@
   const normWS = (s) => s.replace(/\s+/g, ' ').trim();
   const DICT_NORM = Object.create(null);
   for (const k in DICT) DICT_NORM[normWS(k)] = DICT[k];
+
+  /* FR overrides: admin-editable display text for French visitors.
+     Populated by _loadTranslationsJson from _fr_overrides section. */
+  const FR_OVERRIDES      = Object.create(null);
+  const FR_OVERRIDES_NORM = Object.create(null);
+
   function lookup(original) {
     const trimmed = original.trim();
     if (DICT[trimmed] !== undefined) return DICT[trimmed];
@@ -766,6 +777,48 @@
   }
 
   /* -----------------------------------------------------------------------
+   *  Apply FR overrides to a single text node (helper).
+   * --------------------------------------------------------------------- */
+  function applyFrOverrideToNode(n) {
+    if (!nodeOriginals.has(n)) nodeOriginals.set(n, n.nodeValue);
+    const orig    = nodeOriginals.get(n);
+    const trimmed = orig.trim();
+    if (!trimmed) return;
+    const override = FR_OVERRIDES[trimmed] !== undefined
+      ? FR_OVERRIDES[trimmed]
+      : FR_OVERRIDES_NORM[normWS(orig)];
+    if (override === undefined) return;
+    const lead  = orig.match(/^\s*/)[0];
+    const trail = orig.match(/\s*$/)[0];
+    const target = lead + override + trail;
+    if (n.nodeValue !== target) n.nodeValue = target;
+  }
+
+  /* Walk a subtree and apply admin-defined FR overrides (even in FR mode). */
+  function applyFrOverrides(root) {
+    if (!root) return;
+    if (root.nodeType === 3) {
+      if (!shouldSkip(root)) applyFrOverrideToNode(root);
+      return;
+    }
+    if (root.nodeType !== 1) return;
+    if (SKIP_TAGS.has(root.tagName)) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => {
+        let p = n.parentNode;
+        while (p && p.nodeType === 1) {
+          if (SKIP_TAGS.has(p.tagName)) return NodeFilter.FILTER_REJECT;
+          if (p.namespaceURI && p.namespaceURI.indexOf('svg') !== -1) return NodeFilter.FILTER_REJECT;
+          p = p.parentNode;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let n = walker.nextNode();
+    while (n) { applyFrOverrideToNode(n); n = walker.nextNode(); }
+  }
+
+  /* -----------------------------------------------------------------------
    *  Document-level bits: <title>, meta description, html lang
    * --------------------------------------------------------------------- */
   function translateDocumentChrome(lang) {
@@ -877,7 +930,11 @@
     _translating = true;
     try {
       translateDocumentChrome(currentLang);
-      if (document.body) walkAndTranslate(document.body, currentLang);
+      if (document.body) {
+        walkAndTranslate(document.body, currentLang);
+        /* Apply admin-defined FR overrides (even in FR mode) */
+        if (Object.keys(FR_OVERRIDES).length > 0) applyFrOverrides(document.body);
+      }
     } finally {
       _translating = false;
     }
@@ -893,12 +950,16 @@
       /* While `setLang` is mutating the DOM on purpose, ignore the records
          it generates — we're already translating everything synchronously. */
       if (_translating) return;
-      if (currentLang === 'fr') return; /* Nothing to do in FR mode */
+      const hasFrOverrides = Object.keys(FR_OVERRIDES).length > 0;
+      if (currentLang === 'fr' && !hasFrOverrides) return;
       for (const m of mutations) {
         if (m.type === 'childList') {
-          m.addedNodes.forEach((n) => walkAndTranslate(n, currentLang));
+          m.addedNodes.forEach((n) => {
+            if (currentLang !== 'fr') walkAndTranslate(n, currentLang);
+            else applyFrOverrides(n); /* currentLang==='fr' && hasFrOverrides (guaranteed) */
+          });
         } else if (m.type === 'characterData') {
-          translateTextNode(m.target, currentLang);
+          if (currentLang !== 'fr') translateTextNode(m.target, currentLang);
         } else if (m.type === 'attributes' && m.target && ATTRS_TO_TRANSLATE.indexOf(m.attributeName) !== -1) {
           const el = m.target;
           const attr = m.attributeName;
