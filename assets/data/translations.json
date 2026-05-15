@@ -2,29 +2,29 @@
   "_meta": {
     "version": "1",
     "sections": {
-      "navigation":      "Navigation",
-      "footer":          "Pied de page",
-      "faces":           "Galerie — Visages",
-      "connectors":      "Mots-clés / connecteurs",
-      "index_hero":      "Accueil — Héro",
-      "index_stats":     "Accueil — Statistiques",
-      "index_about":     "Accueil — À propos",
-      "index_skills":    "Accueil — Compétences",
-      "index_sections":  "Accueil — En-têtes de sections",
-      "index_services":  "Accueil — Aperçu services",
-      "index_cta":       "Accueil — CTA final",
-      "services":        "Services & Tarifs",
-      "portfolio":       "Portfolio",
-      "experiences":     "Expériences",
-      "contact":         "Contact",
-      "photos":          "Galerie Photo",
-      "checkout":        "Paiement",
-      "titles":          "Titres de pages (<title>)",
-      "meta":            "Méta-descriptions",
-      "misc":            "Divers"
-    }
+      "navigation": "Navigation",
+      "footer": "Pied de page",
+      "faces": "Galerie — Visages",
+      "connectors": "Mots-clés / connecteurs",
+      "index_hero": "Accueil — Héro",
+      "index_stats": "Accueil — Statistiques",
+      "index_about": "Accueil — À propos",
+      "index_skills": "Accueil — Compétences",
+      "index_sections": "Accueil — En-têtes de sections",
+      "index_services": "Accueil — Aperçu services",
+      "index_cta": "Accueil — CTA final",
+      "services": "Services & Tarifs",
+      "portfolio": "Portfolio",
+      "experiences": "Expériences",
+      "contact": "Contact",
+      "photos": "Galerie Photo",
+      "checkout": "Paiement",
+      "titles": "Titres de pages (<title>)",
+      "meta": "Méta-descriptions",
+      "misc": "Divers"
+    },
+    "updatedAt": "2026-05-15T10:01:39.807Z"
   },
-
   "navigation": {
     "Prestataire de services de communication": "Communication services provider",
     "Accueil": "Home",
@@ -36,13 +36,11 @@
     "Demander un devis": "Request a quote",
     "Menu": "Menu"
   },
-
   "footer": {
     "MS Comm' — Melody. Tous droits réservés.": "MS Comm' — Melody. All rights reserved.",
     "MS Comm' — Tous droits réservés": "MS Comm' — All rights reserved",
     "Retour en haut": "Back to top"
   },
-
   "faces": {
     "Galerie": "Gallery",
     "Albums": "Albums",
@@ -57,7 +55,6 @@
     "← Précédent": "← Previous",
     "Suivant →": "Next →"
   },
-
   "connectors": {
     "Mes": "My",
     "Mon": "My",
@@ -85,7 +82,6 @@
     "spéciaux": "special",
     "sur mesure": "tailored"
   },
-
   "index_hero": {
     "Melody": "Melody",
     "Votre image,": "Your image,",
@@ -96,26 +92,23 @@
     "Découvrir mes services": "Discover my services",
     "Parlons de votre projet": "Let's talk about your project"
   },
-
   "index_stats": {
+    "6": "6",
     "4+": "4+",
     "Années d'expérience": "Years of experience",
-    "6": "6",
     "Projets marquants": "Notable projects",
     "24h / 48h": "24h / 48h",
     "Réactivité": "Response time",
     "100%": "100%",
     "Créativité & passion": "Creativity & passion"
   },
-
   "index_about": {
     "Bienvenue chez": "Welcome to",
-    "Je suis Melody. Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "I'm Melody. For 4 years, I've been helping brands, sports clubs, athletes and entrepreneurs develop communication that reflects who they are and attracts their audience.",
     "Passionnée de création, je mets mon expertise au service de votre image pour vous aider\n              à vous démarquer et à faire grandir vos projets.": "Passionate about creation, I put my expertise at the service of your image to help you stand out and grow your projects.",
     "Mon objectif ? Vous faire briller, quel que soit votre univers : sport, musique, restauration, beauté…": "My goal? To make you shine, whatever your world: sport, music, food, beauty…",
-    "Et j'ai à cœur de construire des collaborations durables, basées sur la confiance et des résultats concrets.": "And I'm committed to building lasting collaborations based on trust and concrete results."
+    "Et j'ai à cœur de construire des collaborations durables, basées sur la confiance et des résultats concrets.": "And I'm committed to building lasting collaborations based on trust and concrete results.",
+    "Je suis Melod. Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "I'm Melody. For 4 years, I've been helping brands, sports clubs, athletes and entrepreneurs develop communication that reflects who they are and attracts their audience."
   },
-
   "index_skills": {
     "Réseaux sociaux": "Social media",
     "Montage vidéo": "Video editing",
@@ -123,7 +116,6 @@
     "Création de contenu": "Content creation",
     "Événementiel": "Events"
   },
-
   "index_sections": {
     "4 ans de projets dans le sport, les médias, et l'événementiel.": "4 years of projects in sport, media and events.",
     "4 ans de projets marquants dans le sport, les médias et l'événementiel.": "4 years of notable projects in sport, media and events.",
@@ -183,7 +175,6 @@
     "Voir mes services": "See my services",
     "Voir la galerie photo complète →": "See the full photo gallery →"
   },
-
   "index_services": {
     "À la carte": "À la carte",
     "dès 10€": "from €10",
@@ -205,14 +196,12 @@
     "Pack Restaurant": "Restaurant Pack",
     "Pack Événement": "Event Pack"
   },
-
   "index_cta": {
     "Prêt·e à": "Ready to",
     "Décrivez votre projet et je vous répondrai rapidement. Ensemble, faisons rayonner votre image.": "Describe your project and I'll reply quickly. Together, let's make your image shine.",
     "Me contacter": "Contact me",
     "Suivre sur Instagram": "Follow on Instagram"
   },
-
   "services": {
     "Des solutions adaptées à chaque univers — sport, musique, restauration, beauté et plus encore.": "Solutions tailored to every world — sport, music, food, beauty and more.",
     "Prestations": "Services",
@@ -279,7 +268,6 @@
     "Une question ?": "A question?",
     "Tarifs indicatifs et personnalisables — contactez-moi pour un devis sur mesure.": "Indicative and customisable pricing — contact me for a tailored quote."
   },
-
   "portfolio": {
     "Print": "Print",
     "Affiches de matchs, stories, contenus jour de compétition et réseaux sociaux.": "Match posters, stories, competition-day content and social media.",
@@ -329,7 +317,6 @@
     "Paysage": "Landscape",
     "Fermer": "Close"
   },
-
   "experiences": {
     "Templates, cartes de visite, cartes de fidélité, chartes graphiques, flyers, affiches,\n              carte de restaurant, photos, réels…": "Templates, business cards, loyalty cards, brand guidelines, flyers, posters, restaurant menus, photos, reels…",
     "Projets d'accompagnement sur le long terme comme la gestion de réseaux sociaux": "Long-term support projects such as social media management",
@@ -356,7 +343,6 @@
     "Envie de": "Want to",
     "Découvrez mes services ou contactez-moi pour discuter de votre projet.": "Discover my services or contact me to discuss your project."
   },
-
   "contact": {
     "Et si on écrivait la suite ensemble ?": "Shall we write the next chapter together?",
     "Décrivez votre projet et je vous répondrai rapidement.": "Describe your project and I'll reply quickly.",
@@ -387,7 +373,6 @@
     "Carte de visite recto": "Business card front",
     "Carte de visite verso": "Business card back"
   },
-
   "photos": {
     "Photo": "Photo",
     "Photographies sportives, portraits et moments d'exception.": "Sports photography, portraits and exceptional moments.",
@@ -431,7 +416,6 @@
     "Le serveur photo n'est pas disponible — démarrez": "The photo server is not available — start",
     "dans": "in"
   },
-
   "checkout": {
     "Récapitulatif & Paiement": "Summary & Payment",
     "Récapitulatif &": "Summary &",
@@ -458,7 +442,6 @@
     "Votre sélection": "Your selection",
     "Aucun article.": "No item."
   },
-
   "titles": {
     "MS Comm' | Communication Sportive, Média & Événementiel Paris | Melody": "MS Comm' | Sports, Media & Events Communication in Paris | Melody",
     "Services & Tarifs Communication Sportive | MS Comm' Paris | Melody": "Services & Pricing — Sports Communication | MS Comm' Paris | Melody",
@@ -468,7 +451,6 @@
     "MS Comm' | Galerie Photo — Photographie Sportive & Événementielle": "MS Comm' | Photo Gallery — Sports & Event Photography",
     "MS Comm' — Récapitulatif & Paiement": "MS Comm' — Summary & Payment"
   },
-
   "meta": {
     "MS Comm' - Spécialiste en communication sportive, média et événementiel à Paris. Création de contenu, réseaux sociaux, photographie sportive, vidéo événementielle, identité visuelle pour clubs sportifs, athlètes et marques.": "MS Comm' — Sports, media and events communication specialist in Paris. Content creation, social media, sports photography, event video, visual identity for sports clubs, athletes and brands.",
     "Services MS Comm' Paris : templates réseaux sociaux sportifs, charte graphique club, photographie sportive, vidéo événementielle, accompagnement communication sportive. Tarifs compétitifs pour clubs et athlètes.": "MS Comm' Paris services: sports social media templates, club brand guidelines, sports photography, event video, sports communication support. Competitive pricing for clubs and athletes.",
@@ -477,7 +459,6 @@
     "Contactez MS Comm' Paris pour vos projets de communication sportive, média et événementiel. Services pour clubs sportifs, athlètes, événements sportifs. Devis personnalisé.": "Contact MS Comm' Paris for your sports, media and event communication projects. Services for sports clubs, athletes, sporting events. Tailored quote.",
     "Découvrez la galerie photo de MS Comm' : photographies sportives, portraits, événements. Téléchargement disponible. Accès galerie privée pour les clients.": "Discover MS Comm's photo gallery: sports photography, portraits, events. Download available. Private gallery access for clients."
   },
-
   "misc": {
     "Créatrice de contenu": "Content Creator",
     "Couverture": "Coverage",
