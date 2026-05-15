@@ -27,7 +27,7 @@
 
   async function _loadTranslationsJson() {
     try {
-      const r = await fetch('/assets/data/translations.json', { cache: 'no-cache' });
+      const r = await fetch('/assets/data/translations.json?_=' + Date.now(), { cache: 'no-store' });
       if (!r.ok) return;
       const data = await r.json();
       /* Aplatir toutes les sections (sauf _meta) dans DICT */
