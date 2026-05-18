@@ -1337,6 +1337,44 @@ document.addEventListener('click', (e) => {
 });
 
 function buildDlDropdown(p) {
+  /* ── Private-album unlocked path ─────────────────────────────────────
+   *  The visitor proved they hold the album code → every photo in this
+   *  album becomes freely downloadable, with or without watermark. The
+   *  album code rides on the download URL so the backend re-validates it
+   *  on every request (no session state required). */
+  if (p._albumCode) {
+    const sub = p.width && p.height ? `${p.width}×${p.height}` : 'Pleine résolution';
+    let html = `<div class="dl-hint">Sans filigrane :</div>
+      <div class="dl-opt" onclick="downloadPrivateAlbumPhoto('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p._albumCode)}',0)">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Original
+        </div>
+        <span class="dl-opt-res">${sub}</span>
+      </div>
+      <div class="dl-sep"></div>
+      <div class="dl-hint">Avec filigrane :</div>
+      <div class="dl-opt" onclick="downloadPrivateAlbumPhoto('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p._albumCode)}',1)">
+        <div class="dl-opt-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Original <small style="color:var(--muted);font-weight:400">(filigrane)</small>
+        </div>
+        <span class="dl-opt-res">${sub}</span>
+      </div>`;
+    if (pubSettings.printEnabled !== false) {
+      html += `<div class="dl-sep"></div>
+        <div class="dl-opt dl-opt-print" onclick="openPrintModalAndClose()">
+          <div class="dl-opt-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimer
+          </div>
+          <span class="dl-opt-res">${pubSettings.printPrice || 10}€</span>
+        </div>`;
+    }
+    document.getElementById('lb-dl-dropdown').innerHTML = html;
+    return;
+  }
+
   const withWm  = p.downloadType === 'free-watermark';
   const paid    = p.downloadType === 'paid';
   const tokens  = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
@@ -1449,6 +1487,13 @@ document.getElementById('lb-dl-btn').addEventListener('click', (e) => {
 });
 document.getElementById('lb-dl-dropdown').addEventListener('click', e => e.stopPropagation());
 document.addEventListener('click', () => document.getElementById('lb-dl-dropdown').classList.add('hidden'));
+
+function downloadPrivateAlbumPhoto(id, title, code, wm) {
+  const url = `${API}/api/public/photos/${id}/download?resolution=original&albumCode=${code}&wm=${wm}`;
+  const a = document.createElement('a');
+  a.href = url; a.download = `${decodeURIComponent(title)}.jpg`; a.click();
+  document.getElementById('lb-dl-dropdown').classList.add('hidden');
+}
 
 function downloadPhoto(id, ext, title, resolution) {
   const tokens = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
@@ -1680,11 +1725,14 @@ async function submitCode() {
     }
     const found = await res.json();
     closeAccessModal();
+    /* Tag each photo with the unlock code so the lightbox can offer free
+       downloads (with or without watermark) for the duration of this session. */
     const privatePhotos = (found.photos || []).map(p => ({
       ...p,
       downloadType: p.downloadType || 'free-watermark',
       watermarkedUrl: p.watermarkedUrl || `/storage/watermarked/${p.id}.jpg`,
-      previewUrl: p.previewUrl || `/storage/previews/${p.id}.jpg`
+      previewUrl: p.previewUrl || `/storage/previews/${p.id}.jpg`,
+      _albumCode: code
     }));
     lbPhotos = privatePhotos;
     document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
