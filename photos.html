@@ -1738,9 +1738,11 @@ async function submitCode() {
     document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
     document.getElementById('albums-grid').style.display = 'none';
     document.getElementById('album-photos-section').classList.remove('hidden');
-    document.getElementById('album-photos-grid').innerHTML = privatePhotos.length
+    const grid = document.getElementById('album-photos-grid');
+    grid.innerHTML = privatePhotos.length
       ? privatePhotos.map((p, i) => gridPhotoHTML(p, privatePhotos, i)).join('')
       : '<p style="color:var(--muted);grid-column:1/-1">Aucune photo dans cet album.</p>';
+    observeLazyImages(grid);
     document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));
     document.getElementById('view-albums').classList.remove('hidden');
     document.getElementById('view-timeline').classList.add('hidden');
