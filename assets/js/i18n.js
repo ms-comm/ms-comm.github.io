@@ -735,8 +735,6 @@
          uppercase when HTML element). We uppercase-compare above; also
          handle namespaced SVG text by checking namespace. */
       if (p.namespaceURI && p.namespaceURI.indexOf('svg') !== -1) return true;
-      /* Skip text nodes inside [data-i18n] elements — applyDataI18n handles those */
-      if (p.hasAttribute && p.hasAttribute('data-i18n')) return true;
       p = p.parentNode;
     }
     return false;
