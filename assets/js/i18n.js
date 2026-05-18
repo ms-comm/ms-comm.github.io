@@ -1104,10 +1104,31 @@
     boot();
   }
 
-  /* Expose a tiny API for debugging / manual override from console. */
+  /* Expose a debugging API for the browser console.
+     Useful when admin edits don't seem to apply — open DevTools and inspect:
+       MSCommI18n.dict          → all FR→EN entries currently in memory
+       MSCommI18n.frOverrides   → admin-defined FR text overrides
+       MSCommI18n.i18nData      → semantic keys (data-i18n attributes)
+       MSCommI18n.reload()      → force re-fetch + re-translate, no page reload
+       MSCommI18n.find('Accueil') → check if/how a string is translated   */
   window.MSCommI18n = {
     setLang,
     getLang: () => currentLang,
-    dict: DICT
+    dict: DICT,
+    frOverrides: FR_OVERRIDES,
+    i18nData: _i18nData,
+    isJsonLoaded: () => _jsonLoaded,
+    reload: async () => {
+      await _loadTranslationsJson();
+      console.info('[i18n] reloaded: dict=' + Object.keys(DICT).length
+        + ' frOverrides=' + Object.keys(FR_OVERRIDES).length
+        + ' i18nData=' + Object.keys(_i18nData).length);
+    },
+    find: (text) => ({
+      lang:        currentLang,
+      inDICT:      DICT[text],
+      inOverrides: FR_OVERRIDES[text],
+      inI18n:      _i18nData[text]
+    })
   };
 })();
