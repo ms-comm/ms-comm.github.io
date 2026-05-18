@@ -424,6 +424,23 @@ function finalizeSuccess(result) {
   localStorage.removeItem('mscomm_cart');
   localStorage.removeItem('mscomm_checkout');
 
+  /* Persist order info so "Mes achats" can offer a "Tout télécharger" button
+     without requiring the user to keep the checkout page open. Keep the last
+     20 orders; older ones are trimmed automatically. */
+  if (result.orderId && result.downloadUrl) {
+    try {
+      const orders = JSON.parse(localStorage.getItem('mscomm_orders') || '[]');
+      orders.unshift({
+        id:       result.orderId,
+        url:      result.downloadUrl,
+        photoIds: Object.keys(downloadTokens),
+        total:    result.total,
+        at:       Date.now()
+      });
+      localStorage.setItem('mscomm_orders', JSON.stringify(orders.slice(0, 20)));
+    } catch { /* storage full or unavailable — not critical */ }
+  }
+
   /* Wire the direct ZIP download link. Even when email is down, the user can
      grab their photos immediately via this button. */
   const btn = document.getElementById('success-download-btn');

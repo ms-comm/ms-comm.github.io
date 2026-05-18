@@ -443,11 +443,16 @@
            keyed by the per-photo download tokens stored in localStorage. -->
       <div id="view-purchased" class="hidden">
         <div class="purchased-header">
-          <h2 style="margin:0 0 6px;color:var(--gold-2)">Mes achats</h2>
-          <p class="purchased-sub">
-            Toutes les photos que vous avez déjà achetées sur ce navigateur.
-            Cliquez pour rouvrir et retélécharger sans payer à nouveau.
-          </p>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <h2 style="margin:0 0 6px;color:var(--gold-2)">Mes achats</h2>
+              <p class="purchased-sub">
+                Toutes les photos que vous avez déjà achetées sur ce navigateur.
+                Cliquez pour rouvrir et retélécharger sans payer à nouveau.
+              </p>
+            </div>
+            <div id="purchased-dl-actions" style="display:none;flex-shrink:0"></div>
+          </div>
         </div>
         <div class="photos-masonry" id="purchased-grid"></div>
         <div class="gal-empty hidden" id="purchased-empty">
@@ -864,8 +869,9 @@ function renderView(view) {
  * masonry/lightbox pipeline as the main timeline so the user gets identical
  * navigation, downloading and sharing affordances.                          */
 function renderPurchased() {
-  const grid  = document.getElementById('purchased-grid');
-  const empty = document.getElementById('purchased-empty');
+  const grid    = document.getElementById('purchased-grid');
+  const empty   = document.getElementById('purchased-empty');
+  const actions = document.getElementById('purchased-dl-actions');
   if (!grid) return;
 
   const tokens = (() => { try { return JSON.parse(localStorage.getItem('mscomm_tokens') || '{}'); } catch { return {}; } })();
@@ -885,6 +891,45 @@ function renderPurchased() {
    * stay within the purchased subset rather than the full gallery. */
   lbPhotos = photos;
   observeLazyImages(grid);
+
+  /* "Tout télécharger" — one ZIP button per stored order, filtered to orders
+   * that contain at least one photo the visitor still owns. */
+  if (actions) {
+    const orders = (() => { try { return JSON.parse(localStorage.getItem('mscomm_orders') || '[]'); } catch { return []; } })();
+    const tokenSet = new Set(Object.keys(tokens));
+    const relevant = orders.filter(o => Array.isArray(o.photoIds) && o.photoIds.some(id => tokenSet.has(id)));
+    if (relevant.length > 0) {
+      actions.style.display = '';
+      if (relevant.length === 1) {
+        /* Single order: one button */
+        actions.innerHTML = `<a href="${relevant[0].url}" download
+          class="lb-btn lb-btn-dl" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Tout télécharger (ZIP)
+        </a>`;
+      } else {
+        /* Multiple orders: dropdown */
+        const items = relevant.map((o, i) => {
+          const d = new Date(o.at);
+          const label = `Commande du ${d.toLocaleDateString('fr-FR')} — ${o.photoIds?.length || '?'} photo(s)`;
+          return `<a href="${o.url}" download style="display:block;padding:8px 16px;color:var(--text);text-decoration:none;font-size:13px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.07)" onmouseover="this.style.background='rgba(198,155,0,.12)'" onmouseout="this.style.background=''">${label}</a>`;
+        }).join('');
+        actions.innerHTML = `<div style="position:relative">
+          <button class="lb-btn lb-btn-dl" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="gap:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Tout télécharger
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:8px;overflow:hidden;z-index:99;min-width:260px">
+            ${items}
+          </div>
+        </div>`;
+      }
+    } else {
+      actions.style.display = 'none';
+      actions.innerHTML = '';
+    }
+  }
 }
 
 /* Show the "Mes achats" tab whenever the visitor owns at least one photo
