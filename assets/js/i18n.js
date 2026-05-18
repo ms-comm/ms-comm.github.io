@@ -26,11 +26,53 @@
   let _jsonLoaded = false;
   let _i18nData = {}; /* key → { fr, en } — populated from translations.json _i18n section */
 
+  /* Detect the backend API base — same logic as photos.html / main.js so
+     the i18n layer behaves identically across pages. We fetch translations
+     from the backend FIRST so admin-panel edits propagate to the live site
+     without a GitHub commit. Falls back to the static file on failure. */
+  function _i18nApiBase() {
+    const h = window.location.hostname;
+    if (window.location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '') {
+      return 'http://localhost:3000';
+    }
+    return 'https://ms-comm-server.fly.dev';
+  }
+
+  async function _fetchTranslations() {
+    const stamp = '?_=' + Date.now();
+    /* Try backend first (reflects admin edits immediately). */
+    try {
+      const url = _i18nApiBase() + '/api/public/translations' + stamp;
+      const r = await fetch(url, { cache: 'no-store' });
+      if (r.ok) {
+        const data = await r.json();
+        console.info('[i18n] loaded from backend (' + Object.keys(data).length + ' sections)');
+        return data;
+      }
+      console.warn('[i18n] backend fetch returned', r.status, '— falling back to static');
+    } catch (e) {
+      console.warn('[i18n] backend unreachable (' + e.message + ') — falling back to static');
+    }
+    /* Static fallback (always present on GitHub Pages). */
+    try {
+      const r = await fetch('/assets/data/translations.json' + stamp, { cache: 'no-store' });
+      if (r.ok) {
+        const data = await r.json();
+        console.info('[i18n] loaded from static (' + Object.keys(data).length + ' sections)');
+        return data;
+      }
+      console.warn('[i18n] static fetch returned', r.status);
+    } catch (e) {
+      console.warn('[i18n] static fetch failed:', e.message);
+    }
+    console.warn('[i18n] using only the inline DICT (no JSON source loaded)');
+    return null;
+  }
+
   async function _loadTranslationsJson() {
     try {
-      const r = await fetch('/assets/data/translations.json?_=' + Date.now(), { cache: 'no-store' });
-      if (!r.ok) return;
-      const data = await r.json();
+      const data = await _fetchTranslations();
+      if (!data) return;
       /* Aplatir toutes les sections (sauf _meta, _fr_overrides, _i18n) dans DICT */
       Object.entries(data).forEach(([section, entries]) => {
         if (section === '_meta' || section === '_fr_overrides' || section === '_i18n' || typeof entries !== 'object') return;
