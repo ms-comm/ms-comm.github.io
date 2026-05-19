@@ -901,18 +901,18 @@ function renderPurchased() {
     if (relevant.length > 0) {
       actions.style.display = '';
       if (relevant.length === 1) {
-        /* Single order: one button */
-        actions.innerHTML = `<a href="${relevant[0].url}" download
-          class="lb-btn lb-btn-dl" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
+        const tok = getOrderToken(relevant[0].url);
+        actions.innerHTML = `<button onclick="downloadOrderZip('${relevant[0].id}','${tok}',this,this.querySelector('span'))"
+          class="lb-btn lb-btn-dl" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Tout télécharger (ZIP)
-        </a>`;
+          <span>Tout télécharger (ZIP)</span>
+        </button>`;
       } else {
-        /* Multiple orders: dropdown */
-        const items = relevant.map((o, i) => {
+        const items = relevant.map(o => {
           const d = new Date(o.at);
           const label = `Commande du ${d.toLocaleDateString('fr-FR')} — ${o.photoIds?.length || '?'} photo(s)`;
-          return `<a href="${o.url}" download style="display:block;padding:8px 16px;color:var(--text);text-decoration:none;font-size:13px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.07)" onmouseover="this.style.background='rgba(198,155,0,.12)'" onmouseout="this.style.background=''">${label}</a>`;
+          const tok = getOrderToken(o.url);
+          return `<div onclick="downloadOrderZip('${o.id}','${tok}',null,null)" style="display:block;padding:8px 16px;cursor:pointer;color:var(--text);font-size:13px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.07)" onmouseover="this.style.background='rgba(198,155,0,.12)'" onmouseout="this.style.background=''">${label}</div>`;
         }).join('');
         actions.innerHTML = `<div style="position:relative">
           <button class="lb-btn lb-btn-dl" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="gap:6px">
@@ -1854,11 +1854,58 @@ function closeAccessModal() { document.getElementById('access-modal').classList.
 /* ===== ESC / BACKDROP ===== */
 document.querySelectorAll('.g-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
 
+/* ===== CLIENT-SIDE ZIP ===== */
+function getOrderToken(url) {
+  try { return new URL(url).searchParams.get('token') || ''; } catch { return ''; }
+}
+
+async function downloadOrderZip(orderId, token, btnEl, lblEl) {
+  if (btnEl) btnEl.disabled = true;
+  const origLabel = lblEl ? lblEl.textContent : '';
+  try {
+    if (lblEl) lblEl.textContent = 'Chargement…';
+    const r = await fetch(`${API}/api/orders/${orderId}/download-urls?token=${token}`);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `Erreur ${r.status}`);
+    }
+    const data = await r.json();
+    if (!data.files?.length) throw new Error('Aucune photo dans cette commande');
+
+    const zipFiles = {};
+    for (let i = 0; i < data.files.length; i++) {
+      const f = data.files[i];
+      if (lblEl) lblEl.textContent = `${i + 1} / ${data.files.length}…`;
+      const fr = await fetch(f.url, { mode: 'cors' });
+      if (!fr.ok) throw new Error(`Échec ${f.filename} (${fr.status})`);
+      zipFiles[f.filename] = [new Uint8Array(await fr.arrayBuffer()), { level: 0 }];
+    }
+
+    if (lblEl) lblEl.textContent = 'Création ZIP…';
+    const zipped = fflate.zipSync(zipFiles);
+    const blob = new Blob([zipped], { type: 'application/zip' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = data.zipName || `mscomm-${orderId.slice(0, 8)}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch (err) {
+    console.error('[ZIP client]', err);
+    alert('Erreur ZIP : ' + err.message);
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+    if (lblEl && origLabel) lblEl.textContent = origLabel;
+  }
+}
+
 /* ===== INIT ===== */
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 renderCartPanel();
 init();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 </body>
 </html>
