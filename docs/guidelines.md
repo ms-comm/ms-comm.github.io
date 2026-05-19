@@ -79,7 +79,7 @@ No local preview files generated for Flickr uploads — storage/previews/ is onl
 - `--expose-gc` is set in `npm start` → `global.gc()` works in production (not in `npm run dev`)
 - CPU throttle detection: reads `/sys/fs/cgroup/cpu.stat` every 2s (Linux/cgroup v2 only)
 - Memory guard: rejects upload with 503 if RSS > 400 MB (leaves ~110 MB headroom)
-- Client-side adaptive pause: detects `cpuThrottled` in server response + configurable pauses (tp1/tp2/tp3 in admin Settings)
+- Client-side retry: detects `cpuThrottled` / `memoryPressure` in server response → hardcoded 15s / 8s pause (no longer configurable; browser watermark eliminates server CPU cost)
 - **DCT shrink-on-load**: for 8000px source → 3840px target, libjpeg uses /2 decode (4000px intermediate). Peak RGBA ~96 MB per photo — this is the fundamental ceiling for 4K watermarks on large sources.
 
 ---

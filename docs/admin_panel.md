@@ -47,7 +47,8 @@
    - If unsupported or assets not loaded → falls back to server-side sharp
 4. `POST /api/admin/photos/upload` sends both `photo` (original) + `watermark` (browser-generated, optional) as multipart fields
 5. Server: if `watermark` field present → skips `generateWatermarkedFlickrFile`, uploads browser file to Flickr directly; if absent → server-side sharp (existing path)
-6. Progress modal: shows per-file rows (always visible — no toggle), connection speed (KB/s or MB/s), and ETA
+6. 2 files upload concurrently (2-worker pool in `startUpload`). ETA = `avgMs × remaining / 2`.
+7. Progress modal: shows per-file rows (always visible — no toggle), connection speed (KB/s or MB/s), and ETA
 7. Duplicate detection: checks last-3-days uploads by filename
 
 ### Face Detection
