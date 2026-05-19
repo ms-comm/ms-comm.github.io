@@ -1860,8 +1860,10 @@ function getOrderToken(url) {
 }
 
 async function downloadOrderZip(orderId, token, btnEl, lblEl) {
+  if (typeof fflate === 'undefined') { alert('Bibliothèque ZIP non chargée — rechargez la page.'); return; }
   if (btnEl) btnEl.disabled = true;
   const origLabel = lblEl ? lblEl.textContent : '';
+  let objectUrl = null;
   try {
     if (lblEl) lblEl.textContent = 'Chargement…';
     const r = await fetch(`${API}/api/orders/${orderId}/download-urls?token=${token}`);
@@ -1876,7 +1878,10 @@ async function downloadOrderZip(orderId, token, btnEl, lblEl) {
     for (let i = 0; i < data.files.length; i++) {
       const f = data.files[i];
       if (lblEl) lblEl.textContent = `${i + 1} / ${data.files.length}…`;
-      const fr = await fetch(f.url, { mode: 'cors' });
+      /* Use the same endpoint as individual downloads — already works, no CORS issue,
+         server pipes Flickr → client without buffering. */
+      const photoUrl = `${API}/api/public/photos/${f.photoId}/download?resolution=original&token=${encodeURIComponent(f.token)}`;
+      const fr = await fetch(photoUrl);
       if (!fr.ok) throw new Error(`Échec ${f.filename} (${fr.status})`);
       zipFiles[f.filename] = [new Uint8Array(await fr.arrayBuffer()), { level: 0 }];
     }
@@ -1884,15 +1889,18 @@ async function downloadOrderZip(orderId, token, btnEl, lblEl) {
     if (lblEl) lblEl.textContent = 'Création ZIP…';
     const zipped = fflate.zipSync(zipFiles);
     const blob = new Blob([zipped], { type: 'application/zip' });
+    objectUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = objectUrl;
     a.download = data.zipName || `mscomm-${orderId.slice(0, 8)}.zip`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
+    /* Revoke after a delay so the browser has time to read the blob */
+    setTimeout(() => { if (objectUrl) URL.revokeObjectURL(objectUrl); }, 30000);
   } catch (err) {
     console.error('[ZIP client]', err);
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
     alert('Erreur ZIP : ' + err.message);
   } finally {
     if (btnEl) btnEl.disabled = false;
