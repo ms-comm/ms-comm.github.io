@@ -94,4 +94,4 @@ assets/data/translations.json  /admin  (SPA)
 | Session errors on Windows | OneDrive/Defender lock | Ignore (suppressed), or set `SESSION_DIR` to temp |
 | `SESSION_SECRET` error on Fly | Env var missing | `fly secrets set SESSION_SECRET="..."` |
 | Translations not updating in EN | `shouldSkip` bug | Check `i18n.js` — `data-i18n` skip must not be present |
-| Upload crashes after ~30 photos | Fly.io CPU burst credit exhaustion | `FLICKR_WM_MAX=1920` in imageProcessor.js — see [docs/fixes_and_issues.md](docs/fixes_and_issues.md) |
+| Upload crashes after ~30 photos | Fly.io CPU burst credit exhaustion | watermark q82 + no preview copy — see [docs/fixes_and_issues.md](docs/fixes_and_issues.md) |
