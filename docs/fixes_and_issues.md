@@ -85,6 +85,18 @@
 
 ---
 
+### [IMPLEMENTED] Pipeline upload + cancel button feedback
+**Goal**: Eliminate idle client time during server's Flickr upload (~15s per photo).
+**Implementation**:
+- `uploadFile()` now returns `{sent, done}` — `sent` resolves on `xhr.upload.onload` (client finished sending), `done` on server response
+- `tryStartNext()` called from `sent.then()` → next file starts uploading while server handles current one with Flickr
+- `MAX_IN_FLIGHT=4` event-driven pipeline replaces 2-worker pool; at most 4 concurrent XHRs
+- Cancel button immediately shows "Annulation…" and is disabled on click; reset to "Annuler"/enabled at next upload start
+**Files changed**: `photo-server/admin/js/admin.js`  
+**Deployed**: requires `fly deploy`
+
+---
+
 ## Pending / To-Do
 
 - [ ] Test ZIP flow end-to-end after `fly deploy` (client-side approach was not confirmed working before session closed)

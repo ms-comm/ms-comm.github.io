@@ -47,9 +47,9 @@
    - If unsupported or assets not loaded → falls back to server-side sharp
 4. `POST /api/admin/photos/upload` sends both `photo` (original) + `watermark` (browser-generated, optional) as multipart fields
 5. Server: if `watermark` field present → skips `generateWatermarkedFlickrFile`, uploads browser file to Flickr directly; if absent → server-side sharp (existing path)
-6. 2 files upload concurrently (2-worker pool in `startUpload`). ETA = `avgMs × remaining / 2`.
-7. Progress modal: shows per-file rows (always visible — no toggle), connection speed (KB/s or MB/s), and ETA
-7. Duplicate detection: checks last-3-days uploads by filename
+6. Pipeline upload (`MAX_IN_FLIGHT=4`): `uploadFile()` returns `{sent, done}` — `sent` resolves on `xhr.upload.onload` (file received by server), `done` resolves when server responds. `tryStartNext()` is called on `sent` so the next file starts uploading while server is doing Flickr upload (~15s). At most 4 concurrent XHRs. ETA = `avgMs × remaining / active`.
+7. Progress modal: shows per-file rows (always visible), connection speed (KB/s or MB/s), ETA, cancel button shows "Annulation…" when clicked
+8. Duplicate detection: checks last-3-days uploads by filename
 
 ### Face Detection
 - `loadFaces()` — load faces + persons from API
