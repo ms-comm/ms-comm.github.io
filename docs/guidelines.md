@@ -55,7 +55,7 @@ No local preview files generated for Flickr uploads — storage/previews/ is onl
 ## CPU / Memory Management
 
 - Fly.io: 1 shared vCPU, 512 MB RAM + 512 MB swap
-- `sharp.cache(false)` + `sharp.concurrency(1)` — always set in imageProcessor.js
+- `sharp.cache(false)` + `sharp.concurrency(1)` + `sharp.simd(false)` — always set in imageProcessor.js
 - `--expose-gc` is set in `npm start` → `global.gc()` works in production (not in `npm run dev`)
 - CPU throttle detection: reads `/sys/fs/cgroup/cpu.stat` every 2s (Linux/cgroup v2 only)
 - Memory guard: rejects upload with 503 if RSS > 400 MB (leaves ~110 MB headroom)

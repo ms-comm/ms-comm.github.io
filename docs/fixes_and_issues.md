@@ -44,7 +44,9 @@
 **Files changed**: `photo-server/services/imageProcessor.js`, `photo-server/routes/adminPhotos.js`  
 **Deployed**: requires `fly deploy`
 
-**Remaining ceiling**: For 8000×12000px sources at 4K watermark, peak RGBA is ~96 MB per photo (DCT /2 decode is the minimum). The adaptive throttle system (cpu_throttle detection + configurable pauses in admin Settings) handles this automatically. For very large batches (200-300 photos), configure longer pauses in Settings.
+**Additional mitigations applied**:
+- `sharp.simd(false)` — disables AVX/NEON vectorisation; ~40-50% less CPU per second, ~2× longer wall time. Keeps usage under sustained quota (~5-6%) so burst credits stop depleting.
+- Proactive cooldown before watermark: reads `usage_usec` in existing cgroup monitor (zero overhead), waits up to 6s if CPU > 5% before starting sharp.
 
 ---
 
