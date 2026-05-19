@@ -40,19 +40,31 @@
 
   async function _fetchTranslations() {
     const stamp = '?_=' + Date.now();
-    /* Try backend first (reflects admin edits immediately). */
+    /* Try backend first (reflects admin edits immediately).
+       4 s timeout: if Fly.io is cold-starting, fall back to static quickly
+       rather than blocking for 10–15 s. */
     try {
-      const url = _i18nApiBase() + '/api/public/translations' + stamp;
-      const r = await fetch(url, { cache: 'no-store' });
-      if (r.ok) {
-        const data = await r.json();
-        console.info('[i18n] loaded from backend (' + Object.keys(data).length + ' sections)');
-        return data;
+      const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = ctrl ? setTimeout(() => ctrl.abort(), 4000) : null;
+      try {
+        const url = _i18nApiBase() + '/api/public/translations' + stamp;
+        const r = await fetch(url, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined });
+        clearTimeout(timer);
+        if (r.ok) {
+          const data = await r.json();
+          console.info('[i18n] loaded from backend (' + Object.keys(data).length + ' sections)');
+          return data;
+        }
+        console.warn('[i18n] backend fetch returned', r.status, '— falling back to static');
+      } catch (e) {
+        clearTimeout(timer);
+        if (e.name === 'AbortError') {
+          console.warn('[i18n] backend timeout (4 s) — falling back to static');
+        } else {
+          console.warn('[i18n] backend unreachable (' + e.message + ') — falling back to static');
+        }
       }
-      console.warn('[i18n] backend fetch returned', r.status, '— falling back to static');
-    } catch (e) {
-      console.warn('[i18n] backend unreachable (' + e.message + ') — falling back to static');
-    }
+    } catch (_) { /* AbortController unsupported — already logged above */ }
     /* Static fallback (always present on GitHub Pages). */
     try {
       const r = await fetch('/assets/data/translations.json' + stamp, { cache: 'no-store' });
@@ -99,7 +111,7 @@
       /* Re-appliquer la langue : data-i18n + traductions EN + overrides FR */
       setLang(currentLang);
     } catch (e) {
-      /* Fallback silencieux sur le DICT inline */
+      console.error('[i18n] _loadTranslationsJson error:', e);
     }
   }
 
@@ -1027,8 +1039,8 @@
       if (document.body) {
         applyDataI18n(document.body, currentLang);
         walkAndTranslate(document.body, currentLang);
-        /* Apply admin-defined FR overrides (even in FR mode) */
-        if (Object.keys(FR_OVERRIDES).length > 0) applyFrOverrides(document.body);
+        /* Apply admin-defined FR overrides — only in FR mode */
+        if (currentLang === 'fr' && Object.keys(FR_OVERRIDES).length > 0) applyFrOverrides(document.body);
       }
     } finally {
       _translating = false;

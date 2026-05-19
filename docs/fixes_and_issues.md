@@ -97,6 +97,30 @@
 
 ---
 
+---
+
+### [FIXED] i18n backend fetch — no timeout caused cold-start stall
+**Symptom**: Admin translation edits not visible on site, or visible only after 10–15s delay.  
+**Root cause**: `_fetchTranslations()` had no timeout. If Fly.io backend was sleeping, the page waited 10–15s for the cold start before applying admin edits. Also `applyFrOverrides` was incorrectly called in EN mode.  
+**Fix**:
+- Added 4 s `AbortController` timeout to backend fetch — falls back to static file immediately if backend is cold
+- `applyFrOverrides` now only applied when `currentLang === 'fr'`
+- Silent `catch(e){}` in `_loadTranslationsJson` replaced with `console.error` so errors are visible in DevTools  
+**Files changed**: `assets/js/i18n.js`  
+**Deployed**: yes (frontend, GitHub Pages)
+
+**Important**: To guarantee changes are always visible even when backend is cold, use **"Sauvegarder & Pousser sur GitHub"** in the Texts tab — not just "Enregistrer local". The GitHub push updates the static fallback file that is served when the backend is asleep.
+
+---
+
+### [IMPLEMENTED] Admin panel — watermark download
+**Goal**: Allow downloading the watermarked copy of a photo from the admin photo list.  
+**Implementation**: Download icon menu now shows "Avec filigrane" (in addition to "Original") for photos that have a `flickrWatermarkId`. Backend streams the Flickr watermark copy via `streamFlickrSized` with `resolution=watermark`.  
+**Files changed**: `photo-server/admin/js/admin.js`, `photo-server/routes/adminPhotos.js`  
+**Deployed**: requires `fly deploy`
+
+---
+
 ## Pending / To-Do
 
 - [ ] Test ZIP flow end-to-end after `fly deploy` (client-side approach was not confirmed working before session closed)
