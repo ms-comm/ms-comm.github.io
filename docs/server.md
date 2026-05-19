@@ -27,7 +27,7 @@
 
 ### orders.js — Download Endpoints
 - `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP (Flickr → server → client). Subject to Flickr CDN 429 if server IP rate-limited.
-- `GET /api/orders/:id/download-urls?token=xxx` — **Preferred.** Returns JSON list of Flickr CDN URLs for client-side ZIP assembly (zero server bandwidth for files).
+- `GET /api/orders/:id/download-urls?token=xxx` — **Preferred.** Returns `{ photoId, filename, token }` per photo. No Flickr API calls. Client uses these tokens to call `/api/public/photos/:id/download?token=xxx` individually and builds ZIP in browser.
 - `GET /api/orders/:id` — Retrieve order + tokens (completed orders only).
 
 ### publicApi.js — Photo Download Matrix

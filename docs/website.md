@@ -63,8 +63,10 @@
   `url` = `/api/orders/:id/download-all?token=xxx` (contains the order token)
 - "Tout télécharger" button calls `downloadOrderZip(orderId, token, btnEl, lblEl)`
 - Uses **fflate** (CDN: `cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js`) loaded before `</body>`
-- Flow: GET `/api/orders/:id/download-urls?token=xxx` → fetch each Flickr URL directly in browser → `fflate.zipSync()` → `URL.createObjectURL()` → download
-- Zero server bandwidth for photo files (browser fetches directly from Flickr CDN)
+- Flow: GET `/api/orders/:id/download-urls?token=xxx` → for each photo, fetch via `GET /api/public/photos/:id/download?token=xxx&resolution=original` (same-origin, no CORS issue) → `fflate.zipSync()` → `URL.createObjectURL()` → download
+- Same endpoint as individual downloads — already proven to work
+- `revokeObjectURL` delayed 30s so browser has time to read the blob before it's freed
+- Guard: checks `typeof fflate !== 'undefined'` before proceeding
 
 ### Lazy Loading
 - Batch: ~200 photos rendered at a time, IntersectionObserver sentinel at bottom

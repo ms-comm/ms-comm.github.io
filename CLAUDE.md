@@ -53,6 +53,8 @@ fly secrets set KEY="value"        # set env var
 | [docs/website.md](docs/website.md) | Pages, CSS system, i18n, photo gallery, checkout, client-side ZIP |
 | [docs/admin_panel.md](docs/admin_panel.md) | Admin SPA tabs, upload flow, face detection, translation editor |
 | [docs/flickr_integration.md](docs/flickr_integration.md) | OAuth, circuit breaker, CDN URLs, watermarking, 429 strategy |
+| [docs/fixes_and_issues.md](docs/fixes_and_issues.md) | Applied fixes, known limitations, pending issues, diagnostics |
+| [docs/guidelines.md](docs/guidelines.md) | Hard rules, image specs, what to ask before changing, common mistakes |
 
 ---
 
@@ -92,3 +94,4 @@ assets/data/translations.json  /admin  (SPA)
 | Session errors on Windows | OneDrive/Defender lock | Ignore (suppressed), or set `SESSION_DIR` to temp |
 | `SESSION_SECRET` error on Fly | Env var missing | `fly secrets set SESSION_SECRET="..."` |
 | Translations not updating in EN | `shouldSkip` bug | Check `i18n.js` — `data-i18n` skip must not be present |
+| Upload crashes after ~30 photos | Fly.io CPU burst credit exhaustion | `FLICKR_WM_MAX=1920` in imageProcessor.js — see [docs/fixes_and_issues.md](docs/fixes_and_issues.md) |
