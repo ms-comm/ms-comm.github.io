@@ -66,10 +66,30 @@
 
 ---
 
+---
+
+### [IMPLEMENTED] Browser-side watermark generation
+**Goal**: Eliminate server CPU usage for watermark processing (main bottleneck for large batches).  
+**Implementation**:
+- Admin JS: `generateClientWatermark(file, settings)` — OffscreenCanvas approach.
+  - `createImageBitmap(file, {resizeWidth, resizeHeight, resizeQuality:'high', imageOrientation:'from-image'})` decodes + resizes in one pass (memory-efficient, no full 8000×12000 decode)
+  - Replicates server watermark: gradient, logo (PNG from `/api/admin/settings/watermark-image`), text (custom font from `/api/admin/settings/watermark-font`), opacity, rotation, position
+  - Exports as JPEG q82 blob (matches server quality)
+  - Graceful fallback to server-side when `OffscreenCanvas.convertToBlob` not available (older browsers)
+- `POST /api/admin/photos/upload` now accepts `multer.fields([photo, watermark])` — server skips `generateWatermarkedFlickrFile` when `watermark` field is present
+- Progress modal: detail rows always visible (no toggle), connection speed displayed (KB/s or MB/s)
+- Custom font loaded via FontFace API + `document.fonts.add()` — works in OffscreenCanvas on main thread
+**Files changed**: `photo-server/routes/adminPhotos.js`, `photo-server/admin/index.html`, `photo-server/admin/js/admin.js`  
+**Deployed**: requires `fly deploy`  
+**Compatibility**: Safari 16.4+ / iOS 18+ (iPhone 17) ✓, Chrome 69+ ✓, Firefox 46+ ✓. Older browsers → server fallback.
+
+---
+
 ## Pending / To-Do
 
 - [ ] Test ZIP flow end-to-end after `fly deploy` (client-side approach was not confirmed working before session closed)
-- [ ] Monitor upload stability with large batches (200–300 photos) after CPU fix is deployed
+- [ ] Monitor upload stability with large batches (200–300 photos) after browser watermark is deployed
+- [ ] Reduce Fly.io from 2 CPUs to 1 CPU after browser watermark is confirmed working (server CPU now near zero for watermark batches)
 
 ---
 

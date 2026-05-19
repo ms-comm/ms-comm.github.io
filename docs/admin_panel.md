@@ -40,10 +40,15 @@
 
 ### Upload Flow
 1. File selected / dropped → added to `state.uploadQueue`
-2. Each file uploaded via `POST /api/admin/photos/upload` (multipart)
-3. Backend: saves original locally → generates preview (1200px) → uploads to Flickr
-4. Queue item shows progress bar → success/error badge
-5. Duplicate detection: checks last-3-days uploads by filename
+2. `prepareUploadPage()` calls `loadWatermarkAssets()` — fetches custom font + logo PNG once via `/api/admin/settings/watermark-font` and `/api/admin/settings/watermark-image`
+3. For each file: if `OffscreenCanvas + createImageBitmap + FontFace` supported (Safari 16.4+, iOS 18+, modern Android/Chrome), browser generates the watermark image via `generateClientWatermark()` — zero server CPU cost
+   - Decodes + resizes to FLICKR_WM_MAX (3840) in one `createImageBitmap` call with `resizeWidth/resizeHeight` (memory-efficient on mobile)
+   - Applies gradient + logo + text on OffscreenCanvas, exports as JPEG q82
+   - If unsupported or assets not loaded → falls back to server-side sharp
+4. `POST /api/admin/photos/upload` sends both `photo` (original) + `watermark` (browser-generated, optional) as multipart fields
+5. Server: if `watermark` field present → skips `generateWatermarkedFlickrFile`, uploads browser file to Flickr directly; if absent → server-side sharp (existing path)
+6. Progress modal: shows per-file rows (always visible — no toggle), connection speed (KB/s or MB/s), and ETA
+7. Duplicate detection: checks last-3-days uploads by filename
 
 ### Face Detection
 - `loadFaces()` — load faces + persons from API

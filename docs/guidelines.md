@@ -34,19 +34,39 @@
 
 ## Upload Pipeline (Flickr path, free-watermark or paid)
 
+### Browser path (OffscreenCanvas supported — modern browsers, Safari 16.4+, iOS 18+)
 ```
-1. multer diskStorage → temp file (never in heap)
+CLIENT
+1. generateClientWatermark(file, settings) — OffscreenCanvas
+   a. createImageBitmap(file, {resizeWidth, resizeHeight, ...}) → decode+resize in one pass
+   b. drawImage → apply gradient → draw logo + text (with opacity, rotation)
+   c. convertToBlob(jpeg q82)
+
+SERVER — multer.fields([photo, watermark])
+2. multer diskStorage → two temp files (original + browser watermark)
+3. readExif(origPath) — header only, fast
+4. flickr.uploadToFlickrPath(origPath) — original, private
+5. 500ms pause
+6. flickr.uploadToFlickrPath(wmFile.path) — watermark (browser-generated), public
+7. flickr.getOrCreateOriginalsPhotosetId + addPhotoToPhotoset (non-blocking)
+8. flickr.getPhotoInfo → flickrWatermarkUrl
+9. delete both temp files, call global.gc()
+```
+
+### Server fallback path (older browsers or assets not loaded)
+```
+1. multer diskStorage → single temp file
 2. readExif(origPath) — header only, fast
 3. generateWatermarkedFlickrFile(origPath → wmPath) — 3840px watermark, q82, no EXIF
 4. flickr.uploadToFlickrPath(origPath) — original, private
 5. 500ms pause
 6. flickr.uploadToFlickrPath(wmPath) — watermark, public
 7. flickr.getOrCreateOriginalsPhotosetId + addPhotoToPhotoset (non-blocking)
-8. flickr.getPhotoInfo → flickrWatermarkUrl (used as admin thumbnail — no local preview file)
+8. flickr.getPhotoInfo → flickrWatermarkUrl
 9. delete temp files, call global.gc()
+```
 
 No local preview files generated for Flickr uploads — storage/previews/ is only used by the non-Flickr fallback path.
-```
 
 **Do not reorder steps or add new ones without asking.**
 
