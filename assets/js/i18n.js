@@ -108,6 +108,13 @@
         });
       }
       _jsonLoaded = true;
+      console.group('[i18n] translations chargées');
+      console.log('DICT entries:', Object.keys(DICT).length);
+      console.log('FR_OVERRIDES:', Object.keys(FR_OVERRIDES).length,
+        Object.keys(FR_OVERRIDES).length > 0 ? Object.keys(FR_OVERRIDES).slice(0, 5) : '(aucun)');
+      console.log('_i18nData entries:', Object.keys(_i18nData).length);
+      console.log('lang actuelle:', currentLang);
+      console.groupEnd();
       /* Re-appliquer la langue : data-i18n + traductions EN + overrides FR */
       setLang(currentLang);
     } catch (e) {
@@ -876,7 +883,19 @@
       }
     });
     let n = walker.nextNode();
-    while (n) { applyFrOverrideToNode(n); n = walker.nextNode(); }
+    let matched = 0;
+    while (n) {
+      const before = n.nodeValue;
+      applyFrOverrideToNode(n);
+      if (n.nodeValue !== before) matched++;
+      n = walker.nextNode();
+    }
+    if (root === document.body) {
+      if (matched === 0 && Object.keys(FR_OVERRIDES).length > 0)
+        console.warn('[i18n] applyFrOverrides: 0 nœuds modifiés sur', Object.keys(FR_OVERRIDES).length, 'overrides — les clés ne correspondent peut-être pas au HTML');
+      else if (matched > 0)
+        console.log('[i18n] applyFrOverrides: ' + matched + ' nœud(s) modifié(s)');
+    }
   }
 
   /* -----------------------------------------------------------------------
