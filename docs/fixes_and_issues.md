@@ -39,8 +39,7 @@
 **Fix** (no change to output resolution — watermark stays 4K):
 - Watermark JPEG quality: `90 → 82` — faster encode (~15-20%), smaller Flickr upload (~25%)
 - Removed `.withMetadata()` from watermark copy — strips GPS/EXIF (privacy + minor speed)
-- Preview generation: replaced `fs.copyFileSync(wmPath → preview)` (copies full 3840px watermark) with `generatePreviewFromPath(origPath → preview)` — generates proper 1200px thumbnail directly from the original via DCT /8 decode; fast and correct size for admin thumbnails
-- Preview is now generated BEFORE the watermark, so it's saved even if watermark generation fails
+- Preview generation: **supprimée entièrement du path Flickr**. Les previews locales (`storage/previews/`) n'étaient qu'un fallback pour `flickrWatermarkUrl` qui est toujours rempli quand Flickr est configuré. Suppression = une sharp op et une écriture disque de moins par upload, plus aucun stockage gaspillé.
 
 **Files changed**: `photo-server/services/imageProcessor.js`, `photo-server/routes/adminPhotos.js`  
 **Deployed**: requires `fly deploy`

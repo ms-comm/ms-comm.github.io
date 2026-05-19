@@ -26,7 +26,7 @@
 | Max source dimensions | 8000 × 12000 px |
 | Typical source format | JPEG (camera output) |
 | Watermark copy output | 3840px max (longest side), JPEG q82, no EXIF |
-| Admin preview | 1200px, JPEG q82 |
+| Admin preview | Pas de fichier local — `flickrWatermarkUrl` sert de thumbnail dans le panel |
 | Original on Flickr | Full resolution, private album `__MSCOMM_ORIGINALS__` |
 | Watermark copy on Flickr | Public, used for gallery display |
 
@@ -37,14 +37,15 @@
 ```
 1. multer diskStorage → temp file (never in heap)
 2. readExif(origPath) — header only, fast
-3. generatePreviewFromPath(origPath → previews/id.jpg) — 1200px thumbnail for admin
-4. generateWatermarkedFlickrFile(origPath → wmPath) — 3840px watermark, q82, no EXIF
-5. flickr.uploadToFlickrPath(origPath) — original, private
-6. 500ms pause
-7. flickr.uploadToFlickrPath(wmPath) — watermark, public
-8. flickr.getOrCreateOriginalsPhotosetId + addPhotoToPhotoset (non-blocking)
-9. flickr.getPhotoInfo → flickrWatermarkUrl
-10. delete temp files, call global.gc()
+3. generateWatermarkedFlickrFile(origPath → wmPath) — 3840px watermark, q82, no EXIF
+4. flickr.uploadToFlickrPath(origPath) — original, private
+5. 500ms pause
+6. flickr.uploadToFlickrPath(wmPath) — watermark, public
+7. flickr.getOrCreateOriginalsPhotosetId + addPhotoToPhotoset (non-blocking)
+8. flickr.getPhotoInfo → flickrWatermarkUrl (used as admin thumbnail — no local preview file)
+9. delete temp files, call global.gc()
+
+No local preview files generated for Flickr uploads — storage/previews/ is only used by the non-Flickr fallback path.
 ```
 
 **Do not reorder steps or add new ones without asking.**
