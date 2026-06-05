@@ -23,7 +23,7 @@
       "meta": "Méta-descriptions",
       "misc": "Divers"
     },
-    "updatedAt": "2026-05-19T12:19:23.352Z"
+    "updatedAt": "2026-06-05T12:03:16.107Z"
   },
   "navigation": {
     "Prestataire de services de communication": "Communication services provider",
@@ -215,7 +215,7 @@
     "Carte de visite recto": "Business card front",
     "+ verso": "+ back",
     "Supports à imprimer": "Print materials",
-    "Création d'affiches / flyers": "Poster / flyer creation",
+    "Création d'affiches / flyers": "Poster / flyer creation (Standard)",
     "Carte de restaurant ou de prestations": "Restaurant / services menu",
     "Carte de fidélité": "Loyalty card",
     "Roll up": "Roll-up",
@@ -467,6 +467,7 @@
     "MS": "MS"
   },
   "_fr_overrides": {
-    "Je suis . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "Je suis Melody . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience."
+    "Je suis . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "Je suis Melody . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.",
+    "Création d'affiches / flyers": "Création d'affiches / flyers (Standard)"
   }
 }
