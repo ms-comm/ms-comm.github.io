@@ -802,15 +802,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const photoParam = params.get('photo');
   const albumParam = params.get('album');
-  const codeParam  = params.get('code');
 
-  if (codeParam) {
-    /* Pre-fill the private-access modal */
-    document.getElementById('access-modal').classList.add('open');
-    document.getElementById('code-input').value = codeParam;
-    setTimeout(submitCode, 50);
-    return;
-  }
   if (albumParam && allAlbums.find(a => a.id === albumParam)) {
     /* Jump straight into the album view */
     document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));

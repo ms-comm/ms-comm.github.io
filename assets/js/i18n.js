@@ -87,7 +87,7 @@
       if (!data) return;
       /* Aplatir toutes les sections (sauf _meta, _fr_overrides, _i18n) dans DICT */
       Object.entries(data).forEach(([section, entries]) => {
-        if (section === '_meta' || section === '_fr_overrides' || section === '_i18n' || typeof entries !== 'object') return;
+        if (section === '_meta' || section === '_fr_overrides' || section === '_i18n' || section === '_servicesCatalog' || typeof entries !== 'object') return;
         Object.entries(entries).forEach(([fr, en]) => {
           DICT[fr] = en;
           const norm = fr.replace(/\s+/g, ' ').trim();

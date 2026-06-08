@@ -46,6 +46,7 @@
 
 - `services.html` keeps a static fallback inside `#services-catalog-root`, then `assets/js/services-catalog.js` replaces it when `translations.json._servicesCatalog` is available.
 - Data source priority matches i18n: backend `GET /api/public/translations` first, then static `assets/data/translations.json`.
+- Dynamic service blocks are forced visible after injection because the global reveal observer only observes DOM present on initial page load.
 - Admin edits happen in Texts → Services and save through the same `/api/admin/translations` flow as normal text edits.
 - `_servicesCatalog.categories[]` contains section fields: `title`, `accent`, `subtitle`, `layout` (`cards` or `tarifs`), `columns`, `background`, `visible`, `footnote`, and `cards[]`.
 - Each card supports `name`, `oldPrice`, `price`, `priceNote`, `note`, `cta`, `ctaHref`, `featured`, `visible`, and `items[]` (`label`, optional `price`).
@@ -92,6 +93,7 @@
 ### Private Album Unlock
 - Modal with code input → `POST /api/public/verify-private-code` → success unlocks photos
 - Unlock code stays in memory for the current view and is re-sent per private photo/ZIP download.
+- Private album share links never include the code. Admin shares only `photos.html`; the code is given separately.
 
 ### Cart & Checkout
 - Cart state in memory + `localStorage['mscomm_cart']`

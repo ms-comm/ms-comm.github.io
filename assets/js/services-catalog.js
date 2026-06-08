@@ -160,8 +160,14 @@
     for (const url of urls) {
       try {
         const res = await fetch(url, { cache: 'no-store' });
-        if (res.ok) return res.json();
-      } catch (_) { /* try next source */ }
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data._servicesCatalog) return data;
+          console.warn('[services-catalog] source without _servicesCatalog:', url);
+        }
+      } catch (err) {
+        console.warn('[services-catalog] fetch failed:', url, err && err.message ? err.message : err);
+      }
     }
     return null;
   }
@@ -172,10 +178,18 @@
     const target = doc.getElementById('services-catalog-root');
     if (!target) return;
     const translations = await fetchTranslations();
-    if (!translations || !translations._servicesCatalog) return;
+    if (!translations || !translations._servicesCatalog) {
+      console.warn('[services-catalog] catalog unavailable, keeping static fallback');
+      return;
+    }
     const html = renderServicesCatalogHTML(translations._servicesCatalog);
-    if (!html.trim()) return;
+    if (!html.trim()) {
+      console.warn('[services-catalog] catalog rendered empty, keeping static fallback');
+      return;
+    }
     target.innerHTML = html;
+    target.querySelectorAll('.reveal, .reveal-left, .reveal-right, .stagger')
+      .forEach(el => el.classList.add('is-visible'));
     if (root.MSCommI18n && typeof root.MSCommI18n.refresh === 'function') root.MSCommI18n.refresh();
   }
 

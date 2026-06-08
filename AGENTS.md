@@ -80,7 +80,8 @@ assets/data/translations.json  /admin  (SPA)
 
 - **Photo downloads (ZIP)**: Use client-side approach (`/api/orders/:id/download-urls` for purchases, `/api/public/albums/:id/download-urls` for albums) — server only returns same-origin download URLs. Browser fetches files directly. See [docs/flickr_integration.md](docs/flickr_integration.md).
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
-- **Photo trash**: Admin deletion soft-deletes photos into a 7-day trash (`deletedAt`), sets them private, hides them from all public APIs, and allows restore selected/all from the Photos filter `Corbeille`.
+- **Photo trash**: Admin deletion soft-deletes photos into a 7-day trash (`deletedAt`), sets them private, hides them from all public APIs, and allows restore selected/all from the sidebar tab `Corbeille`.
+- **Private album sharing**: Never put private album codes in URLs. Share `photos.html` only; give the code manually or in separate email text.
 - **i18n**: `shouldSkip()` in `i18n.js` must NOT skip `data-i18n` elements — DICT handles all text nodes. `applyDataI18n` is a dead path (no `_i18n` section in translations.json).
 - **Services catalog**: `services.html` renders editable services from `translations.json._servicesCatalog` via `assets/js/services-catalog.js`; admin edits it from Texts → Services with the same save/GitHub flow as text edits.
 - **Services admin UX**: helper for hierarchy/drafts lives in `photo-server/admin/js/services-admin-ui.js`; keep it in `photo-server/` for Fly deploy because Docker copies only backend files.

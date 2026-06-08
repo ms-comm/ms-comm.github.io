@@ -37,9 +37,10 @@
   - Goes **through the server** which streams from Flickr (`streamFlickrSized`)
 - `toggleAdminDl(id)` — shows download resolution menu per photo
 - `hasPrivateOriginal(p)` — true when `flickrWatermarkId` set (original is in private Flickr album)
-- Photos filter `Corbeille` loads `GET /api/admin/photos?downloadType=trash`.
+- Sidebar tab `Corbeille` loads `GET /api/admin/photos?downloadType=trash` while reusing the Photos grid/list.
 - Delete actions move photos into the 7-day trash, set them private, and hide them from the public site.
 - Trash mode swaps the bulk toolbar to `Restaurer` for selected photos and `Restaurer tout` for the full trash.
+- Private album share copies only `https://ms-comm.github.io/photos.html`; the access code is not embedded in the URL.
 
 ### Upload Flow
 1. File selected / dropped → added to `state.uploadQueue`
