@@ -23,7 +23,7 @@
       "meta": "Méta-descriptions",
       "misc": "Divers"
     },
-    "updatedAt": "2026-06-08T13:39:29.531Z"
+    "updatedAt": "2026-06-08T14:01:32.119Z"
   },
   "navigation": {
     "Prestataire de services de communication": "Communication services provider",
@@ -476,7 +476,7 @@
         "id": "alacarte",
         "title": "Prestations à la carte",
         "accent": "à la carte",
-        "subtitle": "Des créations rapides et accessibles, en toute cohérence visuelle.",
+        "subtitle": "Des créations rapides et , en toute cohérence visuelle.",
         "layout": "tarifs",
         "visible": true,
         "cards": [
