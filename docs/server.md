@@ -41,6 +41,18 @@ private album     → flickrOriginalId or flickrWatermarkId (album code required
 
 Individual download uses `streamFlickrSized` which does **server-side streaming** (pipes Flickr → client without buffering). For "Original" it uses `originalsecret` URL; for sized it uses CDN size suffixes (`_h`, `_k`, etc.).
 
+### publicApi.js - Album ZIP
+- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx` returns `{ zipName, files[] }` for browser-side ZIP creation.
+- `mode=watermark` is allowed for public albums and private albums with code.
+- `mode=original` is allowed only for private albums with a valid code. Public paid originals still require order download tokens.
+- Legacy `POST /api/public/albums/:id/download` returns `410`; server-side album ZIP is disabled to avoid leaking public originals and to avoid Flickr CDN 429 from the Fly IP.
+
+### adminPhotos.js - Trash
+- Default admin delete is soft-delete: sets `deletedAt`, stores `previousDownloadType`/`previousAlbumId`, changes `downloadType` to `private`, and flips the Flickr watermark copy private best-effort.
+- `GET /api/admin/photos?downloadType=trash` lists only trashed photos; normal photo lists exclude `deletedAt`.
+- `POST /api/admin/photos/bulk/restore` restores selected ids or `{ all: true }`.
+- A startup/daily purge permanently removes trashed photos older than 7 days from JSON/local files/Flickr best-effort.
+
 ## Services
 
 | File | Purpose |

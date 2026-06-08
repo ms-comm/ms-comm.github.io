@@ -29,6 +29,7 @@
 |------|---------|
 | `assets/js/main.js` | Drawer nav, scroll reveals, lightbox, carousel, sparkles |
 | `assets/js/i18n.js` | Language switcher + full translation engine |
+| `assets/js/services-catalog.js` | Renders editable services/prices on `services.html` from `translations.json._servicesCatalog` |
 | `assets/js/faces.js` | Face detection UI in photo gallery |
 
 ## i18n System
@@ -41,11 +42,20 @@
 - `_fr_overrides`: admin can override French strings; stored in `translations.json._fr_overrides`
 - MutationObserver re-translates dynamically added content
 
+## services.html — Editable Services Catalog
+
+- `services.html` keeps a static fallback inside `#services-catalog-root`, then `assets/js/services-catalog.js` replaces it when `translations.json._servicesCatalog` is available.
+- Data source priority matches i18n: backend `GET /api/public/translations` first, then static `assets/data/translations.json`.
+- Admin edits happen in Texts → Services and save through the same `/api/admin/translations` flow as normal text edits.
+- `_servicesCatalog.categories[]` contains section fields: `title`, `accent`, `subtitle`, `layout` (`cards` or `tarifs`), `columns`, `background`, `visible`, `footnote`, and `cards[]`.
+- Each card supports `name`, `oldPrice`, `price`, `priceNote`, `note`, `cta`, `ctaHref`, `featured`, `visible`, and `items[]` (`label`, optional `price`).
+- If `ctaHref` is empty, the renderer builds `contact.html?pack=<name> — <price>` automatically.
+
 ## photos.html — Gallery
 
 ### Views
 - **Timeline**: all photos sorted by date, infinite lazy-load (sentinel IntersectionObserver)
-- **Albums**: grouped by album, timeline by year
+- **Albums**: grouped by album with the same justified masonry image style as the main gallery; public/private album photo grids use the same visual language
 - **Faces**: AI face detection results
 - **Mes achats**: purchased photos with "Tout télécharger (ZIP)" button
 
@@ -68,14 +78,20 @@
 - `revokeObjectURL` delayed 30s so browser has time to read the blob before it's freed
 - Guard: checks `typeof fflate !== 'undefined'` before proceeding
 
+### Album ZIP
+- Public albums show "Tout telecharger (avec filigrane)" only.
+- Private albums unlocked by code also show "Tout telecharger (sans filigrane)".
+- `downloadAlbumZip(mode, btnEl, lblEl)` uses the same browser ZIP pattern as purchases: GET `/api/public/albums/:id/download-urls`, fetch each same-origin `/api/public/photos/:id/download` URL, build with `fflate.zipSync()`, then download the blob.
+- Security rule: sans-filigrane requires a private album code; public paid originals remain purchase-token only.
+
 ### Lazy Loading
 - Batch: ~200 photos rendered at a time, IntersectionObserver sentinel at bottom
 - Justified layout: flexbox `flex-grow` on photo tiles (no black holes in grid)
 - `resolveUrl()` picks between Flickr watermark URL and local preview fallback
 
 ### Private Album Unlock
-- Modal with code input → `POST /api/public/albums/:id/verify` → success unlocks photos
-- `localStorage` stores unlocked album codes per session
+- Modal with code input → `POST /api/public/verify-private-code` → success unlocks photos
+- Unlock code stays in memory for the current view and is re-sent per private photo/ZIP download.
 
 ### Cart & Checkout
 - Cart state in memory + `localStorage['mscomm_cart']`
@@ -99,6 +115,7 @@ Structure:
   "navigation": { "fr": "...", "en": "..." },
   "photos": { ... },
   "checkout": { ... },
+  "_servicesCatalog": { "categories": [...] },
   "_fr_overrides": { "original FR": "admin override FR" }
 }
 ```

@@ -8,7 +8,7 @@
 | File | Purpose |
 |------|---------|
 | `admin/index.html` | Full SPA HTML + inline styles |
-| `admin/js/admin.js` | All logic (~3800 lines): CRUD, upload queue, face scan, settings |
+| `admin/js/admin.js` | All logic (~4000+ lines): CRUD, upload queue, face scan, settings, text/service editors |
 | `admin/css/admin.css` | Admin-specific styles |
 
 ## Tabs / Pages
@@ -20,7 +20,7 @@
 | Albums | `albums` | Album CRUD, public/private toggle, email code sender, Flickr photoset sync |
 | Faces | `faces` | Face detection results grid, person tagging, bulk scan launch |
 | Orders | `orders` | Order list, download token generation, order status |
-| Texts | `texts` | i18n translation editor: FR column (editable) + EN column, GitHub push |
+| Texts | `texts` | i18n translation editor + editable services catalog, GitHub push |
 | Settings | `settings` | Prices, watermark, SMTP, Flickr API keys, password change |
 
 ## Key Functions in admin.js
@@ -37,6 +37,9 @@
   - Goes **through the server** which streams from Flickr (`streamFlickrSized`)
 - `toggleAdminDl(id)` — shows download resolution menu per photo
 - `hasPrivateOriginal(p)` — true when `flickrWatermarkId` set (original is in private Flickr album)
+- Photos filter `Corbeille` loads `GET /api/admin/photos?downloadType=trash`.
+- Delete actions move photos into the 7-day trash, set them private, and hide them from the public site.
+- Trash mode swaps the bulk toolbar to `Restaurer` for selected photos and `Restaurer tout` for the full trash.
 
 ### Upload Flow
 1. File selected / dropped → added to `state.uploadQueue`
@@ -58,9 +61,14 @@
 
 ### Translation Editor (Texts tab)
 - Loads `GET /api/admin/translations`
-- FR column editable, EN column read-only
-- Save: `PUT /api/admin/translations` → writes `translations.json`
-- GitHub push button: `POST /api/admin/translations/push` → commits to GitHub via API
+- Mode switch: **Textes** edits normal i18n entries; **Services** edits `translations.json._servicesCatalog`
+- Textes mode: FR column editable through `_fr_overrides`; EN column editable in section data / `_i18n`
+- Services mode: category/card/item CRUD for names, prices, old prices, notes, CTA, order, visibility, featured state, layout, and section backgrounds
+- Services mode UX: left hierarchy (`Section > Card > Élément`) jumps to the selected editor block; center pane edits fields; right pane shows a live site-style preview
+- Add actions scroll/focus the newly created section, card, or item so the admin sees where it was created
+- `admin/js/services-admin-ui.js` contains the hierarchy/draft helpers and must stay inside `photo-server/` because Fly deploy copies only the backend folder
+- Save button: current implementation uses `POST /api/admin/translations` with `pushGitHub: true`; it writes `translations.json`, then pushes GitHub when a token is configured
+- Public `services.html` reads `_servicesCatalog` through `/api/public/translations` and falls back to static HTML if unavailable
 
 ### Settings
 - Flickr fields auto-save with debounce (300ms) on blur
