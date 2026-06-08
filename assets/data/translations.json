@@ -23,7 +23,7 @@
       "meta": "Méta-descriptions",
       "misc": "Divers"
     },
-    "updatedAt": "2026-06-05T12:04:17.819Z"
+    "updatedAt": "2026-06-08T13:39:29.531Z"
   },
   "navigation": {
     "Prestataire de services de communication": "Communication services provider",
@@ -468,5 +468,307 @@
   },
   "_fr_overrides": {
     "Je suis . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "Je suis Melody . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience."
+  },
+  "_servicesCatalog": {
+    "updatedAt": "2026-06-08T13:39:29.559Z",
+    "categories": [
+      {
+        "id": "alacarte",
+        "title": "Prestations à la carte",
+        "accent": "à la carte",
+        "subtitle": "Des créations rapides et , en toute cohérence visuelle.",
+        "layout": "tarifs",
+        "visible": true,
+        "cards": [
+          {
+            "id": "social",
+            "name": "Réseaux Sociaux",
+            "visible": true,
+            "items": [
+              {
+                "label": "Template Story*",
+                "price": "30€"
+              },
+              {
+                "label": "Template Publication*",
+                "price": "35€"
+              },
+              {
+                "label": "Montage vidéo (type réels)",
+                "price": "30€"
+              }
+            ]
+          },
+          {
+            "id": "visual",
+            "name": "Identité Visuelle",
+            "visible": true,
+            "items": [
+              {
+                "label": "Charte graphique",
+                "price": "300€"
+              },
+              {
+                "label": "Carte de visite recto",
+                "price": "50€"
+              },
+              {
+                "label": "+ verso",
+                "price": "+10€"
+              }
+            ]
+          },
+          {
+            "id": "print",
+            "name": "Supports à imprimer",
+            "visible": true,
+            "items": [
+              {
+                "label": "Création d'affiches / flyers",
+                "price": "60€"
+              },
+              {
+                "label": "Carte de restaurant ou de prestations",
+                "price": "60€"
+              },
+              {
+                "label": "Carte de fidélité",
+                "price": "40€"
+              },
+              {
+                "label": "Roll up",
+                "price": "110€"
+              }
+            ]
+          },
+          {
+            "id": "photo",
+            "name": "Photographies",
+            "note": "Toutes les photos sont livrées retouchées",
+            "visible": true,
+            "items": [
+              {
+                "label": "1 photo",
+                "price": "20€"
+              },
+              {
+                "label": "10 photos",
+                "price": "150€"
+              },
+              {
+                "label": "20 photos ou plus",
+                "price": "10€ / unité"
+              }
+            ]
+          }
+        ],
+        "footnote": "*Personnalisation par MS Comm' en supplément.\nTarifs indiqués hors frais d'impression et de déplacement — voir CGV."
+      },
+      {
+        "id": "launch-packs",
+        "title": "Packs de lancement",
+        "accent": "lancement",
+        "subtitle": "Plus d'impact, moins de budget — démarrez fort.",
+        "layout": "cards",
+        "background": true,
+        "visible": true,
+        "cards": [
+          {
+            "id": "starter",
+            "name": "Pack Réseaux Sociaux Starter",
+            "oldPrice": "95€",
+            "price": "80€",
+            "priceNote": "pack complet",
+            "cta": "Choisir ce pack",
+            "visible": true,
+            "items": [
+              {
+                "label": "1 template story*"
+              },
+              {
+                "label": "1 template publication"
+              },
+              {
+                "label": "1 montage vidéo type réel"
+              }
+            ]
+          },
+          {
+            "id": "boost",
+            "name": "Pack Réseaux Sociaux Boost",
+            "oldPrice": "220€",
+            "price": "190€",
+            "priceNote": "pack complet",
+            "cta": "Choisir ce pack",
+            "featured": true,
+            "visible": true,
+            "items": [
+              {
+                "label": "3 templates story*"
+              },
+              {
+                "label": "2 templates publications*"
+              },
+              {
+                "label": "2 montages vidéo type réels"
+              }
+            ]
+          },
+          {
+            "id": "identity",
+            "name": "Pack Identité Visuelle",
+            "oldPrice": "385€",
+            "price": "320€",
+            "priceNote": "pack complet",
+            "cta": "Choisir ce pack",
+            "visible": true,
+            "items": [
+              {
+                "label": "Carte de visite recto"
+              },
+              {
+                "label": "1 template publication"
+              },
+              {
+                "label": "Charte graphique complète"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "special-packs",
+        "title": "Packs spéciaux",
+        "accent": "spéciaux",
+        "subtitle": "Votre univers, sur mesure — faites briller chaque projet.",
+        "layout": "cards",
+        "columns": "repeat(2,1fr)",
+        "visible": true,
+        "cards": [
+          {
+            "id": "sport",
+            "name": "Pack Sportif",
+            "oldPrice": "170€",
+            "price": "150€",
+            "priceNote": "par pack",
+            "cta": "Choisir ce pack",
+            "visible": true,
+            "items": [
+              {
+                "label": "1 template story* Compétition"
+              },
+              {
+                "label": "1 template Story Matchs"
+              },
+              {
+                "label": "1 Publication Récap"
+              },
+              {
+                "label": "3 montages type réel"
+              }
+            ]
+          },
+          {
+            "id": "beauty",
+            "name": "Pack Beauté & Bien-être",
+            "oldPrice": "170€",
+            "price": "140€",
+            "priceNote": "par pack",
+            "cta": "Choisir ce pack",
+            "visible": true,
+            "items": [
+              {
+                "label": "Carte de prestations"
+              },
+              {
+                "label": "2 templates Story"
+              },
+              {
+                "label": "1 Publication"
+              },
+              {
+                "label": "1 Montage vidéo type réel"
+              }
+            ]
+          },
+          {
+            "id": "resto",
+            "name": "Pack Restauration",
+            "oldPrice": "130€",
+            "price": "100€",
+            "priceNote": "par pack",
+            "cta": "Choisir ce pack",
+            "visible": true,
+            "items": [
+              {
+                "label": "Carte de restaurant"
+              },
+              {
+                "label": "1 carte de fidélité"
+              },
+              {
+                "label": "1 Template Story*"
+              }
+            ]
+          },
+          {
+            "id": "event",
+            "name": "Pack Événement",
+            "oldPrice": "90€",
+            "price": "70€",
+            "priceNote": "par pack",
+            "cta": "Choisir ce pack",
+            "visible": true,
+            "items": [
+              {
+                "label": "Affiche ou flyer"
+              },
+              {
+                "label": "1 Story vidéo ou réel"
+              }
+            ]
+          }
+        ],
+        "footnote": "*Personnalisation par MS Comm' en supplément.\nPersonnalisation de packs possible : remplacez un élément du pack par un autre service équivalent.\nTarifs indiqués hors frais d'impression et de déplacement — voir CGV."
+      },
+      {
+        "id": "premium",
+        "title": "Accompagnement sur mesure",
+        "accent": "sur mesure",
+        "subtitle": "Gestion de réseaux sociaux, stratégie de contenu, reporting mensuel.",
+        "layout": "cards",
+        "columns": "1fr",
+        "background": true,
+        "visible": true,
+        "cards": [
+          {
+            "id": "premium-support",
+            "name": "Accompagnement Premium",
+            "price": "Sur devis",
+            "priceNote": "engagement mensuel",
+            "cta": "Demander un devis personnalisé",
+            "featured": true,
+            "visible": true,
+            "items": [
+              {
+                "label": "Gestion complète des réseaux sociaux"
+              },
+              {
+                "label": "Stratégie éditoriale mensuelle"
+              },
+              {
+                "label": "Création de contenus (posts, stories, réels)"
+              },
+              {
+                "label": "Accompagnement & conseils personnalisés"
+              },
+              {
+                "label": "Disponibilité et réactivité"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
