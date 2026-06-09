@@ -42,7 +42,8 @@ private album     → flickrOriginalId or flickrWatermarkId (album code required
 Individual download uses `streamFlickrSized` which does **server-side streaming** (pipes Flickr → client without buffering). For "Original" it uses `originalsecret` URL; for sized it uses CDN size suffixes (`_h`, `_k`, etc.).
 
 ### publicApi.js - Album ZIP
-- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx` returns `{ zipName, files[] }` for browser-side ZIP creation.
+- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` returns `{ zipName, files[] }` for browser-side ZIP creation.
+- `ids` is optional. When present, only those selected photo IDs are returned; used by the mobile-friendly album selection download.
 - `mode=watermark` is allowed for public albums and private albums with code.
 - `mode=original` is allowed only for private albums with a valid code. Public paid originals still require order download tokens.
 - Legacy `POST /api/public/albums/:id/download` returns `410`; server-side album ZIP is disabled to avoid leaking public originals and to avoid Flickr CDN 429 from the Fly IP.

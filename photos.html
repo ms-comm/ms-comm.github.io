@@ -110,6 +110,13 @@
 .masonry-overlay { position:absolute; inset:0; background:rgba(0,0,0,0); display:flex; align-items:center; justify-content:center; opacity:0; transition:all .2s; }
 .masonry-item:hover .masonry-overlay { background:rgba(0,0,0,.35); opacity:1; }
 .masonry-overlay svg { width:28px; height:28px; color:#fff; }
+.album-select-check { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.62); color:#fff; display:none; align-items:center; justify-content:center; z-index:4; }
+.album-select-check svg { width:16px; height:16px; }
+.masonry-item.album-pickable .album-select-check { display:flex; }
+.masonry-item.album-pickable .masonry-overlay { opacity:1; background:rgba(0,0,0,.18); }
+.masonry-item.album-selected::after { content:''; position:absolute; inset:0; border:3px solid var(--gold-2); border-radius:8px; box-shadow:inset 0 0 0 2px rgba(0,0,0,.45); pointer-events:none; z-index:3; }
+.masonry-item.album-selected .album-select-check { background:var(--gold); border-color:var(--gold-2); color:#0a0a0a; }
+.masonry-item.album-selected img { transform:scale(1.02); }
 
 /* ═══════════════════════════════════════════════════════════════════════
  *  Date-nav sidebar — persistent, always visible while scrolling
@@ -423,6 +430,16 @@
               <h2 id="album-section-title" style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:600"></h2>
             </div>
             <div class="album-download-actions hidden" id="album-download-actions">
+              <button class="lb-btn" id="album-select-toggle" type="button">
+                <span>Sélectionner</span>
+              </button>
+              <button class="lb-btn" id="album-clear-selection" type="button" style="display:none">
+                <span>Effacer</span>
+              </button>
+              <button class="lb-btn lb-btn-dl" id="album-download-selected" type="button" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Télécharger la sélection</span>
+              </button>
               <button class="lb-btn lb-btn-dl" id="album-download-watermark">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Tout télécharger (avec filigrane)</span>
@@ -802,6 +819,21 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const photoParam = params.get('photo');
   const albumParam = params.get('album');
+  const privateParam = params.get('private');
+
+  if (privateParam !== null) {
+    document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));
+    document.getElementById('view-albums').classList.remove('hidden');
+    document.getElementById('view-timeline').classList.add('hidden');
+    renderAlbums();
+    targetAlbumId = null;
+    document.getElementById('code-input').value = '';
+    document.getElementById('code-err').textContent = '';
+    document.getElementById('code-input').classList.remove('err');
+    document.getElementById('access-modal').classList.add('open');
+    setTimeout(() => document.getElementById('code-input').focus(), 100);
+    return;
+  }
 
   if (albumParam && allAlbums.find(a => a.id === albumParam)) {
     /* Jump straight into the album view */
@@ -986,6 +1018,59 @@ function renderFacesView() {
 let currentAlbumId = null;
 let currentAlbumCode = null;
 let currentAlbumDownloadMode = 'watermark';
+let albumSelectionMode = false;
+let selectedAlbumPhotoIds = new Set();
+
+function resetAlbumSelection() {
+  albumSelectionMode = false;
+  selectedAlbumPhotoIds.clear();
+  updateAlbumSelectionUI();
+}
+
+function setAlbumSelectionMode(on) {
+  albumSelectionMode = !!on;
+  updateAlbumSelectionUI();
+}
+
+function toggleAlbumPhotoSelection(id) {
+  if (!id) return;
+  if (selectedAlbumPhotoIds.has(id)) selectedAlbumPhotoIds.delete(id);
+  else selectedAlbumPhotoIds.add(id);
+  updateAlbumSelectionUI();
+}
+
+function updateAlbumSelectionUI() {
+  const toggleBtn = document.getElementById('album-select-toggle');
+  const clearBtn = document.getElementById('album-clear-selection');
+  const selectedBtn = document.getElementById('album-download-selected');
+  const count = selectedAlbumPhotoIds.size;
+  if (toggleBtn) {
+    toggleBtn.classList.toggle('lb-btn-dl', albumSelectionMode);
+    const label = toggleBtn.querySelector('span');
+    if (label) label.textContent = albumSelectionMode ? 'Terminer' : 'Sélectionner';
+  }
+  if (clearBtn) clearBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+  if (selectedBtn) {
+    selectedBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+    const label = selectedBtn.querySelector('span');
+    if (label) label.textContent = count > 0
+      ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumCode ? ' (sans filigrane)' : ''}`
+      : 'Télécharger la sélection';
+  }
+  document.querySelectorAll('#album-photos-grid .masonry-item[data-photo-id]').forEach(el => {
+    const id = el.dataset.photoId;
+    el.classList.toggle('album-pickable', albumSelectionMode);
+    el.classList.toggle('album-selected', selectedAlbumPhotoIds.has(id));
+  });
+}
+
+function handleAlbumPhotoClick(id, idx) {
+  if (albumSelectionMode) {
+    toggleAlbumPhotoSelection(id);
+    return;
+  }
+  openLightbox(idx);
+}
 
 function renderAlbums() {
   const search = getSearch();
@@ -1001,6 +1086,7 @@ function renderAlbums() {
   document.getElementById('albums-empty').classList.toggle('hidden', albums.length > 0);
   currentAlbumId = null;
   currentAlbumCode = null;
+  resetAlbumSelection();
   updateAlbumDownloadActions();
   const grid = document.getElementById('albums-grid');
   grid.innerHTML = albums.map(a => {
@@ -1064,6 +1150,7 @@ function openAlbum(id) {
   currentAlbumId  = id;
   currentAlbumCode = null;
   currentAlbumDownloadMode = 'watermark';
+  resetAlbumSelection();
   updateAlbumDownloadActions();
 
   if (!photos.length) {
@@ -1113,15 +1200,18 @@ document.getElementById('back-albums-btn').addEventListener('click', () => {
   document.getElementById('album-photos-section').classList.add('hidden');
   currentAlbumId = null;
   currentAlbumCode = null;
+  resetAlbumSelection();
   updateAlbumDownloadActions();
   lbPhotos = allPhotos;
 });
 
 function masonryPhotoHTML(p, idx) {
   const imgSrc = resolveUrl(p.downloadType === 'free' ? p.previewUrl : p.watermarkedUrl);
-  return `<div class="masonry-item" style="${justifiedFlexStyle(p)}" onclick="openLightbox(${idx})">
+  const selected = selectedAlbumPhotoIds.has(p.id);
+  return `<div class="masonry-item${albumSelectionMode ? ' album-pickable' : ''}${selected ? ' album-selected' : ''}" data-photo-id="${p.id}" style="${justifiedFlexStyle(p)}" onclick="handleAlbumPhotoClick('${p.id}',${idx})">
     ${ownedBadgeHTML(p)}
     <img data-src="${imgSrc}" alt="${p.title}" loading="lazy" />
+    <div class="album-select-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
     <div class="masonry-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
   </div>`;
 }
@@ -1130,10 +1220,14 @@ function updateAlbumDownloadActions() {
   const wrap = document.getElementById('album-download-actions');
   const wmBtn = document.getElementById('album-download-watermark');
   const origBtn = document.getElementById('album-download-original');
+  const selectBtn = document.getElementById('album-select-toggle');
+  const clearBtn = document.getElementById('album-clear-selection');
+  const selectedBtn = document.getElementById('album-download-selected');
   if (!wrap || !wmBtn || !origBtn) return;
   const hasPhotos = _albumPhotosAll.length > 0 && currentAlbumId;
   wrap.classList.toggle('hidden', !hasPhotos);
   origBtn.style.display = currentAlbumCode ? 'inline-flex' : 'none';
+  updateAlbumSelectionUI();
 }
 
 function gridPhotoHTML(p, arr, idx, hidePrice = false) {
@@ -1876,6 +1970,7 @@ async function submitCode() {
     currentAlbumId = found.album?.id || null;
     currentAlbumCode = code;
     currentAlbumDownloadMode = 'watermark';
+    resetAlbumSelection();
     document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
     document.getElementById('albums-grid').style.display = 'none';
     document.getElementById('album-photos-section').classList.remove('hidden');
@@ -1905,6 +2000,9 @@ function getOrderToken(url) {
 function setupAlbumZipButtons() {
   const wmBtn = document.getElementById('album-download-watermark');
   const origBtn = document.getElementById('album-download-original');
+  const selectBtn = document.getElementById('album-select-toggle');
+  const clearBtn = document.getElementById('album-clear-selection');
+  const selectedBtn = document.getElementById('album-download-selected');
   wmBtn?.addEventListener('click', () => {
     const run = () => downloadAlbumZip('watermark', wmBtn, wmBtn.querySelector('span'));
     const now = Date.now();
@@ -1918,10 +2016,21 @@ function setupAlbumZipButtons() {
     }
   });
   origBtn?.addEventListener('click', () => downloadAlbumZip('original', origBtn, origBtn.querySelector('span')));
+  selectBtn?.addEventListener('click', () => setAlbumSelectionMode(!albumSelectionMode));
+  clearBtn?.addEventListener('click', () => {
+    selectedAlbumPhotoIds.clear();
+    updateAlbumSelectionUI();
+  });
+  selectedBtn?.addEventListener('click', () => {
+    const mode = currentAlbumCode ? 'original' : 'watermark';
+    downloadAlbumZip(mode, selectedBtn, selectedBtn.querySelector('span'), true);
+  });
 }
 
-async function downloadAlbumZip(mode, btnEl, lblEl) {
+async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (!currentAlbumId) return;
+  const ids = selectedOnly ? Array.from(selectedAlbumPhotoIds) : [];
+  if (selectedOnly && !ids.length) { alert('Sélectionnez au moins une photo.'); return; }
   if (typeof fflate === 'undefined') { alert('Bibliothèque ZIP non chargée — rechargez la page.'); return; }
   if (btnEl) btnEl.disabled = true;
   const origLabel = lblEl ? lblEl.textContent : '';
@@ -1930,6 +2039,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl) {
     if (lblEl) lblEl.textContent = 'Chargement…';
     const params = new URLSearchParams({ mode });
     if (currentAlbumCode) params.set('code', currentAlbumCode);
+    if (ids.length) params.set('ids', ids.join(','));
     const r = await fetch(`${API}/api/public/albums/${currentAlbumId}/download-urls?${params.toString()}`);
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
@@ -1962,7 +2072,12 @@ async function downloadAlbumZip(mode, btnEl, lblEl) {
   } catch (err) {
     console.error('[ZIP album client]', err);
     if (objectUrl) URL.revokeObjectURL(objectUrl);
-    alert('Erreur ZIP : ' + err.message);
+    const msg = String(err?.message || err || '');
+    if (/array buffer|allocation|memory|out of memory/i.test(msg)) {
+      alert('Erreur ZIP : le navigateur mobile manque de mémoire pour créer ce ZIP. Sélectionnez moins de photos et téléchargez la sélection, ou faites le ZIP complet depuis un ordinateur.');
+    } else {
+      alert('Erreur ZIP : ' + msg);
+    }
   } finally {
     if (btnEl) btnEl.disabled = false;
     if (lblEl && origLabel) lblEl.textContent = origLabel;

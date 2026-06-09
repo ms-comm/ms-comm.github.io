@@ -40,7 +40,7 @@
 - Sidebar tab `Corbeille` loads `GET /api/admin/photos?downloadType=trash` while reusing the Photos grid/list.
 - Delete actions move photos into the 7-day trash, set them private, and hide them from the public site.
 - Trash mode swaps the bulk toolbar to `Restaurer` for selected photos and `Restaurer tout` for the full trash.
-- Private album share copies only `https://ms-comm.github.io/photos.html`; the access code is not embedded in the URL.
+- Private album share copies only `https://ms-comm.github.io/photos.html?private=1`; the access code is not embedded in the URL and is given separately.
 
 ### Upload Flow
 1. File selected / dropped → added to `state.uploadQueue`

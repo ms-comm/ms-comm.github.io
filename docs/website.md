@@ -82,7 +82,9 @@
 ### Album ZIP
 - Public albums show "Tout telecharger (avec filigrane)" only.
 - Private albums unlocked by code also show "Tout telecharger (sans filigrane)".
-- `downloadAlbumZip(mode, btnEl, lblEl)` uses the same browser ZIP pattern as purchases: GET `/api/public/albums/:id/download-urls`, fetch each same-origin `/api/public/photos/:id/download` URL, build with `fflate.zipSync()`, then download the blob.
+- Album view has a selection mode: click "Selectionner", tap any photo cards, then "Telecharger la selection". Public selection downloads watermarked files; private unlocked selection downloads originals.
+- `downloadAlbumZip(mode, btnEl, lblEl, selectedOnly)` uses the same browser ZIP pattern as purchases: GET `/api/public/albums/:id/download-urls`, optionally with `ids=id1,id2`, fetch each same-origin `/api/public/photos/:id/download` URL, build with `fflate.zipSync()`, then download the blob.
+- Mobile note: full albums can exceed browser RAM because `fflate.zipSync()` needs the fetched files and final ZIP in memory. The selection button is the preferred mobile path for large albums.
 - Security rule: sans-filigrane requires a private album code; public paid originals remain purchase-token only.
 
 ### Lazy Loading
@@ -93,7 +95,7 @@
 ### Private Album Unlock
 - Modal with code input → `POST /api/public/verify-private-code` → success unlocks photos
 - Unlock code stays in memory for the current view and is re-sent per private photo/ZIP download.
-- Private album share links never include the code. Admin shares only `photos.html`; the code is given separately.
+- Private album share links never include the code. Admin shares `photos.html?private=1` so the code modal opens immediately; the code is given separately.
 
 ### Cart & Checkout
 - Cart state in memory + `localStorage['mscomm_cart']`
