@@ -2078,7 +2078,7 @@ function closeAlbumDownloadMenus() {
   document.querySelectorAll('.album-download-menu').forEach(m => m.classList.add('hidden'));
 }
 
-function openAlbumDownloadMenu(menuId, selectedOnly) {
+function openAlbumDownloadMenu(menuId, selectedOnly, progressBtn) {
   const menu = document.getElementById(menuId);
   if (!menu) return;
   closeAlbumDownloadMenus();
@@ -2095,7 +2095,8 @@ function openAlbumDownloadMenu(menuId, selectedOnly) {
         return;
       }
       closeAlbumDownloadMenus();
-      downloadAlbumZip(mode, btn, btn.querySelector('span'), selectedOnly);
+      const visibleBtn = progressBtn || btn;
+      downloadAlbumZip(mode, visibleBtn, visibleBtn.querySelector('span'), selectedOnly);
     };
   });
   menu.classList.remove('hidden');
@@ -2124,7 +2125,7 @@ function setupAlbumZipButtons() {
     }
   });
   origBtn?.addEventListener('click', () => downloadAlbumZip('original', origBtn, origBtn.querySelector('span')));
-  allMenuBtn?.addEventListener('click', () => openAlbumDownloadMenu('album-download-all-menu', false));
+  allMenuBtn?.addEventListener('click', () => openAlbumDownloadMenu('album-download-all-menu', false, allMenuBtn));
   selectBtn?.addEventListener('click', () => setAlbumSelectionMode(!albumSelectionMode));
   clearBtn?.addEventListener('click', () => {
     albumSelectionMode = false;
@@ -2137,7 +2138,7 @@ function setupAlbumZipButtons() {
       return;
     }
     if (!selectedAlbumPhotoIds.size) return;
-    openAlbumDownloadMenu('album-download-selected-menu', true);
+    openAlbumDownloadMenu('album-download-selected-menu', true, selectedBtn);
   });
 }
 
