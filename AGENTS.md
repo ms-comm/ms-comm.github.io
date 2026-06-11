@@ -17,7 +17,7 @@ Dual-stack photography portfolio with integrated photo gallery:
 | Rule | Detail |
 |------|--------|
 | **Never commit `photo-server/`** | Backend deploys via `fly deploy` only — no GitHub exposure |
-| **User deploys backend** | `fly deploy` is run manually by the user, not automated |
+| **Deploy directly unless told otherwise** | User now wants deploy after each change: push frontend to GitHub Pages and run Fly deploy when backend changed, unless explicitly paused |
 | **Frontend → GitHub** | Push root HTML/CSS/JS/assets to deploy to GitHub Pages |
 | **Update docs on change** | After any code change, update AGENTS.md + the relevant `docs/*.md` |
 
@@ -81,6 +81,7 @@ assets/data/translations.json  /admin  (SPA)
 - **Photo downloads (ZIP)**: Use client-side approach (`/api/orders/:id/download-urls` for purchases, `/api/public/albums/:id/download-urls` for albums, optional `ids=` for selected album photos) — server only returns same-origin download URLs. Browser fetches files directly. See [docs/flickr_integration.md](docs/flickr_integration.md).
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Photo trash**: Admin deletion soft-deletes photos into a 7-day trash (`deletedAt`), sets them private, hides them from all public APIs, and allows restore selected/all from the sidebar tab `Corbeille`.
+- **Private album photos**: Uploading into a private album or moving photos into one forces `downloadType: private` server-side and in the admin UI.
 - **Private album sharing**: Never put private album codes in URLs. Share `photos.html?private=1` only so the code modal opens immediately; give the code manually or in separate email text.
 - **i18n**: `shouldSkip()` in `i18n.js` must NOT skip `data-i18n` elements — DICT handles all text nodes. `applyDataI18n` is a dead path (no `_i18n` section in translations.json).
 - **Services catalog**: `services.html` renders editable services from `translations.json._servicesCatalog` via `assets/js/services-catalog.js`; admin edits it from Texts → Services with the same save/GitHub flow as text edits.

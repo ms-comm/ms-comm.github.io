@@ -82,7 +82,7 @@
 ### Album ZIP
 - Public albums show "Tout telecharger (avec filigrane)" only.
 - Private albums unlocked by code also show "Tout telecharger (sans filigrane)".
-- Album view has a selection mode: click "Selectionner", tap any photo cards, then "Telecharger la selection". Public selection downloads watermarked files; private unlocked selection downloads originals.
+- Album view has a selection mode: click "Telecharger une selection", tap photo cards, then click the same button to download the selection. The magnifier overlay is hidden while selecting, and "Annuler" exits selection mode. Public selection downloads watermarked files; private unlocked selection downloads originals.
 - `downloadAlbumZip(mode, btnEl, lblEl, selectedOnly)` uses the same browser ZIP pattern as purchases: GET `/api/public/albums/:id/download-urls`, optionally with `ids=id1,id2`, fetch each same-origin `/api/public/photos/:id/download` URL, build with `fflate.zipSync()`, then download the blob.
 - Mobile note: full albums can exceed browser RAM because `fflate.zipSync()` needs the fetched files and final ZIP in memory. The selection button is the preferred mobile path for large albums.
 - Security rule: sans-filigrane requires a private album code; public paid originals remain purchase-token only.

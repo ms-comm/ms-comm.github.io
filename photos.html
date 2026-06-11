@@ -113,7 +113,7 @@
 .album-select-check { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.62); color:#fff; display:none; align-items:center; justify-content:center; z-index:4; }
 .album-select-check svg { width:16px; height:16px; }
 .masonry-item.album-pickable .album-select-check { display:flex; }
-.masonry-item.album-pickable .masonry-overlay { opacity:1; background:rgba(0,0,0,.18); }
+.masonry-item.album-pickable .masonry-overlay { display:none; }
 .masonry-item.album-selected::after { content:''; position:absolute; inset:0; border:3px solid var(--gold-2); border-radius:8px; box-shadow:inset 0 0 0 2px rgba(0,0,0,.45); pointer-events:none; z-index:3; }
 .masonry-item.album-selected .album-select-check { background:var(--gold); border-color:var(--gold-2); color:#0a0a0a; }
 .masonry-item.album-selected img { transform:scale(1.02); }
@@ -430,13 +430,13 @@
               <h2 id="album-section-title" style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:600"></h2>
             </div>
             <div class="album-download-actions hidden" id="album-download-actions">
-              <button class="lb-btn" id="album-select-toggle" type="button">
+              <button class="lb-btn" id="album-select-toggle" type="button" style="display:none">
                 <span>Sélectionner</span>
               </button>
               <button class="lb-btn" id="album-clear-selection" type="button" style="display:none">
-                <span>Effacer</span>
+                <span>Annuler</span>
               </button>
-              <button class="lb-btn lb-btn-dl" id="album-download-selected" type="button" style="display:none">
+              <button class="lb-btn lb-btn-dl" id="album-download-selected" type="button">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Télécharger la sélection</span>
               </button>
@@ -1056,6 +1056,31 @@ function updateAlbumSelectionUI() {
     if (label) label.textContent = count > 0
       ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumCode ? ' (sans filigrane)' : ''}`
       : 'Télécharger la sélection';
+  }
+  document.querySelectorAll('#album-photos-grid .masonry-item[data-photo-id]').forEach(el => {
+    const id = el.dataset.photoId;
+    el.classList.toggle('album-pickable', albumSelectionMode);
+    el.classList.toggle('album-selected', selectedAlbumPhotoIds.has(id));
+  });
+}
+
+function updateAlbumSelectionUI() {
+  const toggleBtn = document.getElementById('album-select-toggle');
+  const clearBtn = document.getElementById('album-clear-selection');
+  const selectedBtn = document.getElementById('album-download-selected');
+  const count = selectedAlbumPhotoIds.size;
+  if (toggleBtn) toggleBtn.style.display = 'none';
+  if (clearBtn) clearBtn.style.display = albumSelectionMode ? 'inline-flex' : 'none';
+  if (selectedBtn) {
+    selectedBtn.style.display = currentAlbumId && _albumPhotosAll.length > 0 ? 'inline-flex' : 'none';
+    selectedBtn.disabled = albumSelectionMode && count === 0;
+    const label = selectedBtn.querySelector('span');
+    if (label) {
+      if (!albumSelectionMode) label.textContent = 'Télécharger une sélection';
+      else label.textContent = count > 0
+        ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumCode ? ' (sans filigrane)' : ''}`
+        : 'Sélectionnez des photos';
+    }
   }
   document.querySelectorAll('#album-photos-grid .masonry-item[data-photo-id]').forEach(el => {
     const id = el.dataset.photoId;
@@ -2018,10 +2043,15 @@ function setupAlbumZipButtons() {
   origBtn?.addEventListener('click', () => downloadAlbumZip('original', origBtn, origBtn.querySelector('span')));
   selectBtn?.addEventListener('click', () => setAlbumSelectionMode(!albumSelectionMode));
   clearBtn?.addEventListener('click', () => {
+    albumSelectionMode = false;
     selectedAlbumPhotoIds.clear();
     updateAlbumSelectionUI();
   });
   selectedBtn?.addEventListener('click', () => {
+    if (!albumSelectionMode) {
+      setAlbumSelectionMode(true);
+      return;
+    }
     const mode = currentAlbumCode ? 'original' : 'watermark';
     downloadAlbumZip(mode, selectedBtn, selectedBtn.querySelector('span'), true);
   });
