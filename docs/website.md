@@ -83,9 +83,9 @@
 - Public albums show "Tout telecharger (avec filigrane)" only.
 - Private albums unlocked by code also show "Tout telecharger (sans filigrane)".
 - Album view uses download menus: "Tout telecharger" opens a choice between watermark/original, and "Telecharger la selection" first enters selection mode, then opens the same choice for selected photos. The magnifier overlay is hidden while selecting, "Annuler" exits selection mode, and the all-download button is hidden until selection mode is cancelled. Public original downloads remain blocked unless a private album is unlocked.
-- ZIP progress is written to the visible trigger button, not the dropdown item, so users keep seeing `1 / N`, `2 / N`, etc. after choosing a download mode.
-- `downloadAlbumZip(mode, btnEl, lblEl, selectedOnly)` uses the same browser ZIP pattern as purchases: GET `/api/public/albums/:id/download-urls`, optionally with `ids=id1,id2`, fetch each same-origin `/api/public/photos/:id/download` URL, build with `fflate.zipSync()`, then download the blob.
-- Mobile note: full albums can exceed browser RAM because `fflate.zipSync()` needs the fetched files and final ZIP in memory. The selection button is the preferred mobile path for large albums.
+- `downloadAlbumZip(mode, btnEl, lblEl, selectedOnly)` submits a form POST to `/api/public/albums/:id/download`, optionally with `ids=id1,id2`. The browser receives a streamed ZIP file directly; the page no longer fetches every photo into JS memory.
+- Private album code is sent in the POST body, not in the share URL.
+- Button label changes to "Preparation..." then "Telechargement lance"; detailed byte progress is handled by the browser download UI.
 - Security rule: sans-filigrane requires a private album code; public paid originals remain purchase-token only.
 
 ### Lazy Loading

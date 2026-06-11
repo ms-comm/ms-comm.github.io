@@ -90,7 +90,7 @@ No local preview files generated for Flickr uploads — storage/previews/ is onl
 - Circuit breaker: trips on HTTP 429 + HTML body (CloudFront WAF ban) → blocks all Flickr REST API for 10 min
 - `assertCircuitClosed()` is in the REST API path only — does NOT block CDN streaming
 - Streaming: `streamFlickrSized()` pipes Flickr CDN → client, ~64 KB constant memory
-- ZIP downloads: **always client-side** (`/api/orders/:id/download-urls`). Server returns metadata, browser fetches bytes. Never use server-side ZIP for Flickr photos (triggers 429 fast).
+- ZIP downloads: purchases stay client-side (`/api/orders/:id/download-urls`). Album ZIP uses server streaming (`POST /api/public/albums/:id/download`) with one Flickr/local file appended at a time. Never buffer a full album ZIP in browser or server memory.
 - `live.staticflickr.com` has `Access-Control-Allow-Origin: *` → browser fetch works
 
 ---
@@ -113,7 +113,7 @@ Always ask when the change involves:
 |---------|-----------------|
 | Reduce `FLICKR_WM_MAX` to fix CPU | Do not — ask for alternatives |
 | `Promise.all` for bulk Flickr ops | Use a worker pool with concurrency=3 max |
-| Server-side ZIP (Flickr fetch in loop) | Client-side ZIP only (`download-urls` endpoint) |
+| Buffered server-side ZIP or browser full-album ZIP | Streaming album ZIP, one photo at a time |
 | Commit `photo-server/` to git | Never — fly deploy only |
 | Calling `assertCircuitClosed()` from `download-urls` | No Flickr REST in that endpoint — DB lookups only |
 | Adding `data-i18n` skip to `shouldSkip()` in i18n.js | Do not — DICT engine handles all elements |

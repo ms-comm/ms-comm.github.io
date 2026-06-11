@@ -109,7 +109,7 @@ readDimensionsFromCdn(flickrWatermarkUrl) // reads EXIF/dimensions from CDN stre
 | Server-side ZIP (`download-all`) | Server downloads all files | Server IP gets 429 after N requests |
 | Client-side ZIP (`download-urls`) | Browser fetches directly | Browser IP — NOT rate limited |
 
-**Rule**: For bulk downloads (ZIP), always use the client-side approach (`download-urls` endpoint). The server should only fetch metadata (`getOriginalUrl`), not the actual photo bytes.
+**Rule**: Purchases still use the client-side approach (`download-urls`). Album ZIP downloads use server streaming because mobile browsers cannot reliably build large ZIP files in memory. The album stream appends one Flickr/local file at a time with `archiver` and `store:true`; do not buffer the whole ZIP.
 
 ## Watermarking
 

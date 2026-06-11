@@ -42,11 +42,13 @@ private album     → flickrOriginalId or flickrWatermarkId (album code required
 Individual download uses `streamFlickrSized` which does **server-side streaming** (pipes Flickr → client without buffering). For "Original" it uses `originalsecret` URL; for sized it uses CDN size suffixes (`_h`, `_k`, etc.).
 
 ### publicApi.js - Album ZIP
-- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` returns `{ zipName, files[] }` for browser-side ZIP creation.
-- `ids` is optional. When present, only those selected photo IDs are returned; used by the mobile-friendly album selection download.
+- `POST /api/public/albums/:id/download` streams a ZIP directly from Fly to the browser. The website sends a form POST so private album codes stay in the body, not the URL.
+- Body fields: `mode=watermark|original`, optional `code=xxx`, optional `ids=id1,id2`.
+- The ZIP uses `archiver` with `store:true` and appends one local/Flickr stream at a time. Fly does not buffer the full ZIP or all photos in memory.
+- `ids` is optional. When present, only those selected photo IDs are streamed; used by the album selection download.
 - `mode=watermark` is allowed for public albums and private albums with code.
 - `mode=original` is allowed only for private albums with a valid code. Public paid originals still require order download tokens.
-- Legacy `POST /api/public/albums/:id/download` returns `410`; server-side album ZIP is disabled to avoid leaking public originals and to avoid Flickr CDN 429 from the Fly IP.
+- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` remains available as metadata fallback for browser-side ZIP creation.
 
 ### adminPhotos.js - Trash
 - Default admin delete is soft-delete: sets `deletedAt`, stores `previousDownloadType`/`previousAlbumId`, changes `downloadType` to `private`, and flips the Flickr watermark copy private best-effort.

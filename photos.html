@@ -2150,59 +2150,45 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (!currentAlbumId) return;
   const ids = selectedOnly ? Array.from(selectedAlbumPhotoIds) : [];
   if (selectedOnly && !ids.length) { alert('Sélectionnez au moins une photo.'); return; }
-  if (typeof fflate === 'undefined') { alert('Bibliothèque ZIP non chargée — rechargez la page.'); return; }
-  if (btnEl) btnEl.disabled = true;
+  if (mode === 'original' && !currentAlbumCode) {
+    alert('Le téléchargement sans filigrane est disponible uniquement après déverrouillage d’un album privé.');
+    return;
+  }
+
   const origLabel = lblEl ? lblEl.textContent : '';
-  let objectUrl = null;
   try {
-    if (lblEl) lblEl.textContent = 'Chargement…';
-    const params = new URLSearchParams({ mode });
-    if (currentAlbumCode) params.set('code', currentAlbumCode);
-    if (ids.length) params.set('ids', ids.join(','));
-    const r = await fetch(`${API}/api/public/albums/${currentAlbumId}/download-urls?${params.toString()}`);
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      throw new Error(err.error || `Erreur ${r.status}`);
-    }
-    const data = await r.json();
-    if (!data.files?.length) throw new Error('Aucune photo dans cet album');
+    if (btnEl) btnEl.disabled = true;
+    if (lblEl) lblEl.textContent = 'Préparation...';
 
-    const zipFiles = {};
-    for (let i = 0; i < data.files.length; i++) {
-      const f = data.files[i];
-      if (lblEl) lblEl.textContent = `${i + 1} / ${data.files.length}…`;
-      const photoUrl = /^https?:\/\//.test(f.url) ? f.url : `${API}${f.url}`;
-      const fr = await fetch(photoUrl);
-      if (!fr.ok) throw new Error(`Échec ${f.filename} (${fr.status})`);
-      zipFiles[f.filename] = [new Uint8Array(await fr.arrayBuffer()), { level: 0 }];
-    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download`;
+    form.style.display = 'none';
 
-    if (lblEl) lblEl.textContent = 'Création ZIP…';
-    const zipped = fflate.zipSync(zipFiles);
-    const blob = new Blob([zipped], { type: 'application/zip' });
-    objectUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = objectUrl;
-    a.download = data.zipName || `album-${currentAlbumId}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => { if (objectUrl) URL.revokeObjectURL(objectUrl); }, 30000);
+    const addField = (name, value) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+    addField('mode', mode);
+    if (currentAlbumCode) addField('code', currentAlbumCode);
+    if (ids.length) addField('ids', ids.join(','));
+
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+    if (lblEl) lblEl.textContent = 'Téléchargement lancé';
+    setTimeout(() => { if (lblEl && origLabel) lblEl.textContent = origLabel; }, 2500);
   } catch (err) {
-    console.error('[ZIP album client]', err);
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    const msg = String(err?.message || err || '');
-    if (/array buffer|allocation|memory|out of memory/i.test(msg)) {
-      alert('Erreur ZIP : le navigateur mobile manque de mémoire pour créer ce ZIP. Sélectionnez moins de photos et téléchargez la sélection, ou faites le ZIP complet depuis un ordinateur.');
-    } else {
-      alert('Erreur ZIP : ' + msg);
-    }
+    console.error('[ZIP album stream]', err);
+    alert('Erreur ZIP : ' + (err?.message || err));
+    if (lblEl && origLabel) lblEl.textContent = origLabel;
   } finally {
     if (btnEl) btnEl.disabled = false;
-    if (lblEl && origLabel) lblEl.textContent = origLabel;
   }
 }
-
 async function downloadOrderZip(orderId, token, btnEl, lblEl) {
   if (typeof fflate === 'undefined') { alert('Bibliothèque ZIP non chargée — rechargez la page.'); return; }
   if (btnEl) btnEl.disabled = true;

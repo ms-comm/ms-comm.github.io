@@ -50,7 +50,7 @@ fly secrets set KEY="value"        # set env var
 | File | When to read |
 |------|-------------|
 | [docs/server.md](docs/server.md) | Routes, services, DB schema, rate limits, deploy checklist |
-| [docs/website.md](docs/website.md) | Pages, CSS system, i18n, photo gallery, checkout, client-side ZIP |
+| [docs/website.md](docs/website.md) | Pages, CSS system, i18n, photo gallery, checkout, ZIP downloads |
 | [docs/admin_panel.md](docs/admin_panel.md) | Admin SPA tabs, upload flow, face detection, translation editor |
 | [docs/flickr_integration.md](docs/flickr_integration.md) | OAuth, circuit breaker, CDN URLs, watermarking, 429 strategy |
 | [docs/fixes_and_issues.md](docs/fixes_and_issues.md) | Applied fixes, known limitations, pending issues, diagnostics |
@@ -78,7 +78,7 @@ assets/data/translations.json  /admin  (SPA)
 
 ## Key Constraints
 
-- **Photo downloads (ZIP)**: Use client-side approach (`/api/orders/:id/download-urls` for purchases, `/api/public/albums/:id/download-urls` for albums, optional `ids=` for selected album photos) — server only returns same-origin download URLs. Browser fetches files directly. See [docs/flickr_integration.md](docs/flickr_integration.md).
+- **Photo downloads (ZIP)**: Purchases still use client-side ZIP (`/api/orders/:id/download-urls`). Public/private album ZIP uses server streaming `POST /api/public/albums/:id/download` so mobile/desktop do not build the ZIP in browser memory; optional `ids=` downloads only selected album photos.
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Photo trash**: Admin deletion soft-deletes photos into a 7-day trash (`deletedAt`), sets them private, hides them from all public APIs, and allows restore selected/all from the sidebar tab `Corbeille`.
 - **Private album photos**: Uploading into a private album or moving photos into one forces `downloadType: private` server-side and in the admin UI.
@@ -97,8 +97,8 @@ assets/data/translations.json  /admin  (SPA)
 |---------|-------|-----|
 | Admin panel blank | Backend not running | `npm run dev` in photo-server/ |
 | Flickr uploads fail | Circuit breaker open | Wait 10 min or reset in Settings |
-| ZIP download 429 | Server IP rate-limited by Flickr CDN | Use client-side ZIP endpoint |
-| Mobile ZIP memory error | Browser cannot allocate enough RAM for a full album ZIP | Use selected-photo ZIP or download full ZIP on desktop |
+| ZIP download 429 | Server IP rate-limited by Flickr CDN | Album ZIP streams one photo at a time; purchases still use client-side ZIP |
+| Mobile ZIP memory error | Browser cannot allocate enough RAM for a full album ZIP | Album ZIP uses server streaming; purchases may still need selected/smaller downloads |
 | Session errors on Windows | OneDrive/Defender lock | Ignore (suppressed), or set `SESSION_DIR` to temp |
 | `SESSION_SECRET` error on Fly | Env var missing | `fly secrets set SESSION_SECRET="..."` |
 | Translations not updating in EN | `shouldSkip` bug | Check `i18n.js` — `data-i18n` skip must not be present |
