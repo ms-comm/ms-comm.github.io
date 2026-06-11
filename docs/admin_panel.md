@@ -41,6 +41,10 @@
 - Delete actions move photos into the 7-day trash, set them private, and hide them from the public site.
 - Trash mode swaps the bulk toolbar to `Restaurer` for selected photos and `Restaurer tout` for the full trash.
 - Private album share copies only `https://ms-comm.github.io/photos.html?private=1`; the access code is not embedded in the URL and is given separately.
+- Photos uploaded into a private album, moved there from the photo editor, or bulk-moved there are forced to `downloadType: private`; the backend enforces this even if the client sends another type.
+- The list select-all checkbox toggles visible rows: first click selects all current rows, second click clears them. Toolbar actions are grouped into `Visages` and `Sync` menus, with the bulk selection bar using consistent outline buttons.
+- The global topbar no longer shows "Importer des photos"; importing remains available from the Upload sidebar tab.
+- Settings only show worker/job sync details when gallery-app is connected; when offline, the job detail strip is hidden.
 
 ### Upload Flow
 1. File selected / dropped → added to `state.uploadQueue`

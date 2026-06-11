@@ -66,6 +66,20 @@
 .album-download-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .album-download-actions.hidden { display:none; }
 .album-download-actions .lb-btn { min-height:36px; }
+.album-download-menu-wrap { position:relative; display:inline-flex; }
+.album-download-menu {
+  position:absolute; right:0; top:calc(100% + 6px); z-index:20;
+  min-width:220px; padding:6px; border-radius:10px;
+  background:#141414; border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+.album-download-menu button {
+  width:100%; display:flex; align-items:center; gap:8px;
+  padding:9px 10px; border-radius:8px; color:#f0f0f0;
+  background:transparent; border:0; text-align:left; font-size:13px;
+}
+.album-download-menu button:hover { background:rgba(255,255,255,.06); }
+.album-download-menu button:disabled { opacity:.45; cursor:not-allowed; }
 .badge-pub { background:rgba(34,197,94,.1); color:#86efac; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:600; }
 .badge-paid-t { background:rgba(198,155,0,.15); color:var(--gold-2); padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:600; }
 .badge-priv { background:rgba(148,163,184,.1); color:#94a3b8; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:600; }
@@ -1068,15 +1082,17 @@ function updateAlbumSelectionUI() {
   const toggleBtn = document.getElementById('album-select-toggle');
   const clearBtn = document.getElementById('album-clear-selection');
   const selectedBtn = document.getElementById('album-download-selected');
+  const allMenuBtn = document.getElementById('album-download-all-menu-btn');
   const count = selectedAlbumPhotoIds.size;
   if (toggleBtn) toggleBtn.style.display = 'none';
   if (clearBtn) clearBtn.style.display = albumSelectionMode ? 'inline-flex' : 'none';
+  if (allMenuBtn) allMenuBtn.style.display = albumSelectionMode ? 'none' : 'inline-flex';
   if (selectedBtn) {
     selectedBtn.style.display = currentAlbumId && _albumPhotosAll.length > 0 ? 'inline-flex' : 'none';
     selectedBtn.disabled = albumSelectionMode && count === 0;
     const label = selectedBtn.querySelector('span');
     if (label) {
-      if (!albumSelectionMode) label.textContent = 'Télécharger une sélection';
+      if (!albumSelectionMode) label.textContent = 'Télécharger la sélection';
       else label.textContent = count > 0
         ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumCode ? ' (sans filigrane)' : ''}`
         : 'Sélectionnez des photos';
@@ -2022,12 +2038,79 @@ function getOrderToken(url) {
   try { return new URL(url).searchParams.get('token') || ''; } catch { return ''; }
 }
 
+function albumDownloadMenuHTML(id) {
+  return `<div class="album-download-menu hidden" id="${id}">
+    <button type="button" data-mode="watermark">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Avec filigrane</span>
+    </button>
+    <button type="button" data-mode="original">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Sans filigrane</span>
+    </button>
+  </div>`;
+}
+
+function ensureAlbumDownloadMenus() {
+  const actions = document.getElementById('album-download-actions');
+  const selectedBtn = document.getElementById('album-download-selected');
+  if (!actions || !selectedBtn || document.getElementById('album-download-all-menu-btn')) return;
+
+  const allWrap = document.createElement('div');
+  allWrap.className = 'album-download-menu-wrap';
+  allWrap.innerHTML = `<button class="lb-btn lb-btn-dl" id="album-download-all-menu-btn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span>Tout télécharger</span>
+  </button>${albumDownloadMenuHTML('album-download-all-menu')}`;
+  actions.insertBefore(allWrap, selectedBtn);
+
+  const selectedWrap = document.createElement('div');
+  selectedWrap.className = 'album-download-menu-wrap';
+  selectedBtn.parentNode.insertBefore(selectedWrap, selectedBtn);
+  selectedWrap.appendChild(selectedBtn);
+  selectedWrap.insertAdjacentHTML('beforeend', albumDownloadMenuHTML('album-download-selected-menu'));
+
+  document.getElementById('album-download-watermark')?.classList.add('hidden');
+  document.getElementById('album-download-original')?.classList.add('hidden');
+}
+
+function closeAlbumDownloadMenus() {
+  document.querySelectorAll('.album-download-menu').forEach(m => m.classList.add('hidden'));
+}
+
+function openAlbumDownloadMenu(menuId, selectedOnly) {
+  const menu = document.getElementById(menuId);
+  if (!menu) return;
+  closeAlbumDownloadMenus();
+  const originalBtn = menu.querySelector('[data-mode="original"]');
+  if (originalBtn) {
+    originalBtn.disabled = !currentAlbumCode;
+    originalBtn.title = currentAlbumCode ? '' : 'Disponible uniquement avec un album privé déverrouillé.';
+  }
+  menu.querySelectorAll('button[data-mode]').forEach(btn => {
+    btn.onclick = () => {
+      const mode = btn.dataset.mode;
+      if (mode === 'original' && !currentAlbumCode) {
+        alert('Le téléchargement sans filigrane est disponible uniquement après déverrouillage d’un album privé.');
+        return;
+      }
+      closeAlbumDownloadMenus();
+      downloadAlbumZip(mode, btn, btn.querySelector('span'), selectedOnly);
+    };
+  });
+  menu.classList.remove('hidden');
+}
+
 function setupAlbumZipButtons() {
   const wmBtn = document.getElementById('album-download-watermark');
   const origBtn = document.getElementById('album-download-original');
   const selectBtn = document.getElementById('album-select-toggle');
   const clearBtn = document.getElementById('album-clear-selection');
   const selectedBtn = document.getElementById('album-download-selected');
+  ensureAlbumDownloadMenus();
+  const allMenuBtn = document.getElementById('album-download-all-menu-btn');
+  wmBtn?.classList.add('hidden');
+  origBtn?.classList.add('hidden');
   wmBtn?.addEventListener('click', () => {
     const run = () => downloadAlbumZip('watermark', wmBtn, wmBtn.querySelector('span'));
     const now = Date.now();
@@ -2041,6 +2124,7 @@ function setupAlbumZipButtons() {
     }
   });
   origBtn?.addEventListener('click', () => downloadAlbumZip('original', origBtn, origBtn.querySelector('span')));
+  allMenuBtn?.addEventListener('click', () => openAlbumDownloadMenu('album-download-all-menu', false));
   selectBtn?.addEventListener('click', () => setAlbumSelectionMode(!albumSelectionMode));
   clearBtn?.addEventListener('click', () => {
     albumSelectionMode = false;
@@ -2052,10 +2136,14 @@ function setupAlbumZipButtons() {
       setAlbumSelectionMode(true);
       return;
     }
-    const mode = currentAlbumCode ? 'original' : 'watermark';
-    downloadAlbumZip(mode, selectedBtn, selectedBtn.querySelector('span'), true);
+    if (!selectedAlbumPhotoIds.size) return;
+    openAlbumDownloadMenu('album-download-selected-menu', true);
   });
 }
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.album-download-menu-wrap')) closeAlbumDownloadMenus();
+});
 
 async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (!currentAlbumId) return;

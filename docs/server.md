@@ -54,6 +54,10 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - `POST /api/admin/photos/bulk/restore` restores selected ids or `{ all: true }`.
 - A startup/daily purge permanently removes trashed photos older than 7 days from JSON/local files/Flickr best-effort.
 
+### adminPhotos.js - Private Album Enforcement
+- `POST /api/admin/photos/upload` and `PUT /api/admin/photos/:id` force `downloadType: private` whenever the target `albumId` belongs to an album with `type: private`.
+- The enforcement is server-side so upload, single edit, bulk album move, and album-photo membership edits all share the same rule.
+
 ## Services
 
 | File | Purpose |
