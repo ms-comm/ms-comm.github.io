@@ -79,6 +79,7 @@ assets/data/translations.json  /admin  (SPA)
 ## Key Constraints
 
 - **Photo downloads (ZIP)**: Purchases still use client-side ZIP (`/api/orders/:id/download-urls`). Public/private album ZIP uses server streaming `POST /api/public/albums/:id/download` so mobile/desktop do not build the ZIP in browser memory; optional `ids=` downloads only selected album photos.
+- **Album ZIP precheck**: `/api/public/albums/:id/download-check` must not block an album on one Flickr 429; it tests several candidate sources and only blocks if all checked sources fail.
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Photo trash**: Admin deletion soft-deletes photos into a 7-day trash (`deletedAt`), sets them private, hides them from all public APIs, and allows restore selected/all from the sidebar tab `Corbeille`.
 - **Private album photos**: Uploading into a private album or moving photos into one forces `downloadType: private` server-side and in the admin UI.
