@@ -84,6 +84,7 @@ assets/data/translations.json  /admin  (SPA)
 - **Private album photos**: Uploading into a private album or moving photos into one forces `downloadType: private` server-side and in the admin UI.
 - **Flickr private visibility**: `downloadType: private` must set both Flickr original and watermark copies private. `private-nocode` albums follow the same rule as private albums.
 - **Watermark repair**: Admin selected photos without `flickrWatermarkId` can create a watermarked duplicate later via `/api/admin/photos/bulk/create-watermark`; this links `flickrWatermarkId`/`flickrWatermarkUrl` and then re-syncs Flickr visibility.
+- **Preview repair**: Admin selected photos can run `/api/admin/photos/bulk/repair-previews` to refresh `flickrWatermarkUrl` and regenerate local previews from Flickr without reupload; only ask to create a watermark if no `flickrWatermarkId` is linked.
 - **Bulk admin UX**: Long selected-photo actions must show the blocking bulk progress modal and run sequentially so the admin sees progress and cannot trigger conflicting actions.
 - **Album display order**: Public/private album views render photos newest-first (`takenAt || createdAt`) and public album opening reloads album photos from `/api/public/photos?albumId=...` before falling back to cached data.
 - **Private album sharing**: Never put private album codes in URLs. Share `photos.html?private=1` only so the code modal opens immediately; give the code manually or in separate email text.

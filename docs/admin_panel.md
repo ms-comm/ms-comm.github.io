@@ -46,6 +46,7 @@
 - The list select-all checkbox toggles visible rows: first click selects all current rows, second click clears them. Toolbar actions are grouped into `Visages` and `Sync` menus, with the bulk selection bar using consistent outline buttons and sticky positioning while scrolling.
 - Bulk album/type changes run sequentially instead of `Promise.all` so Flickr permission updates do not get burst-rate-limited; a Flickr permission failure is shown as an error instead of a false success.
 - Long selected-photo actions show `bulk-progress-modal`, block the admin UI, and update `done / total` after every photo.
+- Selected photos expose `Réparer aperçus`. It tries to refresh the Flickr URL and recreate the local preview without reupload; if a watermark copy is missing it asks before launching `Filigrane`.
 - Selected photos with `flickrOriginalId` but no `flickrWatermarkId` expose the `Filigrane` action. It calls `/api/admin/photos/bulk/create-watermark`, creates the missing watermarked Flickr copy, stores `flickrWatermarkId`/`flickrWatermarkUrl`, then re-applies the correct Flickr visibility.
 - The global topbar no longer shows "Importer des photos"; importing remains available from the Upload sidebar tab.
 - Settings and topbar only show worker/job sync details when gallery-app is connected; when offline, queued/failed job text is hidden.
