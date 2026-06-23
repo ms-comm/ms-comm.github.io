@@ -1174,16 +1174,41 @@ let _albumPhotosAll = [];
 let _albumCursor    = 0;
 let _albumSentinelObserver = null;
 
-function openAlbum(id) {
+function photoSortDateValue(p) {
+  const value = new Date(p?.takenAt || p?.createdAt || 0).getTime();
+  return Number.isFinite(value) ? value : 0;
+}
+
+function sortPhotosNewestFirst(photos) {
+  return [...(photos || [])].sort((a, b) => photoSortDateValue(b) - photoSortDateValue(a));
+}
+
+async function fetchAlbumPhotos(id, search) {
+  try {
+    const params = new URLSearchParams({ albumId: id });
+    if (search) params.set('search', search);
+    const res = await fetch(`${API}/api/public/photos?${params.toString()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[albums] fallback local photos:', err.message);
+    return allPhotos.filter(p => p.albumId === id && (!search || String(p.title || '').toLowerCase().includes(search)));
+  }
+}
+
+async function openAlbum(id) {
   const album = allAlbums.find(a => a.id === id);
   if (!album) return;
   const search = getSearch();
-  const photos = allPhotos.filter(p => p.albumId === id && (!search || p.title.toLowerCase().includes(search)));
   document.getElementById('albums-grid').style.display = 'none';
   document.getElementById('album-photos-section').classList.remove('hidden');
   document.getElementById('album-section-title').textContent = album.name;
 
   const grid = document.getElementById('album-photos-grid');
+  grid.innerHTML = '<p style="color:var(--muted);grid-column:1/-1">Chargement de l’album...</p>';
+  const photos = sortPhotosNewestFirst(await fetchAlbumPhotos(id, search));
+  const knownIds = new Set((allPhotos || []).map(p => p.id));
+  photos.forEach(p => { if (!knownIds.has(p.id)) allPhotos.push(p); });
   grid.innerHTML = '';
   _albumPhotosAll = photos;
   _albumCursor    = 0;
@@ -1998,13 +2023,13 @@ async function submitCode() {
     closeAccessModal();
     /* Tag each photo with the unlock code so the lightbox can offer free
        downloads (with or without watermark) for the duration of this session. */
-    const privatePhotos = (found.photos || []).map(p => ({
+    const privatePhotos = sortPhotosNewestFirst((found.photos || []).map(p => ({
       ...p,
       downloadType: p.downloadType || 'free-watermark',
       watermarkedUrl: p.watermarkedUrl || `/storage/watermarked/${p.id}.jpg`,
       previewUrl: p.previewUrl || `/storage/previews/${p.id}.jpg`,
       _albumCode: code
-    }));
+    })));
     lbPhotos = privatePhotos;
     _albumPhotosAll = privatePhotos;
     _albumCursor = privatePhotos.length;

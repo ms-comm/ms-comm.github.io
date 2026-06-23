@@ -119,6 +119,7 @@ Album ZIP streaming can still hit Flickr 429 because Fly's server IP fetches the
 - `free`: original public, watermark private when present.
 - `free-watermark` / `paid`: original private, watermark public.
 - Private and private-nocode albums force photo `downloadType: private` on upload and move.
+- Old imports without a watermarked Flickr duplicate can be repaired from the admin bulk `Filigrane` action. It creates `flickrWatermarkId`, saves the URL when Flickr returns one, then runs the same visibility rule above.
 
 ## Watermarking
 

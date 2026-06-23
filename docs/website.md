@@ -56,7 +56,7 @@
 
 ### Views
 - **Timeline**: all photos sorted by date, infinite lazy-load (sentinel IntersectionObserver)
-- **Albums**: grouped by album with the same justified masonry image style as the main gallery; public/private album photo grids use the same visual language
+- **Albums**: grouped by album with the same justified masonry image style as the main gallery; public/private album photo grids use the same visual language and sort photos newest-first (`takenAt || createdAt`)
 - **Faces**: AI face detection results
 - **Mes achats**: purchased photos with "Tout télécharger (ZIP)" button
 
@@ -93,6 +93,7 @@
 - Batch: ~200 photos rendered at a time, IntersectionObserver sentinel at bottom
 - Justified layout: flexbox `flex-grow` on photo tiles (no black holes in grid)
 - `resolveUrl()` picks between Flickr watermark URL and local preview fallback
+- Opening a public album reloads its photos from `/api/public/photos?albumId=...` with `cache:no-store`, then falls back to cached `allPhotos`; this avoids empty album views when the initial global photo payload is stale or incomplete.
 
 ### Private Album Unlock
 - Modal with code input → `POST /api/public/verify-private-code` → success unlocks photos

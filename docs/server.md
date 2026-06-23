@@ -62,6 +62,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - `POST /api/admin/photos/upload` and `PUT /api/admin/photos/:id` force `downloadType: private` whenever the target `albumId` belongs to an album with `type: private` or `type: private-nocode`.
 - The enforcement is server-side so upload, single edit, bulk album move, and album-photo membership edits all share the same rule.
 - `PUT /api/admin/photos/:id` syncs Flickr permissions for both copies: `private` => original + watermark private, `free` => original public + watermark private, `free-watermark/paid` => original private + watermark public.
+- `POST /api/admin/photos/bulk/create-watermark` repairs old imports that have `flickrOriginalId` but no `flickrWatermarkId`: download original, generate watermark, upload the watermark copy, store the Flickr metadata, then run the same visibility sync.
 - `GET/POST /api/admin/photos/upload-history` stores and lists upload batch history in `db/upload-history.json`.
 
 ## Services
