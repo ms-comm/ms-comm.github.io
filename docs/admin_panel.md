@@ -42,7 +42,9 @@
 - Trash mode swaps the bulk toolbar to `Restaurer` for selected photos and `Restaurer tout` for the full trash.
 - Private album share copies only `https://ms-comm.github.io/photos.html?private=1`; the access code is not embedded in the URL and is given separately.
 - Photos uploaded into a private album, moved there from the photo editor, or bulk-moved there are forced to `downloadType: private`; the backend enforces this even if the client sends another type.
-- The list select-all checkbox toggles visible rows: first click selects all current rows, second click clears them. Toolbar actions are grouped into `Visages` and `Sync` menus, with the bulk selection bar using consistent outline buttons.
+- `downloadType: private` means hidden on the public site and hidden on Flickr: both `flickrOriginalId` and `flickrWatermarkId` are set private. `private-nocode` albums are treated the same as private albums for upload/move enforcement.
+- The list select-all checkbox toggles visible rows: first click selects all current rows, second click clears them. Toolbar actions are grouped into `Visages` and `Sync` menus, with the bulk selection bar using consistent outline buttons and sticky positioning while scrolling.
+- Bulk album/type changes run sequentially instead of `Promise.all` so Flickr permission updates do not get burst-rate-limited; a Flickr permission failure is shown as an error instead of a false success.
 - The global topbar no longer shows "Importer des photos"; importing remains available from the Upload sidebar tab.
 - Settings and topbar only show worker/job sync details when gallery-app is connected; when offline, queued/failed job text is hidden.
 
@@ -58,6 +60,7 @@
 6. Pipeline upload (`MAX_IN_FLIGHT=4`): `uploadFile()` returns `{sent, done}` — `sent` resolves on `xhr.upload.onload` (file received by server), `done` resolves when server responds. `tryStartNext()` is called on `sent` so the next file starts uploading while server is doing Flickr upload (~15s). At most 4 concurrent XHRs. ETA = `avgMs × remaining / active`.
 7. Progress modal: shows per-file rows (always visible), connection speed (KB/s or MB/s), ETA, cancel button shows "Annulation…" when clicked
 8. Duplicate detection: checks last-3-days uploads by filename
+9. Upload tab stores a batch history in `upload-history.json`: start/end time, album, visibility, total/imported/failed counts, and per-photo result details.
 
 ### Face Detection
 - `loadFaces()` — load faces + persons from API

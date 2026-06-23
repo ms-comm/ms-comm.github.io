@@ -82,6 +82,7 @@ assets/data/translations.json  /admin  (SPA)
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Photo trash**: Admin deletion soft-deletes photos into a 7-day trash (`deletedAt`), sets them private, hides them from all public APIs, and allows restore selected/all from the sidebar tab `Corbeille`.
 - **Private album photos**: Uploading into a private album or moving photos into one forces `downloadType: private` server-side and in the admin UI.
+- **Flickr private visibility**: `downloadType: private` must set both Flickr original and watermark copies private. `private-nocode` albums follow the same rule as private albums.
 - **Private album sharing**: Never put private album codes in URLs. Share `photos.html?private=1` only so the code modal opens immediately; give the code manually or in separate email text.
 - **i18n**: `shouldSkip()` in `i18n.js` must NOT skip `data-i18n` elements — DICT handles all text nodes. `applyDataI18n` is a dead path (no `_i18n` section in translations.json).
 - **Services catalog**: `services.html` renders editable services from `translations.json._servicesCatalog` via `assets/js/services-catalog.js`; admin edits it from Texts → Services with the same save/GitHub flow as text edits.
@@ -97,7 +98,7 @@ assets/data/translations.json  /admin  (SPA)
 |---------|-------|-----|
 | Admin panel blank | Backend not running | `npm run dev` in photo-server/ |
 | Flickr uploads fail | Circuit breaker open | Wait 10 min or reset in Settings |
-| ZIP download 429 | Server IP rate-limited by Flickr CDN | Album ZIP streams one photo at a time; purchases still use client-side ZIP |
+| ZIP download 429 | Server IP rate-limited by Flickr CDN | Album ZIP probes `/download-check` and shows contact email before starting when Flickr already blocks Fly |
 | Mobile ZIP memory error | Browser cannot allocate enough RAM for a full album ZIP | Album ZIP uses server streaming; purchases may still need selected/smaller downloads |
 | Session errors on Windows | OneDrive/Defender lock | Ignore (suppressed), or set `SESSION_DIR` to temp |
 | `SESSION_SECRET` error on Fly | Env var missing | `fly secrets set SESSION_SECRET="..."` |

@@ -2160,6 +2160,21 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     if (btnEl) btnEl.disabled = true;
     if (lblEl) lblEl.textContent = 'Préparation...';
 
+    const checkBody = new URLSearchParams();
+    checkBody.set('mode', mode);
+    if (currentAlbumCode) checkBody.set('code', currentAlbumCode);
+    if (ids.length) checkBody.set('ids', ids.join(','));
+    const check = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-check`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: checkBody.toString()
+    });
+    if (!check.ok) {
+      const data = await check.json().catch(() => ({}));
+      const email = data.contactEmail || 'mscomm.contact@gmail.com';
+      throw new Error(`${data.error || 'Téléchargement indisponible'}\n\nSi vous rencontrez un problème durant le téléchargement, contactez-nous à ${email}.`);
+    }
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = `${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download`;

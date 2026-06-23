@@ -45,6 +45,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - `POST /api/public/albums/:id/download` streams a ZIP directly from Fly to the browser. The website sends a form POST so private album codes stay in the body, not the URL.
 - Body fields: `mode=watermark|original`, optional `code=xxx`, optional `ids=id1,id2`.
 - The ZIP uses `archiver` with `store:true` and appends one local/Flickr stream at a time. Fly does not buffer the full ZIP or all photos in memory.
+- `POST /api/public/albums/:id/download-check` probes the first Flickr source before the website starts the form download. If Flickr returns 429, the site shows an error with `mscomm.contact@gmail.com`.
 - `ids` is optional. When present, only those selected photo IDs are streamed; used by the album selection download.
 - `mode=watermark` is allowed for public albums and private albums with code.
 - `mode=original` is allowed only for private albums with a valid code. Public paid originals still require order download tokens.
@@ -52,13 +53,16 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 
 ### adminPhotos.js - Trash
 - Default admin delete is soft-delete: sets `deletedAt`, stores `previousDownloadType`/`previousAlbumId`, changes `downloadType` to `private`, and flips the Flickr watermark copy private best-effort.
+- Trash/private visibility sync hides both original and watermark Flickr copies when available.
 - `GET /api/admin/photos?downloadType=trash` lists only trashed photos; normal photo lists exclude `deletedAt`.
 - `POST /api/admin/photos/bulk/restore` restores selected ids or `{ all: true }`.
 - A startup/daily purge permanently removes trashed photos older than 7 days from JSON/local files/Flickr best-effort.
 
 ### adminPhotos.js - Private Album Enforcement
-- `POST /api/admin/photos/upload` and `PUT /api/admin/photos/:id` force `downloadType: private` whenever the target `albumId` belongs to an album with `type: private`.
+- `POST /api/admin/photos/upload` and `PUT /api/admin/photos/:id` force `downloadType: private` whenever the target `albumId` belongs to an album with `type: private` or `type: private-nocode`.
 - The enforcement is server-side so upload, single edit, bulk album move, and album-photo membership edits all share the same rule.
+- `PUT /api/admin/photos/:id` syncs Flickr permissions for both copies: `private` => original + watermark private, `free` => original public + watermark private, `free-watermark/paid` => original private + watermark public.
+- `GET/POST /api/admin/photos/upload-history` stores and lists upload batch history in `db/upload-history.json`.
 
 ## Services
 
