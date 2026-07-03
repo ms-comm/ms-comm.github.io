@@ -125,7 +125,7 @@
 
 - [ ] Test ZIP flow end-to-end after `fly deploy` (client-side approach was not confirmed working before session closed)
 - [ ] Monitor upload stability with large batches (200–300 photos) after browser watermark is deployed
-- [ ] Reduce Fly.io from 2 CPUs to 1 CPU after browser watermark is confirmed working (server CPU now near zero for watermark batches)
+- [x] Reduce Fly.io from 2 CPUs to 1 CPU after browser watermark is confirmed working (scaled to `shared-cpu-1x:512MB` on 2026-07-03)
 
 ---
 

@@ -93,6 +93,7 @@ assets/data/translations.json  /admin  (SPA)
 - **Services catalog**: `services.html` renders editable services from `translations.json._servicesCatalog` via `assets/js/services-catalog.js`; admin edits it from Texts → Services with the same save/GitHub flow as text edits.
 - **Services admin UX**: helper for hierarchy/drafts lives in `photo-server/admin/js/services-admin-ui.js`; keep it in `photo-server/` for Fly deploy because Docker copies only backend files.
 - **Watermark**: Applied once at upload, stored as separate Flickr photo. Never re-applied on download.
+- **Fly.io VM size**: Production app should run on `shared-cpu-1x` with 512 MB RAM + 512 MB swap.
 - **Fly.io volume**: `/data` → `ms_comm_data`. Photos metadata in `db/`, originals (if saved locally) in `storage/originals/`. Most photos are Flickr-only.
 
 ---
