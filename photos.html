@@ -18,6 +18,7 @@
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/i18n.js" defer></script>
   <script src="assets/js/faces.js" defer></script>
+  <script src="assets/js/album-access.js"></script>
   <style>
 /* ===== GALLERY PAGE ===== */
 :root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --red:#ef4444; --green:#22c55e; }
@@ -1031,9 +1032,18 @@ function renderFacesView() {
 /* ===== ALBUMS ===== */
 let currentAlbumId = null;
 let currentAlbumCode = null;
+let currentAlbumAccessType = null;
 let currentAlbumDownloadMode = 'watermark';
 let albumSelectionMode = false;
 let selectedAlbumPhotoIds = new Set();
+
+function currentAlbumAllowsOriginal() {
+  return window.MSAlbumAccess.allowsOriginalAlbumDownload(currentAlbumAccessType);
+}
+
+function canRequestCurrentAlbumDownload(mode) {
+  return window.MSAlbumAccess.canRequestAlbumDownload(currentAlbumAccessType, mode);
+}
 
 function resetAlbumSelection() {
   albumSelectionMode = false;
@@ -1068,7 +1078,7 @@ function updateAlbumSelectionUI() {
     selectedBtn.style.display = count > 0 ? 'inline-flex' : 'none';
     const label = selectedBtn.querySelector('span');
     if (label) label.textContent = count > 0
-      ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumCode ? ' (sans filigrane)' : ''}`
+      ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumAllowsOriginal() ? ' (original disponible)' : ''}`
       : 'Télécharger la sélection';
   }
   document.querySelectorAll('#album-photos-grid .masonry-item[data-photo-id]').forEach(el => {
@@ -1094,7 +1104,7 @@ function updateAlbumSelectionUI() {
     if (label) {
       if (!albumSelectionMode) label.textContent = 'Télécharger la sélection';
       else label.textContent = count > 0
-        ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumCode ? ' (sans filigrane)' : ''}`
+        ? `Télécharger ${count} sélectionnée${count > 1 ? 's' : ''}${currentAlbumAllowsOriginal() ? ' (original disponible)' : ''}`
         : 'Sélectionnez des photos';
     }
   }
@@ -1127,6 +1137,7 @@ function renderAlbums() {
   document.getElementById('albums-empty').classList.toggle('hidden', albums.length > 0);
   currentAlbumId = null;
   currentAlbumCode = null;
+  currentAlbumAccessType = null;
   resetAlbumSelection();
   updateAlbumDownloadActions();
   const grid = document.getElementById('albums-grid');
@@ -1215,6 +1226,7 @@ async function openAlbum(id) {
   lbPhotos        = photos;
   currentAlbumId  = id;
   currentAlbumCode = null;
+  currentAlbumAccessType = album.type || null;
   currentAlbumDownloadMode = 'watermark';
   resetAlbumSelection();
   updateAlbumDownloadActions();
@@ -1266,6 +1278,7 @@ document.getElementById('back-albums-btn').addEventListener('click', () => {
   document.getElementById('album-photos-section').classList.add('hidden');
   currentAlbumId = null;
   currentAlbumCode = null;
+  currentAlbumAccessType = null;
   resetAlbumSelection();
   updateAlbumDownloadActions();
   lbPhotos = allPhotos;
@@ -1292,7 +1305,7 @@ function updateAlbumDownloadActions() {
   if (!wrap || !wmBtn || !origBtn) return;
   const hasPhotos = _albumPhotosAll.length > 0 && currentAlbumId;
   wrap.classList.toggle('hidden', !hasPhotos);
-  origBtn.style.display = currentAlbumCode ? 'inline-flex' : 'none';
+  origBtn.style.display = currentAlbumAllowsOriginal() ? 'inline-flex' : 'none';
   updateAlbumSelectionUI();
 }
 
@@ -1612,14 +1625,15 @@ function dlDimsWatermark(p) {
 
 function buildDlDropdown(p) {
   /* ── Private-album unlocked path ─────────────────────────────────────
-   *  The visitor proved they hold the album code → every photo in this
-   *  album becomes freely downloadable, with or without watermark. The
-   *  album code rides on the download URL so the backend re-validates it
-   *  on every request (no session state required). */
+   *  The code rides on every request. Album type decides whether the UI
+   *  exposes both variants or the watermarked copy only. */
   if (p._albumCode) {
-    const subOriginal  = dlDimsOriginal(p);
+    const allowsOriginal = window.MSAlbumAccess.allowsOriginalAlbumDownload(p._albumType);
     const subWatermark = dlDimsWatermark(p);
-    let html = `<div class="dl-hint">Sans filigrane :</div>
+    let html = '';
+    if (allowsOriginal) {
+      const subOriginal = dlDimsOriginal(p);
+      html += `<div class="dl-hint">Sans filigrane :</div>
       <div class="dl-opt" onclick="downloadPrivateAlbumPhoto('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p._albumCode)}',0)">
         <div class="dl-opt-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1627,8 +1641,9 @@ function buildDlDropdown(p) {
         </div>
         <span class="dl-opt-res">${subOriginal}</span>
       </div>
-      <div class="dl-sep"></div>
-      <div class="dl-hint">Avec filigrane :</div>
+      <div class="dl-sep"></div>`;
+    }
+    html += `<div class="dl-hint">Avec filigrane :</div>
       <div class="dl-opt" onclick="downloadPrivateAlbumPhoto('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p._albumCode)}',1)">
         <div class="dl-opt-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1785,6 +1800,7 @@ document.addEventListener('keydown', e => {
 });
 
 function downloadPrivateAlbumPhoto(id, title, code, wm) {
+  if (wm !== 1 && !currentAlbumAllowsOriginal()) return;
   const url = `${API}/api/public/photos/${id}/download?resolution=original&albumCode=${code}&wm=${wm}`;
   const a = document.createElement('a');
   a.href = url; a.download = `${decodeURIComponent(title)}.jpg`; a.click();
@@ -2021,20 +2037,22 @@ async function submitCode() {
     }
     const found = await res.json();
     closeAccessModal();
-    /* Tag each photo with the unlock code so the lightbox can offer free
-       downloads (with or without watermark) for the duration of this session. */
+    /* Keep code + album type on each photo so the lightbox exposes only the
+       download modes authorized for this private album. */
     const privatePhotos = sortPhotosNewestFirst((found.photos || []).map(p => ({
       ...p,
       downloadType: p.downloadType || 'free-watermark',
       watermarkedUrl: p.watermarkedUrl || `/storage/watermarked/${p.id}.jpg`,
       previewUrl: p.previewUrl || `/storage/previews/${p.id}.jpg`,
-      _albumCode: code
+      _albumCode: code,
+      _albumType: found.album?.type || 'private'
     })));
     lbPhotos = privatePhotos;
     _albumPhotosAll = privatePhotos;
     _albumCursor = privatePhotos.length;
     currentAlbumId = found.album?.id || null;
     currentAlbumCode = code;
+    currentAlbumAccessType = found.album?.type || 'private';
     currentAlbumDownloadMode = 'watermark';
     resetAlbumSelection();
     document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
@@ -2109,16 +2127,15 @@ function openAlbumDownloadMenu(menuId, selectedOnly, progressBtn) {
   closeAlbumDownloadMenus();
   const originalBtn = menu.querySelector('[data-mode="original"]');
   if (originalBtn) {
-    originalBtn.disabled = !currentAlbumCode;
-    originalBtn.title = currentAlbumCode ? '' : 'Disponible uniquement avec un album privé déverrouillé.';
+    const allowsOriginal = currentAlbumAllowsOriginal();
+    originalBtn.classList.toggle('hidden', !allowsOriginal);
+    originalBtn.disabled = !allowsOriginal;
+    originalBtn.title = allowsOriginal ? '' : 'Original indisponible pour cet album.';
   }
   menu.querySelectorAll('button[data-mode]').forEach(btn => {
     btn.onclick = () => {
       const mode = btn.dataset.mode;
-      if (mode === 'original' && !currentAlbumCode) {
-        alert('Le téléchargement sans filigrane est disponible uniquement après déverrouillage d’un album privé.');
-        return;
-      }
+      if (!canRequestCurrentAlbumDownload(mode)) return;
       closeAlbumDownloadMenus();
       const visibleBtn = progressBtn || btn;
       downloadAlbumZip(mode, visibleBtn, visibleBtn.querySelector('span'), selectedOnly);
@@ -2175,10 +2192,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (!currentAlbumId) return;
   const ids = selectedOnly ? Array.from(selectedAlbumPhotoIds) : [];
   if (selectedOnly && !ids.length) { alert('Sélectionnez au moins une photo.'); return; }
-  if (mode === 'original' && !currentAlbumCode) {
-    alert('Le téléchargement sans filigrane est disponible uniquement après déverrouillage d’un album privé.');
-    return;
-  }
+  if (!canRequestCurrentAlbumDownload(mode)) return;
 
   const origLabel = lblEl ? lblEl.textContent : '';
   try {

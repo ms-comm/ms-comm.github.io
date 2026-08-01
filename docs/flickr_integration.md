@@ -47,6 +47,7 @@ Upload strategy per `downloadType`:
 - `paid` → 1× PRIVATE original + 1× PUBLIC watermarked copy
 
 Private photos go into the `__MSCOMM_ORIGINALS__` photoset (auto-created on first use).
+Albums `private`, `private-watermark`, and `private-nocode` force photo `downloadType: private`, so both Flickr copies remain private.
 
 ### Download / Streaming
 
@@ -118,7 +119,8 @@ Album ZIP streaming can still hit Flickr 429 because Fly's server IP fetches the
 - `private`: set both `flickrOriginalId` and `flickrWatermarkId` private.
 - `free`: original public, watermark private when present.
 - `free-watermark` / `paid`: original private, watermark public.
-- Private and private-nocode albums force photo `downloadType: private` on upload and move.
+- Private, private-watermark, and private-nocode albums force photo `downloadType: private` on upload and move.
+- A code-unlocked `private-watermark` album streams only `flickrWatermarkId`; if it is absent, download fails closed instead of falling back to `flickrOriginalId`.
 - Old imports without a watermarked Flickr duplicate can be repaired from the admin bulk `Filigrane` action. It creates `flickrWatermarkId`, saves the URL when Flickr returns one, then runs the same visibility rule above.
 
 ## Watermarking

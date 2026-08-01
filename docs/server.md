@@ -47,8 +47,9 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - The ZIP uses `archiver` with `store:true` and appends one local/Flickr stream at a time. Fly does not buffer the full ZIP or all photos in memory.
 - `POST /api/public/albums/:id/download-check` probes several candidate Flickr sources before the website starts the form download. If every checked source is blocked by Flickr 429, the site shows an error with `mscomm.contact@gmail.com`; one 429 must not block the album if another selected photo is reachable.
 - `ids` is optional. When present, only those selected photo IDs are streamed; used by the album selection download.
-- `mode=watermark` is allowed for public albums and private albums with code.
-- `mode=original` is allowed only for private albums with a valid code. Public paid originals still require order download tokens.
+- `mode=watermark` is allowed for public albums and code-unlocked `private`/`private-watermark` albums.
+- `mode=original` is allowed only for `private` albums with a valid code. `private-watermark` rejects originals even with a valid code; public paid originals still require order download tokens.
+- For `private-watermark`, ZIP, precheck, URL-list, and individual downloads use only `flickrWatermarkId` or `storage/watermarked/:id.jpg`. Missing safe copies return `409`; an original is never used as fallback.
 - `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` remains available as metadata fallback for browser-side ZIP creation.
 
 ### adminPhotos.js - Trash
@@ -59,7 +60,9 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - A startup/daily purge permanently removes trashed photos older than 7 days from JSON/local files/Flickr best-effort.
 
 ### adminPhotos.js - Private Album Enforcement
-- `POST /api/admin/photos/upload` and `PUT /api/admin/photos/:id` force `downloadType: private` whenever the target `albumId` belongs to an album with `type: private` or `type: private-nocode`.
+- `POST /api/admin/photos/upload` and `PUT /api/admin/photos/:id` force `downloadType: private` whenever the target `albumId` belongs to an album with `type: private`, `private-watermark`, or `private-nocode`.
+- `PUT /api/admin/albums/:id` entering a private type synchronizes both Flickr IDs for every linked photo, including trash, to private sequentially before changing the album, then saves active photos as `downloadType: private`; Flickr/configuration failure returns `502` without changing the album type.
+- `POST /api/admin/photos/bulk/restore` reapplies this enforcement to the restored album instead of trusting the historical download type.
 - The enforcement is server-side so upload, single edit, bulk album move, and album-photo membership edits all share the same rule.
 - `PUT /api/admin/photos/:id` syncs Flickr permissions for both copies: `private` => original + watermark private, `free` => original public + watermark private, `free-watermark/paid` => original private + watermark public.
 - `POST /api/admin/photos/bulk/repair-previews` repairs selected-photo thumbnails without reupload: refresh `flickrWatermarkUrl` from Flickr and regenerate `/storage/previews/:id.jpg` from the Flickr watermark/original source when missing.
@@ -83,7 +86,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 |------|-----------|
 | `settings.json` | `adminPassword` (bcrypt), `defaultPrice`, `watermark{}`, `smtp{}`, `flickr{}`, `githubToken` |
 | `photos.json` | `id`, `title`, `albumId`, `flickrOriginalId`, `flickrWatermarkId`, `flickrWatermarkUrl`, `downloadType`, `price`, `ext`, `width`, `height` |
-| `albums.json` | `id`, `name`, `type` (public/private/paid), `code`, `flickrSetId`, `maxDownloads` |
+| `albums.json` | `id`, `name`, `type` (public/private/private-watermark/private-nocode/paid), `code`, `flickrSetId`, `maxDownloads` |
 | `orders.json` | `id`, `status`, `photos[]` (photoId + downloadToken), `orderDownloadToken`, `total`, `customer{}` |
 | `promo-codes.json` | `code`, `discountType` (fixed/percent), `discountValue`, `maxUses`, `uses`, `active` |
 | `persons.json` | `id`, `name` — named faces |

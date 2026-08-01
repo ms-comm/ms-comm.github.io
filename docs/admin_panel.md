@@ -40,9 +40,12 @@
 - Sidebar tab `Corbeille` loads `GET /api/admin/photos?downloadType=trash` while reusing the Photos grid/list.
 - Delete actions move photos into the 7-day trash, set them private, and hide them from the public site.
 - Trash mode swaps the bulk toolbar to `Restaurer` for selected photos and `Restaurer tout` for the full trash.
+- Restore rechecks the destination album type; a photo restored into a now-private album remains `downloadType: private` and cannot be republished accidentally.
 - Private album share copies only `https://ms-comm.github.io/photos.html?private=1`; the access code is not embedded in the URL and is given separately.
-- Photos uploaded into a private album, moved there from the photo editor, or bulk-moved there are forced to `downloadType: private`; the backend enforces this even if the client sends another type.
-- `downloadType: private` means hidden on the public site and hidden on Flickr: both `flickrOriginalId` and `flickrWatermarkId` are set private. `private-nocode` albums are treated the same as private albums for upload/move enforcement.
+- Album type `private-watermark` uses the same code/email fields as `private`, but labels the album `Privé · filigrane` and authorizes only watermarked visitor downloads.
+- Switching an existing non-private album to any private type first makes every linked original/watermark Flickr copy private, including trash, then forces active photo metadata to `downloadType: private`. If Flickr privacy cannot be verified, the type change is rejected.
+- Photos uploaded into a `private`, `private-watermark`, or `private-nocode` album, moved there from the photo editor, or bulk-moved there are forced to `downloadType: private`; the backend enforces this even if the client sends another type.
+- `downloadType: private` means hidden on the public site and hidden on Flickr: both `flickrOriginalId` and `flickrWatermarkId` are set private. `private-watermark` and `private-nocode` albums are treated the same as private albums for upload/move enforcement.
 - The list select-all checkbox toggles visible rows: first click selects all current rows, second click clears them. Toolbar actions are grouped into `Visages` and `Sync` menus, with the bulk selection bar using consistent outline buttons and sticky positioning while scrolling.
 - Bulk album/type changes run sequentially instead of `Promise.all` so Flickr permission updates do not get burst-rate-limited; a Flickr permission failure is shown as an error instead of a false success.
 - Long selected-photo actions show `bulk-progress-modal`, block the admin UI, and update `done / total` after every photo.

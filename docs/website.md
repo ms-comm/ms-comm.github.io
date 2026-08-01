@@ -82,12 +82,13 @@
 ### Album ZIP
 - Public albums show "Tout telecharger (avec filigrane)" only.
 - Private albums unlocked by code also show "Tout telecharger (sans filigrane)".
+- `private-watermark` albums unlock with a code but individual and grouped menus show only "Avec filigrane".
 - Album view uses download menus: "Tout telecharger" opens a choice between watermark/original, and "Telecharger la selection" first enters selection mode, then opens the same choice for selected photos. The magnifier overlay is hidden while selecting, "Annuler" exits selection mode, and the all-download button is hidden until selection mode is cancelled. Public original downloads remain blocked unless a private album is unlocked.
 - `downloadAlbumZip(mode, btnEl, lblEl, selectedOnly)` submits a form POST to `/api/public/albums/:id/download`, optionally with `ids=id1,id2`. The browser receives a streamed ZIP file directly; the page no longer fetches every photo into JS memory.
 - Before submitting the form, the page calls `/api/public/albums/:id/download-check`; if Flickr/Fly is already blocked with 429, it shows a native alert with `mscomm.contact@gmail.com`.
 - Private album code is sent in the POST body, not in the share URL.
 - Button label changes to "Preparation..." then "Telechargement lance"; detailed byte progress is handled by the browser download UI.
-- Security rule: sans-filigrane requires a private album code; public paid originals remain purchase-token only.
+- Security rule: sans-filigrane requires a valid code for an album of type `private`; `private-watermark` never permits originals, and public paid originals remain purchase-token only.
 
 ### Lazy Loading
 - Batch: ~200 photos rendered at a time, IntersectionObserver sentinel at bottom
@@ -97,6 +98,7 @@
 
 ### Private Album Unlock
 - Modal with code input → `POST /api/public/verify-private-code` → success unlocks photos
+- The response includes `album.type`; `private` enables watermark/original actions while `private-watermark` enables watermark actions only.
 - Unlock code stays in memory for the current view and is re-sent per private photo/ZIP download.
 - Private album share links never include the code. Admin shares `photos.html?private=1` so the code modal opens immediately; the code is given separately.
 
