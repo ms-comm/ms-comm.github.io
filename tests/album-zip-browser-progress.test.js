@@ -45,6 +45,7 @@ const byId = {
 };
 
 const context = {
+  setInterval, clearInterval, Date,
   document: {
     getElementById: id => byId[id] || null,
     querySelector: selector => {
@@ -69,6 +70,21 @@ assert.strictEqual(steps.prepare.bar.value, 1, 'preparation bar advances');
 zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste…');
 assert.strictEqual(steps.prepare.count.textContent, '2/3', 'preparation keeps advancing');
 assert.strictEqual(steps.prepare.bar.value, 2);
+
+/* The manifest request can take ~20s at 2/3: the bar must animate (no `value`)
+   and the elapsed-seconds counter must keep changing so it never looks frozen. */
+zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
+assert.strictEqual(steps.prepare.bar.attributes.has('value'), false, 'waiting bar is indeterminate/animated');
+const firstWaitText = steps.prepare.count.textContent;
+assert.match(firstWaitText, /^2\/3 · \d+s$/, 'waiting shows elapsed seconds');
+/* Simulate the wait having started 3s earlier instead of sleeping in the test. */
+zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
+const realNow = Date.now;
+Date.now = () => realNow() + 3000;
+zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
+Date.now = realNow;
+assert.notStrictEqual(steps.prepare.count.textContent, firstWaitText, 'elapsed seconds keep moving');
+assert.match(steps.prepare.count.textContent, /^2\/3 · [1-9]\d*s$/, 'counter reflects the real wait');
 zipProgress.set('prepare', 3, 3, '302 photos prêtes');
 assert.strictEqual(steps.prepare.count.textContent, '3/3', 'preparation completes');
 assert.strictEqual(byId['album-download-progress-count'].textContent, '3/3', 'banner mirrors preparation');

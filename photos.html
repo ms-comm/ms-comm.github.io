@@ -15,8 +15,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/account.css" />
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/account.js" defer></script>
   <script src="assets/js/faces.js" defer></script>
   <script src="assets/js/album-access.js"></script>
   <style>
@@ -1817,6 +1819,18 @@ function buildDlDropdown(p) {
    The modal lives in a dedicated overlay (`#lb-dl-overlay`) — toggling its
    `.open` class shows/hides it. Closes on: × button, backdrop click, ESC. */
 function openDlModal() {
+  /* Account gate. Browsing is anonymous; taking bytes out is not. The check
+     also runs server-side (routes/publicApi.js downloadGate) — hiding the
+     button alone would be bypassed by calling the URL directly. Once signed
+     in, the sheet replays this very action so the visitor lands back on the
+     download options he asked for. */
+  if (window.MSAccount && !window.MSAccount.isSignedIn()) {
+    window.MSAccount.requireAccount({
+      title: 'Connexion requise pour télécharger',
+      message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
+    }).then(ok => { if (ok) openDlModal(); });
+    return;
+  }
   document.getElementById('lb-dl-overlay').classList.add('open');
 }
 function closeDlModal() {
@@ -1847,20 +1861,45 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('lb-dl-overlay').classList.contains('open')) closeDlModal();
 });
 
-function downloadPrivateAlbumPhoto(id, title, code, wm) {
+/* Downloads are cross-site (GitHub Pages -> Fly), so the session cookie is
+   not a reliable carrier on an <a download> navigation. MSAccount.signDownloadUrl
+   appends a short-lived signed ticket instead; it returns null when signed
+   out, in which case we open the sign-in sheet and replay. */
+async function withDownloadTicket(url, replay) {
+  if (!window.MSAccount) return url;
+  const signed = await window.MSAccount.signDownloadUrl(url);
+  if (signed) return signed;
+  const ok = await window.MSAccount.requireAccount({
+    title: 'Connexion requise pour télécharger',
+    message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
+  });
+  if (ok && typeof replay === 'function') replay();
+  return null;
+}
+
+function triggerDownload(url, filename) {
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+}
+
+async function downloadPrivateAlbumPhoto(id, title, code, wm) {
   if (wm !== 1 && !currentAlbumAllowsOriginal()) return;
   const url = `${API}/api/public/photos/${id}/download?resolution=original&albumCode=${code}&wm=${wm}`;
-  const a = document.createElement('a');
-  a.href = url; a.download = `${decodeURIComponent(title)}.jpg`; a.click();
+  const signed = await withDownloadTicket(url, () => downloadPrivateAlbumPhoto(id, title, code, wm));
+  if (!signed) return;
+  triggerDownload(signed, `${decodeURIComponent(title)}.jpg`);
   closeDlModal();
 }
 
-function downloadPhoto(id, ext, title, resolution) {
+async function downloadPhoto(id, ext, title, resolution) {
   const tokens = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
   const token  = tokens[id] ? `&token=${tokens[id]}` : '';
   const url    = `${API}/api/public/photos/${id}/download?resolution=${resolution}${token}`;
-  const a      = document.createElement('a');
-  a.href = url; a.download = `${decodeURIComponent(title)}.jpg`; a.click();
+  /* A purchase token is an authorisation of its own: the buyer paid and may
+     have no account, so that path must never be gated. */
+  const finalUrl = token ? url : await withDownloadTicket(url, () => downloadPhoto(id, ext, title, resolution));
+  if (!finalUrl) return;
+  triggerDownload(finalUrl, `${decodeURIComponent(title)}.jpg`);
   closeDlModal();
 }
 
@@ -2296,7 +2335,7 @@ document.addEventListener('click', e => {
 const zipProgress = (() => {
   const STEPS = ['prepare', 'download', 'zip'];
   const LABELS = { prepare: 'Préparation', download: 'Téléchargement des photos', zip: 'Fabrication du ZIP' };
-  let state = { active: false, step: 'prepare', done: 0, total: 0, current: '' };
+  let state = { active: false, step: 'prepare', done: 0, total: 0, current: '', waiting: false, waitStartedAt: 0 };
   let pulseTimer = null;
   let pulseTicks = 0;
 
@@ -2309,10 +2348,12 @@ const zipProgress = (() => {
     const count = document.getElementById('album-download-progress-count');
     const bar = document.getElementById('album-download-progress-bar');
     if (bannerEl) bannerEl.classList.toggle('hidden', !state.active);
-    /* A step with no countable unit (the manifest request) must still look alive:
-       we drop the `value` attribute so the browser renders its native animated
-       indeterminate bar instead of a frozen empty one. */
-    const indeterminate = state.active && !state.total;
+    /* A step stuck on one long request (the manifest resolves every Flickr URL
+       server-side and can take ~20s) must still look alive: we drop the `value`
+       attribute so the browser renders its native animated indeterminate bar
+       instead of a frozen one, and we show the elapsed seconds. */
+    const indeterminate = state.active && (!state.total || state.waiting);
+    const waitedSeconds = state.waiting ? Math.floor((Date.now() - state.waitStartedAt) / 1000) : 0;
     if (label) label.textContent = state.active ? LABELS[state.step] + '…' : '';
     if (count) count.textContent = state.total ? `${state.done}/${state.total}` : (state.active ? 'en cours' : '');
     if (bar) {
@@ -2332,7 +2373,10 @@ const zipProgress = (() => {
         if (stepCount) stepCount.textContent = 'Terminé';
         if (stepBar) { stepBar.max = 100; stepBar.value = 100; }
       } else if (index === stepIndex) {
-        if (stepCount) stepCount.textContent = state.total ? `${state.done}/${state.total}` : 'en cours' + '.'.repeat(pulseTicks % 4);
+        if (stepCount) {
+          const base = state.total ? `${state.done}/${state.total}` : 'en cours' + '.'.repeat(pulseTicks % 4);
+          stepCount.textContent = state.waiting ? `${base} · ${waitedSeconds}s` : base;
+        }
         if (stepBar) {
           stepBar.max = state.total || 100;
           if (indeterminate) stepBar.removeAttribute('value'); else stepBar.value = state.done;
@@ -2343,28 +2387,32 @@ const zipProgress = (() => {
       }
     }
     const current = document.getElementById('zip-modal-current');
-    if (current) current.textContent = state.current || '';
+    if (current) current.textContent = state.current ? state.current + (state.waiting ? '.'.repeat(pulseTicks % 4) : '') : '';
   }
 
   /* Keeps the countless steps visibly ticking so the user never wonders whether
      the download froze. Stopped as soon as a real count takes over. */
   function syncPulse() {
-    const needed = state.active && !state.total;
+    const needed = state.active && (!state.total || state.waiting);
     if (needed && !pulseTimer) pulseTimer = setInterval(() => { pulseTicks++; render(); }, 450);
     if (!needed && pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; pulseTicks = 0; }
   }
 
   return {
-    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '' }; this.open(); syncPulse(); render(); },
-    set(step, done, total, current) {
+    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '', waiting: false, waitStartedAt: 0 }; this.open(); syncPulse(); render(); },
+    /* `waiting` marks a step that cannot report a count while it runs: the bar
+       animates and an elapsed-seconds counter proves the app is not stuck. */
+    set(step, done, total, current, waiting = false) {
       state.active = true; state.step = step;
       if (Number.isFinite(done)) state.done = done;
       if (Number.isFinite(total)) state.total = total;
       state.current = current || '';
+      if (waiting && !state.waiting) state.waitStartedAt = Date.now();
+      state.waiting = Boolean(waiting);
       syncPulse();
       render();
     },
-    stop() { state.active = false; state.current = ''; syncPulse(); render(); this.close(); },
+    stop() { state.active = false; state.current = ''; state.waiting = false; syncPulse(); render(); this.close(); },
     open() { modal()?.classList.remove('hidden'); },
     close() { modal()?.classList.add('hidden'); },
     isActive: () => state.active
@@ -2385,6 +2433,16 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (selectedOnly && !ids.length) { alert('Sélectionnez au moins une photo.'); return; }
   if (!canRequestCurrentAlbumDownload(mode)) return;
 
+  /* Same gate as the single-photo path, applied before any progress state so
+     the visitor never sees a bar start and then die on a 401. */
+  if (window.MSAccount && !window.MSAccount.isSignedIn()) {
+    const ok = await window.MSAccount.requireAccount({
+      title: 'Connexion requise pour télécharger',
+      message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
+    });
+    if (!ok) return;
+  }
+
   /* The browser downloads straight from the Flickr CDN for every device. Measured
      on the 302-photo wedding album: the browser pulls 10/10 photos in 0.4s from the
      home connection while the same URLs answer 429 from the Fly datacenter IP, so
@@ -2404,7 +2462,13 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     const query = new URLSearchParams({ mode });
     if (currentAlbumCode) query.set('code', currentAlbumCode);
     if (ids.length) query.set('ids', ids.join(','));
-    zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos… (cela peut prendre un moment)');
+    /* The manifest endpoint is gated server-side too; carry the signed ticket
+       because this is a cross-site request from GitHub Pages. */
+    if (window.MSAccount) {
+      const ticket = await window.MSAccount.downloadTicket();
+      if (ticket) query.set('dlTicket', ticket);
+    }
+    zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
     const manifestRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-urls?${query}`);
     const manifest = await manifestRes.json().catch(() => ({}));
     if (!manifestRes.ok) throw new Error(manifest.error || 'Préparation impossible');
