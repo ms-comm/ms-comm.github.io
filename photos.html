@@ -67,6 +67,9 @@
 .album-download-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .album-download-actions.hidden { display:none; }
 .album-download-actions .lb-btn { min-height:36px; }
+.album-download-actions .lb-btn.zip-loading { position:relative; }
+.album-download-actions .lb-btn.zip-loading::before { content:'⟳'; display:inline-block; margin-right:7px; animation:zip-spin 1s linear infinite; }
+@keyframes zip-spin { to { transform:rotate(360deg); } }
 .album-download-menu-wrap { position:relative; display:inline-flex; }
 .album-download-menu {
   position:absolute; right:0; top:calc(100% + 6px); z-index:20;
@@ -2212,7 +2215,7 @@ async function resumeStoredAlbumZipJob() {
   const progress = document.getElementById('album-download-progress');
   const progressLabel = document.getElementById('album-download-progress-label');
   const progressBar = document.getElementById('album-download-progress-bar');
-  const showProgress = (text, completed, total) => { progress?.classList.remove('hidden'); if (label) label.textContent = text; if (progressLabel) progressLabel.textContent = text; if (progressBar) { progressBar.max = total || 100; progressBar.value = completed || 0; } };
+  const showProgress = (text, completed, total) => { progress?.classList.remove('hidden'); if (btn) btn.classList.add('zip-loading'); if (label) label.textContent = text; if (progressLabel) progressLabel.textContent = text; if (progressBar) { progressBar.max = total || 100; progressBar.value = completed || 0; } };
   if (btn) btn.disabled = true;
   try {
     let status;
@@ -2220,6 +2223,7 @@ async function resumeStoredAlbumZipJob() {
       const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(saved.jobId)}?token=${encodeURIComponent(saved.token)}`);
       if (response.status === 404 || response.status === 410) { localStorage.removeItem('mscomm_album_zip_job'); return; }
       status = await response.json();
+      if (!status || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) { localStorage.removeItem('mscomm_album_zip_job'); return; }
       if (status.status === 'paused') {
         showProgress('Flickr temporairement indisponible — reprise automatique…', status.completed, status.total);
         await new Promise(resolve => setTimeout(resolve, Math.max(5000, (Date.parse(status.resumeAt) || Date.now() + 5000) - Date.now())));
@@ -2231,7 +2235,7 @@ async function resumeStoredAlbumZipJob() {
       window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(saved.token)}`;
     } else localStorage.removeItem('mscomm_album_zip_job');
   } catch (error) { console.warn('[ZIP resume]', error); }
-  finally { if (btn) btn.disabled = false; }
+  finally { if (btn) { btn.disabled = false; btn.classList.remove('zip-loading'); } }
 }
 
 document.addEventListener('click', e => {
@@ -2255,6 +2259,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   const progressBar = document.getElementById('album-download-progress-bar');
   const showProgress = (label, completed = 0, total = 0) => {
     progress?.classList.remove('hidden');
+    if (btnEl) btnEl.classList.add('zip-loading');
     if (progressLabel) progressLabel.textContent = label;
     if (progressBar) { progressBar.max = total || 100; progressBar.value = completed; }
     if (lblEl) lblEl.textContent = label;
@@ -2285,7 +2290,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     localStorage.removeItem('mscomm_album_zip_job');
     window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(job.token)}`;
   } catch(err) { console.error('[ZIP job]',err); alert(err.message || err); }
-  finally { if(btnEl) btnEl.disabled=false; if(lblEl&&origLabel) lblEl.textContent=origLabel; }
+  finally { if(btnEl) { btnEl.disabled=false; btnEl.classList.remove('zip-loading'); } if(lblEl&&origLabel) lblEl.textContent=origLabel; }
   return;
 
   try {
