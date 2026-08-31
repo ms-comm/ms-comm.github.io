@@ -87,6 +87,7 @@ assets/data/translations.json  /admin  (SPA)
 - **Private album refresh**: Keep private album route context and temporary access in session storage; never place private code in the URL.
 - **ZIP visual state**: While local or server ZIP work runs, button shows animated progress; invalid/stale saved job state must be cleared without displaying `undefined` values.
 - **ZIP immediate feedback**: Set visible progress state before any manifest or server request; private album URL may retain album context but never private code.
+- **ZIP loading icon**: Hide download SVG while animated loading indicator is active; restore it when the job ends.
 - **Album ZIP precheck**: `/api/public/albums/:id/download-check` must not block an album on one Flickr 429; it tests several candidate sources and only blocks if all checked sources fail.
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Private watermark albums**: `private-watermark` requires a code but exposes only baked watermarked copies. Individual, ZIP, precheck, and URL-list endpoints must reject originals and must fail closed when no safe watermark exists; never fall back to an original.
