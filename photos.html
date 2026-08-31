@@ -1320,6 +1320,10 @@ async function openAlbum(id) {
   updateAlbumDownloadActions();
   resumeStoredAlbumZipJob();
 
+  /* Journalise l'ouverture d'album pour la fiche client admin. Best effort :
+     ignoré si le visiteur n'est pas connecté. */
+  if (window.MSAccount) window.MSAccount.logEvent('album_view', { albumId: id });
+
   if (!photos.length) {
     grid.innerHTML = '<p style="color:var(--muted);grid-column:1/-1">Aucune photo dans cet album.</p>';
     return;
@@ -2214,6 +2218,7 @@ async function submitCode() {
     currentAlbumAccessType = found.album?.type || 'private';
     currentAlbumDownloadMode = 'watermark';
     resetAlbumSelection();
+    if (window.MSAccount && found.album?.id) window.MSAccount.logEvent('album_view', { albumId: found.album.id });
     document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
     document.getElementById('albums-grid').style.display = 'none';
     document.getElementById('album-photos-section').classList.remove('hidden');
@@ -2562,6 +2567,95 @@ function formatZipSize(bytes) {
   if (mb >= 1024) return `${(mb / 1024).toFixed(2)} Go`;
   return `${mb.toFixed(mb >= 100 ? 0 : 1)} Mo`;
 }
+
+/* Sequentially fetches every album photo from the Flickr CDN.
+
+   The 429 policy mirrors the server worker (albumZipWorker.js) because the
+   failure mode is the same on a throttled home connection: a rate limit is NOT
+   a download failure. Counting it as one burned the three attempts in ~3 s and
+   killed the whole album mid-way, always at the same photo. Instead a 429
+   pauses, keeps the same photo, and permanently doubles the inter-photo
+   cadence, which is what actually gets a throttled client through the album.
+
+   Injectable dependencies keep this testable without a browser. */
+async function fetchAlbumPhotoBytes({
+  list,
+  onPhoto,
+  onProgress = () => {},
+  formatRemaining = ms => `${Math.round(ms / 1000)}s`,
+  fetchImpl = (...args) => fetch(...args),
+  sleep = ms => new Promise(resolve => setTimeout(resolve, ms)),
+  now = () => Date.now(),
+  log = (...args) => console.warn(...args),
+  initialDelayMs = 500,
+  maxDelayMs = 8000,
+  maxAttempts = 3,
+  retryDelaysMs = [1000, 2000],
+  rateLimitBackoffMs = [20000, 45000, 90000, 120000, 180000, 300000],
+  maxRateLimitPauses = 6
+} = {}) {
+  const startedAt = now();
+  let photoDelayMs = initialDelayMs;
+  let rateLimitPauses = 0;
+  let pausedMs = 0;
+
+  for (let index = 0; index < list.length; index++) {
+    const file = list[index];
+    /* Pauses are excluded from the measured pace so one 429 does not inflate
+       the estimate for every remaining photo. */
+    const perPhotoMs = index > 0 ? (now() - startedAt - pausedMs) / index : 900;
+    onProgress(index, `Image ${index + 1}/${list.length} — ${file.filename} · reste ${formatRemaining(Math.round(perPhotoMs * (list.length - index)))}`, false, 0);
+
+    let lastError = null;
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+      let retryAfterMs = null;
+      let rateLimited = false;
+      try {
+        const response = await fetchImpl(file.directUrl, { cache: 'no-store' });
+        if (response.status === 429) {
+          rateLimited = true;
+          const header = response.headers && response.headers.get ? response.headers.get('retry-after') : null;
+          const seconds = header ? Number(header) : NaN;
+          if (Number.isFinite(seconds) && seconds > 0) retryAfterMs = Math.min(seconds * 1000, 300000);
+        } else if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        } else {
+          onPhoto(file.filename, new Uint8Array(await response.arrayBuffer()));
+          lastError = null;
+          break;
+        }
+      } catch (error) {
+        lastError = error;
+        attempt++;
+        if (attempt >= maxAttempts) break;
+        await sleep(retryDelaysMs[attempt - 1] || retryDelaysMs[retryDelaysMs.length - 1] || 1000);
+        continue;
+      }
+
+      if (rateLimited) {
+        rateLimitPauses++;
+        if (rateLimitPauses > maxRateLimitPauses) {
+          throw new Error(`Flickr limite votre connexion (HTTP 429) à l’image ${index + 1}/${list.length}, après ${maxRateLimitPauses} pauses d’attente. Réessayez dans une dizaine de minutes : votre connexion doit d’abord être débloquée par Flickr.`);
+        }
+        const waitMs = retryAfterMs ?? (rateLimitBackoffMs[rateLimitPauses - 1] || rateLimitBackoffMs[rateLimitBackoffMs.length - 1]);
+        /* Slowing down permanently is what clears the limit: a connection
+           already throttled would be throttled again at the same cadence. */
+        photoDelayMs = Math.min(Math.max(photoDelayMs * 2, 1000), maxDelayMs);
+        log('[ZIP album] HTTP 429', { photo: index + 1, of: list.length, pauseMs: waitMs, cadenceMs: photoDelayMs, pauses: rateLimitPauses });
+        onProgress(index, `Flickr limite le débit — reprise automatique de l’image ${index + 1}/${list.length}`, true, waitMs);
+        await sleep(waitMs);
+        pausedMs += waitMs;
+        onProgress(index, `Reprise à l’image ${index + 1}/${list.length} — ${file.filename}`, false, 0);
+        continue;
+      }
+    }
+
+    if (lastError) throw new Error(`Échec sur ${file.filename} (${lastError.message}). Relancez le téléchargement.`);
+    /* Cadence between photos, raised automatically after each 429. */
+    if (index < list.length - 1) await sleep(photoDelayMs);
+  }
+}
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && !document.getElementById('zip-modal')?.classList.contains('hidden')) { zipProgress.close(); zipProgress.clearDone(); }
 });
@@ -2625,34 +2719,15 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     zipProgress.set('prepare', 3, 3, `${list.length} photos prêtes à être téléchargées`);
 
     const files = {};
-    /* Live estimate: measured average per photo so far, plus the 500 ms spacing.
-       Seeded with a plausible first value so a figure shows from photo 1. */
-    const downloadStartedAt = Date.now();
-    for (let index = 0; index < list.length; index++) {
-      const file = list[index];
-      const perPhotoMs = index > 0 ? (Date.now() - downloadStartedAt) / index : 900;
-      const remainingMs = Math.round(perPhotoMs * (list.length - index));
-      zipProgress.set('download', index, list.length, `Image ${index + 1}/${list.length} — ${file.filename} · reste ${zipProgress.formatRemaining(remainingMs)}`);
-      if (lblEl) lblEl.textContent = `${index + 1}/${list.length}`;
-      let lastError = null;
-      /* Three quick attempts: a single CDN hiccup must not lose the whole album. */
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          const response = await fetch(file.directUrl, { cache: 'no-store' });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          files[file.filename] = [new Uint8Array(await response.arrayBuffer()), { level: 0 }];
-          lastError = null;
-          break;
-        } catch (error) {
-          lastError = error;
-          if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-        }
-      }
-      if (lastError) throw new Error(`Échec sur ${file.filename} (${lastError.message}). Relancez le téléchargement.`);
-      /* 500 ms between photos: keeps the browser well under any Flickr CDN
-         burst threshold on a 300+ photo album. Skipped after the last photo. */
-      if (index < list.length - 1) await new Promise(resolve => setTimeout(resolve, 500));
-    }
+    await fetchAlbumPhotoBytes({
+      list,
+      onPhoto: (filename, bytes) => { files[filename] = [bytes, { level: 0 }]; },
+      onProgress: (index, current, waiting, etaMs) => {
+        zipProgress.set('download', index, list.length, current, waiting, etaMs);
+        if (lblEl) lblEl.textContent = `${index + 1}/${list.length}`;
+      },
+      formatRemaining: zipProgress.formatRemaining
+    });
     zipProgress.set('download', list.length, list.length, 'Toutes les photos sont récupérées');
 
     zipProgress.set('zip', 0, list.length, 'Assemblage de l’archive…');
