@@ -87,6 +87,7 @@
 - `downloadAlbumZip(mode, btnEl, lblEl, selectedOnly)` submits a form POST to `/api/public/albums/:id/download`, optionally with `ids=id1,id2`. The browser receives a streamed ZIP file directly; the page no longer fetches every photo into JS memory.
 - On PC, albums up to 350 files try direct browser download and local `fflate` ZIP first; larger albums or failed direct requests use the resumable server job. Server job identity is retained temporarily in `localStorage` so reloads do not create another job.
 - A dedicated album progress panel reports local photo count, local ZIP creation, server fallback, pauses, and resumed server progress.
+- Private album access is restored after refresh from session storage, scoped to the album; code remains absent from URL and is cleared when the session ends.
 - Before submitting the form, the page calls `/api/public/albums/:id/download-check`; if Flickr/Fly is already blocked with 429, it shows a native alert with `mscomm.contact@gmail.com`.
 - Private album code is sent in the POST body, not in the share URL.
 - Button label changes to "Preparation..." then "Telechargement lance"; detailed byte progress is handled by the browser download UI.

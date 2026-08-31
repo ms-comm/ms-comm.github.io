@@ -37,6 +37,11 @@ async function main() {
 
   const reloaded = createAlbumZipJobs(options);
   assert.strictEqual((await reloaded.getJob('job-1')).albumId, 'album-private');
+  const legacyFile = path.join(root, 'db', 'album-zip-jobs.json');
+  const legacyData = JSON.parse(fs.readFileSync(legacyFile, 'utf8'));
+  delete legacyData['job-1'].dedupeKey;
+  fs.writeFileSync(legacyFile, JSON.stringify(legacyData));
+  assert.strictEqual((await reloaded.findReusableJob({ albumId: 'album-private', mode: 'watermark', photoIds: ['photo-1', 'photo-2'] })).id, 'job-1');
 
   await jobs.markPhotoDownloading('job-1', 'photo-1');
   await jobs.markPhotoComplete('job-1', 'photo-1', { path: 'photos/one.jpg', sizeBytes: 123 });

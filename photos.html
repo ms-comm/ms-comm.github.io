@@ -849,8 +849,16 @@ async function init() {
     document.getElementById('code-input').value = '';
     document.getElementById('code-err').textContent = '';
     document.getElementById('code-input').classList.remove('err');
-    document.getElementById('access-modal').classList.add('open');
-    setTimeout(() => document.getElementById('code-input').focus(), 100);
+    let savedAccess = null;
+    try { savedAccess = JSON.parse(sessionStorage.getItem('mscomm_private_access') || 'null'); } catch {}
+    if (savedAccess?.code) {
+      targetAlbumId = savedAccess.albumId || null;
+      document.getElementById('code-input').value = savedAccess.code;
+      submitCode();
+    } else {
+      document.getElementById('access-modal').classList.add('open');
+      setTimeout(() => document.getElementById('code-input').focus(), 100);
+    }
     return;
   }
 
@@ -1173,6 +1181,10 @@ function renderAlbums() {
 function openPrivateAlbum(id) {
   targetAlbumId = id;
   const album = allAlbums.find(a => a.id === id);
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('mscomm_private_access') || 'null');
+    if (saved?.albumId === id && saved.code) { document.getElementById('code-input').value = saved.code; submitCode(); return; }
+  } catch {}
   document.getElementById('code-input').value = '';
   document.getElementById('code-err').textContent = '';
   document.getElementById('code-input').classList.remove('err');
@@ -2041,6 +2053,7 @@ async function submitCode() {
       return;
     }
     const found = await res.json();
+    sessionStorage.setItem('mscomm_private_access', JSON.stringify({ albumId: found.album?.id || targetAlbumId, code }));
     closeAccessModal();
     /* Keep code + album type on each photo so the lightbox exposes only the
        download modes authorized for this private album. */
