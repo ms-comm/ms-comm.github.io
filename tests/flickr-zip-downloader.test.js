@@ -14,13 +14,13 @@ async function main() {
         server: '1',
         secret: 'secret',
         originalsecret: 'original-secret',
-        originalformat: 'jpg'
+        originalformat: 'jpg',
+        url: 'https://live.staticflickr.com/1/10_sizes-secret_b.jpg'
       };
     },
     async getPhotoUrlExact(id, label) {
       sourceCalls.push(['size', id, label]);
       if (label === 'Large 2048') return 'https://live.staticflickr.com/1/10_sizes-secret_k.jpg';
-      if (label === 'Large 1024') return 'https://live.staticflickr.com/1/10_sizes-secret_b.jpg';
       throw new Error(`Unexpected size ${label}`);
     }
   };
@@ -48,8 +48,7 @@ async function main() {
 
   assert.deepStrictEqual(sourceCalls, [
     ['info', 'flickr-1'],
-    ['size', 'flickr-1', 'Large 2048'],
-    ['size', 'flickr-1', 'Large 1024']
+    ['size', 'flickr-1', 'Large 2048']
   ]);
   assert.deepStrictEqual(httpCalls.map(call => new URL(call.url).pathname), [
     '/1/10_original-secret_o.jpg',
