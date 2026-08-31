@@ -2,6 +2,7 @@
 
 Recent ZIP hardening: album ZIP must only abort on an explicit client request abort, never on a normal response close during archive finalization; Flickr CDN requests use the tested browser User-Agent and stop permanently after three distinct source failures.
 Async album ZIP work uses resumable jobs, one Flickr download at a time, one-hour retention, 5 GB target volume, and one shared CPU.
+Admin Overview rework: the dashboard reads one aggregate (`GET /api/admin/overview`) with period comparison and an actionable `attention[]` queue, and a Clients section (`GET /api/admin/clients`) derives clients from orders by normalised email until real accounts exist. Roadmap and API contracts: [docs/PLAN_REFONTE.md](docs/PLAN_REFONTE.md).
 
 > **Update this file + the relevant `docs/` file at every code change.**
 
@@ -58,6 +59,7 @@ fly secrets set KEY="value"        # set env var
 | [docs/flickr_integration.md](docs/flickr_integration.md) | OAuth, circuit breaker, CDN URLs, watermarking, 429 strategy |
 | [docs/fixes_and_issues.md](docs/fixes_and_issues.md) | Applied fixes, known limitations, pending issues, diagnostics |
 | [docs/guidelines.md](docs/guidelines.md) | Hard rules, image specs, what to ask before changing, common mistakes |
+| [docs/PLAN_REFONTE.md](docs/PLAN_REFONTE.md) | Overview/Clients rework, client accounts, favorites, Atelier MS Comm' — architecture, API contracts, phases |
 
 ---
 
@@ -83,6 +85,7 @@ assets/data/translations.json  /admin  (SPA)
 
 - **Photo downloads (ZIP)**: Album ZIP is built **client-side on every device** from `/api/public/albums/:id/download-urls` + `fflate`. Never route album photo bytes through the server: Flickr 429-rate-limits the Fly IP while the visitor's connection is not limited (measured: browser 10/10 in 0.4s vs 429 from Fly on the same URLs). Purchases also use client-side ZIP (`/api/orders/:id/download-urls`).
 - **Album ZIP UI**: One `zipProgress` controller drives the inline banner and the `#zip-modal` three-step dialog (Préparation / Téléchargement des photos / Fabrication du ZIP), each step with its own bar and live `n/total`. Closing the modal must never cancel the download; the banner stays visible and reopens the panel.
+- **Album ZIP browser cadence**: 500 ms between two photo downloads in `downloadAlbumZip()`, skipped after the last photo.
 - **Album ZIP reuse**: Identical album/mode/policy/exact-Flickr-source selections reuse one queued, running, paused, failed, archiving, or unexpired ready job; a failed job restarts from its checkpoint only after an explicit new POST/click, never from status polling. A policy/source change must invalidate old ZIPs.
 - **Album ZIP progress**: The gallery must show a dedicated progress bar for both PC-local downloads and server preparation; fallback from local to server must be explicit and visible.
 - **Private album refresh**: Keep private album route context and temporary access in session storage; never place private code in the URL.

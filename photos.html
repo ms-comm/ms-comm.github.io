@@ -581,6 +581,10 @@
         <div class="lb-photo-meta" id="lb-meta"></div>
       </div>
       <div class="lb-actions">
+        <button class="lb-btn fav-btn" id="lb-fav" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span id="lb-fav-label">Ajouter aux favoris</span>
+        </button>
         <button class="lb-btn lb-btn-share" id="lb-share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Partager
@@ -1606,6 +1610,10 @@ function renderLightbox() {
 
   buildDlDropdown(p);
   renderFilmstrip();
+  updateLbFavorite();
+  /* Attribute the view to the signed-in client so the admin client sheet can
+     show "Événements consultés". No-op when signed out. */
+  if (window.MSAccount) window.MSAccount.logEvent('photo_view', { photoId: p.id, albumId: p.albumId });
 
   /* Lazy face overlay — degrades silently if no faces or API offline.
    * Skipped entirely when the admin disabled the Visages feature. */
@@ -1945,6 +1953,31 @@ document.getElementById('lb-share').addEventListener('click', () => {
     setTimeout(() => { document.getElementById('lb-share').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Partager`; }, 2000);
   });
 });
+
+/* ===== FAVORITES (lightbox) =====================================
+   The heart stays visible when signed out: hiding it would hide the reason
+   to have an account. Tapping it opens the sign-in sheet and the favourite
+   is applied straight after (MSAccount.toggleFavorite replays itself). */
+function updateLbFavorite() {
+  const btn = document.getElementById('lb-fav');
+  const label = document.getElementById('lb-fav-label');
+  const p = lbPhotos[lbIndex];
+  if (!btn || !p) return;
+  const on = !!(window.MSAccount && window.MSAccount.isFavorite(p.id));
+  btn.classList.toggle('is-fav', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  if (label) label.textContent = on ? 'Dans vos favoris' : 'Ajouter aux favoris';
+}
+
+document.getElementById('lb-fav').addEventListener('click', async () => {
+  const p = lbPhotos[lbIndex];
+  if (!p || !window.MSAccount) return;
+  await window.MSAccount.toggleFavorite(p.id);
+  updateLbFavorite();
+});
+
+if (window.MSAccount) window.MSAccount.onChange(() => updateLbFavorite());
+
 
 function renderFilmstrip() {
   const strip = document.getElementById('lb-filmstrip');
@@ -2496,6 +2529,9 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
         }
       }
       if (lastError) throw new Error(`Échec sur ${file.filename} (${lastError.message}). Relancez le téléchargement.`);
+      /* 500 ms between photos: keeps the browser well under any Flickr CDN
+         burst threshold on a 300+ photo album. Skipped after the last photo. */
+      if (index < list.length - 1) await new Promise(resolve => setTimeout(resolve, 500));
     }
     zipProgress.set('download', list.length, list.length, 'Toutes les photos sont récupérées');
 
@@ -2542,6 +2578,11 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     checkBody.set('mode', mode);
     if (currentAlbumCode) checkBody.set('code', currentAlbumCode);
     if (ids.length) checkBody.set('ids', ids.join(','));
+    /* Legacy server-streaming path (currently unreachable, kept as the
+       fallback). Both the check and the form POST are account-gated
+       server-side, so they carry the ticket too. */
+    const zipTicket = window.MSAccount ? await window.MSAccount.downloadTicket() : null;
+    if (zipTicket) checkBody.set('dlTicket', zipTicket);
     const check = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
@@ -2568,6 +2609,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     addField('mode', mode);
     if (currentAlbumCode) addField('code', currentAlbumCode);
     if (ids.length) addField('ids', ids.join(','));
+    if (zipTicket) addField('dlTicket', zipTicket);
 
     document.body.appendChild(form);
     form.submit();
