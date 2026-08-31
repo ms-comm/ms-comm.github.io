@@ -2227,7 +2227,7 @@ async function resumeStoredAlbumZipJob() {
       status = await response.json();
       if (!status || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) { localStorage.removeItem('mscomm_album_zip_job'); return; }
       if (status.status === 'paused') {
-        showProgress('Flickr temporairement indisponible — reprise automatique…', status.completed, status.total);
+        showProgress(`Serveur : téléchargement en cours — reprise prévue vers ${new Date(status.resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, status.completed, status.total);
         await new Promise(resolve => setTimeout(resolve, Math.max(5000, (Date.parse(status.resumeAt) || Date.now() + 5000) - Date.now())));
       } else showProgress(`Préparation du ZIP… ${status.completed}/${status.total}`, status.completed, status.total);
       if (status.status !== 'ready' && status.status !== 'failed') await new Promise(resolve => setTimeout(resolve, 3000));
@@ -2288,7 +2288,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     localStorage.setItem('mscomm_album_zip_job', JSON.stringify({albumId:currentAlbumId, mode, ids:[...ids].sort(), jobId:job.jobId, token:job.token, updatedAt:Date.now()}));
     if (job.status === 'ready' && job.downloadUrl) { window.location.href = `${API}${job.downloadUrl}?token=${encodeURIComponent(job.token)}`; return; }
     let status;
-    do { await new Promise(r=>setTimeout(r,3000)); const r=await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`); status=await r.json(); if(status.status==='paused'){ showProgress('Flickr temporairement indisponible — reprise automatique…',status.completed,status.total); await new Promise(r=>setTimeout(r,Math.max(5000,Date.parse(status.resumeAt)-Date.now()))); } else showProgress(`Préparation du ZIP… ${status.completed}/${status.total}`,status.completed,status.total); } while(status.status!=='ready'&&status.status!=='failed');
+    do { await new Promise(r=>setTimeout(r,3000)); const r=await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`); status=await r.json(); if(status.status==='paused'){ showProgress(`Serveur : téléchargement en cours — reprise prévue vers ${new Date(status.resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,status.completed,status.total); await new Promise(r=>setTimeout(r,Math.max(5000,Date.parse(status.resumeAt)-Date.now()))); } else showProgress(`Préparation du ZIP… ${status.completed}/${status.total}`,status.completed,status.total); } while(status.status!=='ready'&&status.status!=='failed');
     if(status.status!=='ready') throw new Error('Veuillez réessayer plus tard.');
     localStorage.removeItem('mscomm_album_zip_job');
     window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(job.token)}`;
