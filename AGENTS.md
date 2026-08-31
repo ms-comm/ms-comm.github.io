@@ -92,6 +92,7 @@ assets/data/translations.json  /admin  (SPA)
 - **ZIP retry cap**: Flickr retry/pause wait is capped at 60 seconds; never persist a longer ZIP resume delay.
 - **ZIP transient gateway errors**: Refresh Flickr URL and retry `500/502/503/504` like rate limits; log photo ID and attempt; reset attempt counter after a pause so a temporary CDN error cannot strand the job forever.
 - **Production sessions**: Default `SESSION_DIR` must be `/data/sessions` on Fly, not OS temp; stale cookies may produce one recoverable `ENOENT` and require login once.
+- **ZIP cleanup**: Queued, running, paused, or failed ZIP jobs with no update for 10 minutes are deleted with their temporary files; ready ZIPs keep their existing one-hour TTL.
 - **Album ZIP precheck**: `/api/public/albums/:id/download-check` must not block an album on one Flickr 429; it tests several candidate sources and only blocks if all checked sources fail.
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Private watermark albums**: `private-watermark` requires a code but exposes only baked watermarked copies. Individual, ZIP, precheck, and URL-list endpoints must reject originals and must fail closed when no safe watermark exists; never fall back to an original.
