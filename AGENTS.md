@@ -89,6 +89,7 @@ assets/data/translations.json  /admin  (SPA)
 - **ZIP immediate feedback**: Set visible progress state before any manifest or server request; private album URL may retain album context but never private code.
 - **ZIP loading icon**: Hide download SVG while animated loading indicator is active; restore it when the job ends.
 - **ZIP diagnostics**: Log job start/checkpoint, each 429 retry with exact seconds and resume timestamp, archive start, ready expiry, and terminal failures.
+- **ZIP retry cap**: Flickr retry/pause wait is capped at 60 seconds; never persist a longer ZIP resume delay.
 - **Album ZIP precheck**: `/api/public/albums/:id/download-check` must not block an album on one Flickr 429; it tests several candidate sources and only blocks if all checked sources fail.
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Private watermark albums**: `private-watermark` requires a code but exposes only baked watermarked copies. Individual, ZIP, precheck, and URL-list endpoints must reject originals and must fail closed when no safe watermark exists; never fall back to an original.
