@@ -13,6 +13,8 @@ const controller = source.slice(0, source.indexOf('\ndocument.addEventListener')
 function makeElement(id) {
   return {
     id, textContent: '', max: 100, value: 0,
+    attributes: new Set(['value']),
+    removeAttribute(name) { this.attributes.delete(name); },
     classes: new Set(),
     classList: {
       add(name) { this.owner.classes.add(name); },
@@ -58,6 +60,18 @@ const zipProgress = context.zipProgress;
 zipProgress.start(302);
 assert.strictEqual(byId['zip-modal'].classes.has('hidden'), false, 'modal opens on start');
 assert.strictEqual(byId['album-download-progress'].classes.has('hidden'), false, 'banner visible');
+
+/* Preparation must visibly advance instead of showing an empty frozen bar. */
+zipProgress.set('prepare', 1, 3, 'Vérification de vos accès à l’album…');
+assert.strictEqual(steps.prepare.classes.has('is-active'), true, 'step 1 active');
+assert.strictEqual(steps.prepare.count.textContent, '1/3', 'preparation shows a real count');
+assert.strictEqual(steps.prepare.bar.value, 1, 'preparation bar advances');
+zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste…');
+assert.strictEqual(steps.prepare.count.textContent, '2/3', 'preparation keeps advancing');
+assert.strictEqual(steps.prepare.bar.value, 2);
+zipProgress.set('prepare', 3, 3, '302 photos prêtes');
+assert.strictEqual(steps.prepare.count.textContent, '3/3', 'preparation completes');
+assert.strictEqual(byId['album-download-progress-count'].textContent, '3/3', 'banner mirrors preparation');
 
 zipProgress.set('download', 271, 302, 'Image 272/302 — IMG_2491.jpg');
 assert.strictEqual(byId['album-download-progress-count'].textContent, '271/302');

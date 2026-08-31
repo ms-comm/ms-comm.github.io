@@ -2297,6 +2297,8 @@ const zipProgress = (() => {
   const STEPS = ['prepare', 'download', 'zip'];
   const LABELS = { prepare: 'Préparation', download: 'Téléchargement des photos', zip: 'Fabrication du ZIP' };
   let state = { active: false, step: 'prepare', done: 0, total: 0, current: '' };
+  let pulseTimer = null;
+  let pulseTicks = 0;
 
   const modal = () => document.getElementById('zip-modal');
   const banner = () => document.getElementById('album-download-progress');
@@ -2307,9 +2309,16 @@ const zipProgress = (() => {
     const count = document.getElementById('album-download-progress-count');
     const bar = document.getElementById('album-download-progress-bar');
     if (bannerEl) bannerEl.classList.toggle('hidden', !state.active);
+    /* A step with no countable unit (the manifest request) must still look alive:
+       we drop the `value` attribute so the browser renders its native animated
+       indeterminate bar instead of a frozen empty one. */
+    const indeterminate = state.active && !state.total;
     if (label) label.textContent = state.active ? LABELS[state.step] + '…' : '';
-    if (count) count.textContent = state.total ? `${state.done}/${state.total}` : '';
-    if (bar) { bar.max = state.total || 100; bar.value = state.done; }
+    if (count) count.textContent = state.total ? `${state.done}/${state.total}` : (state.active ? 'en cours' : '');
+    if (bar) {
+      bar.max = state.total || 100;
+      if (indeterminate) bar.removeAttribute('value'); else bar.value = state.done;
+    }
 
     const stepIndex = STEPS.indexOf(state.step);
     for (const [index, name] of STEPS.entries()) {
@@ -2323,8 +2332,11 @@ const zipProgress = (() => {
         if (stepCount) stepCount.textContent = 'Terminé';
         if (stepBar) { stepBar.max = 100; stepBar.value = 100; }
       } else if (index === stepIndex) {
-        if (stepCount) stepCount.textContent = state.total ? `${state.done}/${state.total}` : '…';
-        if (stepBar) { stepBar.max = state.total || 100; stepBar.value = state.done; }
+        if (stepCount) stepCount.textContent = state.total ? `${state.done}/${state.total}` : 'en cours' + '.'.repeat(pulseTicks % 4);
+        if (stepBar) {
+          stepBar.max = state.total || 100;
+          if (indeterminate) stepBar.removeAttribute('value'); else stepBar.value = state.done;
+        }
       } else {
         if (stepCount) stepCount.textContent = '';
         if (stepBar) { stepBar.max = 100; stepBar.value = 0; }
@@ -2334,16 +2346,25 @@ const zipProgress = (() => {
     if (current) current.textContent = state.current || '';
   }
 
+  /* Keeps the countless steps visibly ticking so the user never wonders whether
+     the download froze. Stopped as soon as a real count takes over. */
+  function syncPulse() {
+    const needed = state.active && !state.total;
+    if (needed && !pulseTimer) pulseTimer = setInterval(() => { pulseTicks++; render(); }, 450);
+    if (!needed && pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; pulseTicks = 0; }
+  }
+
   return {
-    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '' }; this.open(); render(); },
+    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '' }; this.open(); syncPulse(); render(); },
     set(step, done, total, current) {
       state.active = true; state.step = step;
       if (Number.isFinite(done)) state.done = done;
       if (Number.isFinite(total)) state.total = total;
       state.current = current || '';
+      syncPulse();
       render();
     },
-    stop() { state.active = false; state.current = ''; render(); this.close(); },
+    stop() { state.active = false; state.current = ''; syncPulse(); render(); this.close(); },
     open() { modal()?.classList.remove('hidden'); },
     close() { modal()?.classList.add('hidden'); },
     isActive: () => state.active
@@ -2374,18 +2395,22 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     if (btnEl) { btnEl.disabled = true; btnEl.classList.add('zip-loading'); }
     if (lblEl) lblEl.textContent = 'Téléchargement…';
     zipProgress.start(0);
-    zipProgress.set('prepare', 0, 0, 'Récupération de la liste des photos…');
+    /* The manifest is a single request, so preparation is reported as explicit
+       sub-steps (3) rather than a bar stuck at zero: the server resolves every
+       Flickr URL here and this can take a while on a large album. */
+    zipProgress.set('prepare', 1, 3, 'Vérification de vos accès à l’album…');
 
     if (typeof fflate === 'undefined') throw new Error('Bibliothèque ZIP non chargée — rechargez la page.');
     const query = new URLSearchParams({ mode });
     if (currentAlbumCode) query.set('code', currentAlbumCode);
     if (ids.length) query.set('ids', ids.join(','));
+    zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos… (cela peut prendre un moment)');
     const manifestRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-urls?${query}`);
     const manifest = await manifestRes.json().catch(() => ({}));
     if (!manifestRes.ok) throw new Error(manifest.error || 'Préparation impossible');
     const list = (manifest.files || []).filter(file => file.directUrl);
     if (!list.length) throw new Error('Aucune photo téléchargeable dans cet album.');
-    zipProgress.set('prepare', list.length, list.length, `${list.length} photos prêtes`);
+    zipProgress.set('prepare', 3, 3, `${list.length} photos prêtes à être téléchargées`);
 
     const files = {};
     for (let index = 0; index < list.length; index++) {
