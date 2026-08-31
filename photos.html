@@ -2194,7 +2194,25 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (selectedOnly && !ids.length) { alert('Sélectionnez au moins une photo.'); return; }
   if (!canRequestCurrentAlbumDownload(mode)) return;
 
+  /* Resumable preparation: Flickr fetches run in the backend worker, so a
+     large album is never exposed as a partial streamed ZIP. */
+  const jobBody = new URLSearchParams({ mode });
+  if (currentAlbumCode) jobBody.set('code', currentAlbumCode);
+  if (ids.length) jobBody.set('ids', ids.join(','));
   const origLabel = lblEl ? lblEl.textContent : '';
+  try {
+    if (btnEl) btnEl.disabled = true;
+    if (lblEl) lblEl.textContent = 'Préparation du ZIP…';
+    const created = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/zip-jobs`, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'}, body:jobBody.toString() });
+    const job = await created.json(); if (!created.ok) throw new Error(job.error || 'Préparation impossible');
+    let status;
+    do { await new Promise(r=>setTimeout(r,3000)); const r=await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`); status=await r.json(); if(status.status==='paused'){ if(lblEl) lblEl.textContent='Flickr temporairement indisponible — reprise automatique…'; await new Promise(r=>setTimeout(r,Math.max(5000,Date.parse(status.resumeAt)-Date.now()))); } else if(lblEl) lblEl.textContent=`Préparation du ZIP… ${status.completed}/${status.total}`; } while(status.status!=='ready'&&status.status!=='failed');
+    if(status.status!=='ready') throw new Error('Veuillez réessayer plus tard.');
+    window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(job.token)}`;
+  } catch(err) { console.error('[ZIP job]',err); alert(err.message || err); }
+  finally { if(btnEl) btnEl.disabled=false; if(lblEl&&origLabel) lblEl.textContent=origLabel; }
+  return;
+
   try {
     if (btnEl) btnEl.disabled = true;
     if (lblEl) lblEl.textContent = 'Préparation...';
