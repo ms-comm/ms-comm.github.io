@@ -47,6 +47,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - Repeated requests for the same album, mode, and exact photo selection reuse the existing active or unexpired ready job; this prevents duplicate Flickr workers.
 - ZIP logs distinguish normal progress, 429 pause/retry timing, archive creation, ready expiry, and terminal worker failure. Non-429 or exhausted retries persist `failed` status instead of leaving a job apparently running.
 - ZIP retry waits are capped at 60 seconds, including Flickr `Retry-After`, to keep user-visible recovery under one minute.
+- On Fly production, `express-session` files persist under `/data/sessions` on the attached volume. `session get suppressed: ENOENT` means an old cookie references a removed session; it is recoverable by logging in again and does not indicate a Flickr failure.
 - Body fields: `mode=watermark|original`, optional `code=xxx`, optional `ids=id1,id2`.
 - The ZIP uses `archiver` with `store:true` and appends one local/Flickr stream at a time. Fly does not buffer the full ZIP or all photos in memory. A normal response close during archive finalization must not abort the archive; only the request `aborted` event may do so.
 - `POST /api/public/albums/:id/download-check` probes several candidate Flickr sources before the website starts the form download. If every checked source is blocked by Flickr 429, the site shows an error with `mscomm.contact@gmail.com`; one 429 must not block the album if another selected photo is reachable.
