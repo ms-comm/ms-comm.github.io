@@ -107,6 +107,17 @@ async function main() {
   assert.strictEqual(paused.retryAfterMs, 5000);
   assert.strictEqual(fs.existsSync(path.join(jobs.getJobDirectory(throttled.id), 'album.zip')), false);
 
+  const gateway = await jobs.createJob({ albumId: 'album-4', estimatedBytes: 10, photos: [{ id: 'gateway', source: 'flickr-gateway', filename: 'gateway.jpg' }] });
+  let gatewayAttempts = 0;
+  const gatewayWorker = createAlbumZipWorker({
+    jobs, sleep: async ms => waits.push(ms),
+    download: async () => { gatewayAttempts += 1; if (gatewayAttempts === 1) { const e = new Error('bad gateway'); e.response = { status: 502, headers: {} }; throw e; } return Readable.from(['gateway']); },
+    createArchive: async ({ destinationPath }) => fs.writeFileSync(destinationPath, 'ready')
+  });
+  await gatewayWorker.processJob(gateway.id);
+  assert.strictEqual(gatewayAttempts, 2);
+  assert.strictEqual((await jobs.getJob(gateway.id)).status, 'ready');
+
   console.log('album ZIP worker tests passed');
 }
 
