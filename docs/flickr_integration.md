@@ -113,6 +113,7 @@ readDimensionsFromCdn(flickrWatermarkUrl) // reads EXIF/dimensions from CDN stre
 **Rule**: Purchases still use the client-side approach (`download-urls`). Album ZIP downloads use server streaming because mobile browsers cannot reliably build large ZIP files in memory. The album stream appends one Flickr/local file at a time with `archiver` and `store:true`; do not buffer the whole ZIP.
 
 Album ZIP workers treat Flickr CDN `500/502/503/504` as transient: they request a fresh Flickr URL on every attempt, log the exact photo and retry schedule, and pause at most 60 seconds before continuing.
+Each attempt first uses the refreshed original CDN URL, then Flickr `getSizes` fallback, with a cache-busting query parameter; private-watermark selection remains restricted to the watermarked Flickr photo.
 
 Album ZIP streaming can still hit Flickr 429 because Fly's server IP fetches the CDN files. The website probes `/api/public/albums/:id/download-check` before opening the download; the check tests several sources and only blocks when all checked sources fail. The server uses a browser-like User-Agent for Flickr CDN fetches and shows a contact message when Flickr is already blocking Fly.
 
