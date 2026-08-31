@@ -236,6 +236,32 @@
 .zip-modal__current{margin:16px 0 0;font-size:12px;color:rgba(255,255,255,.5);min-height:16px;word-break:break-word}
 @media (prefers-reduced-motion:reduce){.zip-step{transition:none}}
 
+/* Success state: replaces the step list once the archive has been handed to
+   the browser, so the last thing the visitor sees is a clear confirmation
+   rather than a panel that just disappears. */
+.zip-done{display:none;flex-direction:column;align-items:center;text-align:center;padding:6px 0 2px}
+.zip-modal.is-done .zip-done{display:flex}
+.zip-modal.is-done .zip-steps,.zip-modal.is-done .zip-modal__hint,.zip-modal.is-done .zip-modal__current{display:none}
+.zip-done__mark{width:56px;height:56px;border-radius:50%;background:rgba(224,178,73,.14);border:1px solid rgba(224,178,73,.45);display:flex;align-items:center;justify-content:center;animation:zipDonePop .42s cubic-bezier(.2,.9,.3,1.3) both}
+.zip-done__mark svg{width:28px;height:28px;stroke:#e0b249;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.zip-done__mark path{stroke-dasharray:32;stroke-dashoffset:32;animation:zipDoneDraw .38s .18s ease-out forwards}
+.zip-done__title{margin:14px 0 0;font-size:15.5px;font-weight:600;animation:zipDoneRise .34s .12s ease-out both}
+.zip-done__sub{margin:6px 0 0;font-size:12.5px;color:rgba(255,255,255,.58);animation:zipDoneRise .34s .2s ease-out both}
+.zip-done__actions{display:flex;gap:10px;margin-top:18px;animation:zipDoneRise .34s .28s ease-out both}
+.zip-done__btn{border-radius:9px;padding:9px 16px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:none;color:#fff;transition:background .18s ease,border-color .18s ease}
+.zip-done__btn:hover{background:rgba(255,255,255,.09)}
+.zip-done__btn--primary{background:#e0b249;border-color:#e0b249;color:#15161a;font-weight:600}
+.zip-done__btn--primary:hover{background:#eec163}
+.zip-done__btn[hidden]{display:none}
+.zip-done__expiry{margin:10px 0 0;font-size:11.5px;color:rgba(255,255,255,.4)}
+@keyframes zipDonePop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes zipDoneDraw{to{stroke-dashoffset:0}}
+@keyframes zipDoneRise{from{transform:translateY(7px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .zip-done__mark,.zip-done__title,.zip-done__sub,.zip-done__actions{animation:none}
+  .zip-done__mark path{animation:none;stroke-dashoffset:0}
+}
+
 /* ===== LIGHTBOX ===== */
 .lb-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:400; flex-direction:column; }
 .lb-overlay.open { display:flex; }
@@ -2466,7 +2492,7 @@ const zipProgress = (() => {
   }
 
   return {
-    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '', waiting: false, waitStartedAt: 0, etaMs: 0 }; this.open(); syncPulse(); render(); },
+    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '', waiting: false, waitStartedAt: 0, etaMs: 0 }; this.clearDone(); this.open(); syncPulse(); render(); },
     /* `waiting` marks a step that cannot report a count while it runs: the bar
        animates and an elapsed-seconds counter proves the app is not stuck. */
     set(step, done, total, current, waiting = false, etaMs = 0) {
@@ -2481,6 +2507,39 @@ const zipProgress = (() => {
       render();
     },
     stop() { state.active = false; state.current = ''; state.waiting = false; state.etaMs = 0; syncPulse(); render(); this.close(); },
+    /* Terminal success: keeps the panel open on a confirmation instead of
+       closing it, so a finished download is acknowledged rather than guessed.
+       `onAgain` is provided only while the archive is still held in memory. */
+    succeed({ subtitle, expiryLabel, onAgain }) {
+      state.active = false; state.current = ''; state.waiting = false; state.etaMs = 0;
+      syncPulse();
+      render();
+      const sub = document.getElementById('zip-done-sub');
+      if (sub) sub.textContent = subtitle || '';
+      const expiry = document.getElementById('zip-done-expiry');
+      if (expiry) expiry.textContent = expiryLabel || '';
+      const again = document.getElementById('zip-done-again');
+      if (again) {
+        again.hidden = !onAgain;
+        again.onclick = onAgain || null;
+      }
+      modal()?.classList.add('is-done');
+      this.open();
+    },
+    /* Any new run, or dismissing the panel, must leave the success state. */
+    clearDone() {
+      modal()?.classList.remove('is-done');
+      const again = document.getElementById('zip-done-again');
+      if (again) { again.hidden = true; again.onclick = null; }
+    },
+    /* The cached archive was freed: drop the re-save action but keep the
+       confirmation, so the panel never offers a link that cannot work. */
+    expireDone(expiryLabel) {
+      const again = document.getElementById('zip-done-again');
+      if (again) { again.hidden = true; again.onclick = null; }
+      const expiry = document.getElementById('zip-done-expiry');
+      if (expiry) expiry.textContent = expiryLabel || '';
+    },
     open() { modal()?.classList.remove('hidden'); },
     close() { modal()?.classList.add('hidden'); },
     isActive: () => state.active,
@@ -2489,11 +2548,22 @@ const zipProgress = (() => {
 })();
 
 document.addEventListener('click', event => {
-  if (event.target.closest('[data-zip-close]')) zipProgress.close();
+  if (event.target.closest('[data-zip-close]')) { zipProgress.close(); zipProgress.clearDone(); }
   else if (event.target.closest('#album-download-progress')) zipProgress.open();
 });
+
+/* Shared across runs: a new album ZIP must free the previous cached archive
+   instead of letting two blobs sit in memory. */
+let zipKeepAliveTimer = null;
+
+function formatZipSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '';
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 1024) return `${(mb / 1024).toFixed(2)} Go`;
+  return `${mb.toFixed(mb >= 100 ? 0 : 1)} Mo`;
+}
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && !document.getElementById('zip-modal')?.classList.contains('hidden')) zipProgress.close();
+  if (event.key === 'Escape' && !document.getElementById('zip-modal')?.classList.contains('hidden')) { zipProgress.close(); zipProgress.clearDone(); }
 });
 
 async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
@@ -2519,9 +2589,12 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
      routing the bytes through the server is both slower and rate-limited. */
   const origLabel = lblEl ? lblEl.textContent : '';
   let objectUrl = null;
+  let succeeded = false;
   try {
     if (btnEl) { btnEl.disabled = true; btnEl.classList.add('zip-loading'); }
     if (lblEl) lblEl.textContent = 'Téléchargement…';
+    /* Free any archive still cached from a previous run before building a new one. */
+    if (zipKeepAliveTimer) { clearTimeout(zipKeepAliveTimer); zipKeepAliveTimer = null; }
     zipProgress.start(0);
     /* The manifest is a single request, so preparation is reported as explicit
        sub-steps (3) rather than a bar stuck at zero: the server resolves every
@@ -2599,19 +2672,43 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
 
     const blob = new Blob([zipped], { type: 'application/zip' });
     objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = `album-${currentAlbumId}.zip`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => { if (objectUrl) URL.revokeObjectURL(objectUrl); }, 30000);
+    const filename = `album-${currentAlbumId}.zip`;
+    const saveZip = () => {
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    };
+    saveZip();
+
+    /* The blob is kept alive for 10 minutes so a visitor who cancelled the
+       browser's save dialog, or picked the wrong folder, can re-save without
+       re-downloading 300 photos from Flickr. Revoking frees the memory and
+       removes the button, because a dead object URL would fail silently. */
+    succeeded = true;
+    const keepAliveMs = 10 * 60 * 1000;
+    const expiresAt = Date.now() + keepAliveMs;
+    const summary = `${list.length} photo${list.length > 1 ? 's' : ''} · ${formatZipSize(zipped.length)} · ${filename}`;
+    const showSuccess = () => zipProgress.succeed({
+      subtitle: summary,
+      expiryLabel: `Archive gardée en mémoire encore ${zipProgress.formatRemaining(expiresAt - Date.now())} : réenregistrez-la sans tout retélécharger.`,
+      onAgain: () => { saveZip(); showSuccess(); }
+    });
+    showSuccess();
+    zipKeepAliveTimer = setTimeout(() => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = null;
+      zipProgress.expireDone('Archive libérée de la mémoire. Relancez le téléchargement pour la recréer.');
+    }, keepAliveMs);
   } catch (err) {
     console.error('[ZIP album]', err);
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     alert(err.message || err);
   } finally {
-    zipProgress.stop();
+    /* On success the panel must stay open on its confirmation. */
+    if (!succeeded) zipProgress.stop();
     if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('zip-loading'); }
     if (lblEl && origLabel) lblEl.textContent = origLabel;
   }
@@ -2755,6 +2852,18 @@ init();
       </li>
     </ol>
     <p class="zip-modal__current" id="zip-modal-current"></p>
+    <div class="zip-done" id="zip-done">
+      <div class="zip-done__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6.5" /></svg>
+      </div>
+      <p class="zip-done__title" id="zip-done-title">ZIP téléchargé avec succès</p>
+      <p class="zip-done__sub" id="zip-done-sub"></p>
+      <div class="zip-done__actions">
+        <button type="button" class="zip-done__btn zip-done__btn--primary" id="zip-done-again">Retélécharger</button>
+        <button type="button" class="zip-done__btn" data-zip-close>Fermer</button>
+      </div>
+      <p class="zip-done__expiry" id="zip-done-expiry"></p>
+    </div>
   </div>
 </div>
 </body>

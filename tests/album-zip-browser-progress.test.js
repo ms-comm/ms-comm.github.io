@@ -41,7 +41,10 @@ const byId = {
   'album-download-progress-label': wire(makeElement('label')),
   'album-download-progress-count': wire(makeElement('count')),
   'album-download-progress-bar': wire(makeElement('bar')),
-  'zip-modal-current': wire(makeElement('current'))
+  'zip-modal-current': wire(makeElement('current')),
+  'zip-done-sub': wire(makeElement('zip-done-sub')),
+  'zip-done-expiry': wire(makeElement('zip-done-expiry')),
+  'zip-done-again': wire(makeElement('zip-done-again'))
 };
 
 const context = {
@@ -116,6 +119,35 @@ assert.strictEqual(steps.download.classes.has('is-done'), true, 'step 2 done');
 zipProgress.open();
 assert.strictEqual(byId['zip-modal'].classes.has('hidden'), false, 'reopened from the banner');
 assert.strictEqual(steps.zip.count.textContent, '150/302', 'reopened panel shows live state');
+
+/* Success must keep the panel open on a confirmation, not silently vanish. */
+let resaved = 0;
+zipProgress.succeed({
+  subtitle: '302 photos · 1.2 Go · album-x.zip',
+  expiryLabel: 'Archive gardée en mémoire encore environ 10 min',
+  onAgain: () => { resaved++; }
+});
+assert.strictEqual(zipProgress.isActive(), false, 'job is finished');
+assert.strictEqual(byId['zip-modal'].classes.has('hidden'), false, 'panel stays open on success');
+assert.strictEqual(byId['zip-modal'].classes.has('is-done'), true, 'success state is shown');
+assert.strictEqual(byId['album-download-progress'].classes.has('hidden'), true, 'banner hidden once done');
+assert.strictEqual(byId['zip-done-sub'].textContent, '302 photos · 1.2 Go · album-x.zip');
+assert.match(byId['zip-done-expiry'].textContent, /gardée en mémoire/, 'cache window is explained');
+assert.strictEqual(byId['zip-done-again'].hidden, false, 're-download offered while cached');
+byId['zip-done-again'].onclick();
+assert.strictEqual(resaved, 1, 're-download re-saves the cached archive');
+
+/* Once the blob is revoked the button must disappear: a dead object URL would
+   fail silently and look like a broken download. */
+zipProgress.expireDone('Archive libérée de la mémoire.');
+assert.strictEqual(byId['zip-done-again'].hidden, true, 're-download withdrawn after expiry');
+assert.strictEqual(byId['zip-done-again'].onclick, null, 'expired handler is detached');
+assert.strictEqual(byId['zip-done-expiry'].textContent, 'Archive libérée de la mémoire.');
+
+/* A new run must never inherit the previous success screen. */
+zipProgress.start(120);
+assert.strictEqual(byId['zip-modal'].classes.has('is-done'), false, 'success state cleared on a new run');
+assert.strictEqual(byId['zip-modal'].classes.has('hidden'), false, 'modal reopened for the new run');
 
 zipProgress.stop();
 assert.strictEqual(byId['album-download-progress'].classes.has('hidden'), true, 'banner hidden at the end');
