@@ -1230,6 +1230,7 @@ async function openAlbum(id) {
   currentAlbumDownloadMode = 'watermark';
   resetAlbumSelection();
   updateAlbumDownloadActions();
+  resumeStoredAlbumZipJob();
 
   if (!photos.length) {
     grid.innerHTML = '<p style="color:var(--muted);grid-column:1/-1">Aucune photo dans cet album.</p>';
@@ -2059,6 +2060,7 @@ async function submitCode() {
     document.getElementById('albums-grid').style.display = 'none';
     document.getElementById('album-photos-section').classList.remove('hidden');
     updateAlbumDownloadActions();
+    resumeStoredAlbumZipJob();
     const grid = document.getElementById('album-photos-grid');
     grid.innerHTML = privatePhotos.length
       ? privatePhotos.map((p, i) => masonryPhotoHTML(p, i)).join('')
@@ -2182,6 +2184,33 @@ function setupAlbumZipButtons() {
     if (!selectedAlbumPhotoIds.size) return;
     openAlbumDownloadMenu('album-download-selected-menu', true, selectedBtn);
   });
+}
+
+async function resumeStoredAlbumZipJob() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem('mscomm_album_zip_job') || 'null'); } catch { saved = null; }
+  if (!saved || saved.albumId !== currentAlbumId || !saved.jobId || !saved.token) return;
+  const btn = document.getElementById('album-download-all-menu-btn') || document.getElementById('album-download-watermark');
+  const label = btn?.querySelector('span');
+  if (btn) btn.disabled = true;
+  try {
+    let status;
+    do {
+      const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(saved.jobId)}?token=${encodeURIComponent(saved.token)}`);
+      if (response.status === 404 || response.status === 410) { localStorage.removeItem('mscomm_album_zip_job'); return; }
+      status = await response.json();
+      if (status.status === 'paused') {
+        if (label) label.textContent = 'Flickr temporairement indisponible — reprise automatique…';
+        await new Promise(resolve => setTimeout(resolve, Math.max(5000, (Date.parse(status.resumeAt) || Date.now() + 5000) - Date.now())));
+      } else if (label) label.textContent = `Préparation du ZIP… ${status.completed}/${status.total}`;
+      if (status.status !== 'ready' && status.status !== 'failed') await new Promise(resolve => setTimeout(resolve, 3000));
+    } while (status.status !== 'ready' && status.status !== 'failed');
+    if (status.status === 'ready' && status.downloadUrl) {
+      localStorage.removeItem('mscomm_album_zip_job');
+      window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(saved.token)}`;
+    } else localStorage.removeItem('mscomm_album_zip_job');
+  } catch (error) { console.warn('[ZIP resume]', error); }
+  finally { if (btn) btn.disabled = false; }
 }
 
 document.addEventListener('click', e => {
