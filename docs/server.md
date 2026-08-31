@@ -14,6 +14,8 @@
 | `adminPhotos.js` | `/api/admin/photos` | CRUD photos, Flickr/local upload, sharp resize, download |
 | `adminAlbums.js` | `/api/admin/albums` | CRUD albums, email codes for private albums, Flickr photoset sync |
 | `adminOrders.js` | `/api/admin/orders` | Order list, token generation, download |
+| `adminOverview.js` | `/api/admin/overview` | Dashboard aggregate: KPI + delta vs previous window, series, top lists, health, attention queue |
+| `adminClients.js` | `/api/admin/clients` | Client list/detail derived from orders (email key). See [PLAN_REFONTE.md](PLAN_REFONTE.md) |
 | `adminPromoCodes.js` | `/api/admin/promo-codes` | Promo code CRUD, discount application |
 | `adminSettings.js` | `/api/admin/settings` | Config (prices, watermark, SMTP, Flickr keys, GitHub token) |
 | `adminFaces.js` | `/api/admin/faces` | Face detection + tagging via gallery-app worker |
@@ -76,6 +78,29 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - `POST /api/admin/photos/bulk/create-watermark` repairs old imports that have `flickrOriginalId` but no `flickrWatermarkId`: download original, generate watermark, upload the watermark copy, store the Flickr metadata, then run the same visibility sync.
 - `GET/POST /api/admin/photos/upload-history` stores and lists upload batch history in `db/upload-history.json`.
 
++### adminOverview.js / adminClients.js - Dashboard aggregation
+
+- `GET /api/admin/overview?range=7d|30d|90d|12m` returns one payload for the whole dashboard: `kpis` (each with
+  `value`, `previous`, `deltaPct`), `series` (`revenue`, `traffic`, `hourly`, `photoGrowth`), `top`
+  (`photos`, `albums`, `sold`, `clients`), `health` and `attention`.
+- `deltaPct` compares the window to the immediately preceding window of equal length. It is `null` when the previous
+  window is empty, so the UI shows "nouveau" instead of an infinite percentage.
+- `granularity` is `day` up to 90 days and switches to `month` (12 points) for `12m`, keeping the payload small.
+- `attention[]` is the actionable queue: `photos_without_watermark`, `private_album_without_code`, `orders_pending`
+  (over 48 h), `trash_not_empty`, `flickr_breaker_open`, `flickr_not_configured`, `scan_jobs_failed`. Sorted
+  `error` then `warn` then `info`.
+- `photos_without_watermark` only counts non-private photos with a Flickr original but neither `flickrWatermarkId`
+  nor `flickrWatermarkUrl`. Testing `flickrWatermarkId` alone flags the entire Flickr-imported catalogue.
+- `db.isAnyWorkerOnline()` returns a diagnostic object, not a boolean; `health.worker.online` reads `state.online`.
+- `GET /api/admin/clients` has no account system behind it yet. Clients are derived from `orders.json` and keyed by
+  the lowercase-trimmed email, so ids look like `guest:email@example.com` and `type` is `guest`. When
+  `db/accounts.json` appears (phase 2), accounts merge on the same key and become `type: account`.
+- Only paid orders (`paid`, `completed`, or no status) count towards revenue and order counts; a `pending` order
+  still creates the client record with zero revenue.
+- `GET /api/admin/clients/:id` adds `orders[]` with photo thumbnails, `topAlbums[]` (album affinity computed from
+  bought photos), `favorites[]`, `creations[]` and a merged `timeline[]` capped at 30 entries.
+- Both routes are read-only and mounted behind `requireAuth`. Tests: `node tests/insights.test.js`.
+
 ## Services
 
 | File | Purpose |
@@ -86,6 +111,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 | `emailService.js` | Nodemailer: private album access codes, order download links. |
 | `stripeService.js` | Stripe SDK: create payment intent, validate webhook signature. |
 | `analytics.js` | Lightweight download/visit counters in JSON files (capped at 5000 entries). |
+| `insights.js` | Read-only aggregation for Overview + Clients. `getOverview(range)`, `getClients(query)`, `getClientDetail(id)`. Never mutates state. |
 
 ## Database — photo-server/db/ (JSON files on Fly volume)
 

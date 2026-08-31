@@ -88,9 +88,11 @@ async function main() {
     jobs,
     maxAttempts: 3,
     sleep: async ms => waits.push(ms),
+    maxRateLimitPauses: 3,
+    rateLimitBackoffMs: [60000, 120000, 300000],
     download: async ({ attempt }) => {
       attempts += 1;
-      assert.strictEqual(attempt, attempts - 1);
+      assert.strictEqual(attempt, 0, '429 must not consume a normal attempt');
       const error = new Error('rate limited');
       error.response = { status: 429, headers: {} };
       throw error;
@@ -98,16 +100,42 @@ async function main() {
     createArchive: async () => { archiveCalled = true; }
   });
   await throttleWorker.processJob(throttled.id);
-  assert.deepStrictEqual(waits, [5000, 10000]);
-  assert.strictEqual(attempts, 3);
+  assert.deepStrictEqual(waits, [60000, 120000, 300000]);
+  assert.strictEqual(attempts, 4);
   assert.strictEqual(archiveCalled, false);
   const failed = await jobs.getJob(throttled.id);
   assert.strictEqual(failed.status, 'failed');
   assert.strictEqual(failed.photos[0].status, 'failed');
-  assert.strictEqual(failed.photos[0].attempts, 3);
+  assert.strictEqual(failed.photos[0].attempts, 0);
   assert.strictEqual(failed.failedPhotoId, 'limited');
-  assert.match(failed.error, /3 tentatives/);
+  assert.match(failed.error, /429/);
   assert.strictEqual(fs.existsSync(path.join(jobs.getJobDirectory(throttled.id), 'album.zip')), false);
+
+  const recovering = await jobs.createJob({ albumId: 'album-3b', estimatedBytes: 20, photos: [
+    { id: 'r1', source: 'flickr-r1', filename: 'r1.jpg' },
+    { id: 'r2', source: 'flickr-r2', filename: 'r2.jpg' }
+  ] });
+  const recoveryWaits = [];
+  let recoveryCalls = 0;
+  const recoveryWorker = createAlbumZipWorker({
+    jobs,
+    sleep: async ms => recoveryWaits.push(ms),
+    download: async ({ photo }) => {
+      recoveryCalls += 1;
+      if (photo.id === 'r2' && recoveryCalls === 2) {
+        const error = new Error('rate limited');
+        error.response = { status: 429, headers: { 'retry-after': '30' } };
+        throw error;
+      }
+      return Readable.from([photo.id]);
+    },
+    createArchive: async ({ destinationPath }) => fs.writeFileSync(destinationPath, 'ready')
+  });
+  await recoveryWorker.processJob(recovering.id);
+  const recovered = await jobs.getJob(recovering.id);
+  assert.strictEqual(recovered.status, 'ready', '429 must pause and resume, not kill the job');
+  assert.strictEqual(recoveryCalls, 3);
+  assert.deepStrictEqual(recoveryWaits, [1000, 30000], 'inter-photo cadence 1s, Retry-After honoured');
 
   const gateway = await jobs.createJob({ albumId: 'album-4', estimatedBytes: 10, photos: [{ id: 'gateway', source: 'flickr-gateway', filename: 'gateway.jpg' }] });
   let gatewayAttempts = 0;
@@ -146,7 +174,7 @@ async function main() {
 
   const failedBeforeRestart = await jobs.getJob(throttled.id);
   await throttleWorker.processJob(throttled.id);
-  assert.strictEqual(attempts, 3);
+  assert.strictEqual(attempts, 4);
   assert.deepStrictEqual(await jobs.getJob(throttled.id), failedBeforeRestart);
 
   console.log('album ZIP worker tests passed');

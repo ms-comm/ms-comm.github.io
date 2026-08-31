@@ -81,7 +81,8 @@ assets/data/translations.json  /admin  (SPA)
 
 ## Key Constraints
 
-- **Photo downloads (ZIP)**: Purchases still use client-side ZIP (`/api/orders/:id/download-urls`). Public/private album ZIP uses server streaming `POST /api/public/albums/:id/download` so mobile/desktop do not build the ZIP in browser memory; optional `ids=` downloads only selected album photos.
+- **Photo downloads (ZIP)**: Album ZIP is built **client-side on every device** from `/api/public/albums/:id/download-urls` + `fflate`. Never route album photo bytes through the server: Flickr 429-rate-limits the Fly IP while the visitor's connection is not limited (measured: browser 10/10 in 0.4s vs 429 from Fly on the same URLs). Purchases also use client-side ZIP (`/api/orders/:id/download-urls`).
+- **Album ZIP UI**: One `zipProgress` controller drives the inline banner and the `#zip-modal` three-step dialog (Préparation / Téléchargement des photos / Fabrication du ZIP), each step with its own bar and live `n/total`. Closing the modal must never cancel the download; the banner stays visible and reopens the panel.
 - **Album ZIP reuse**: Identical album/mode/policy/exact-Flickr-source selections reuse one queued, running, paused, failed, archiving, or unexpired ready job; a failed job restarts from its checkpoint only after an explicit new POST/click, never from status polling. A policy/source change must invalidate old ZIPs.
 - **Album ZIP progress**: The gallery must show a dedicated progress bar for both PC-local downloads and server preparation; fallback from local to server must be explicit and visible.
 - **Private album refresh**: Keep private album route context and temporary access in session storage; never place private code in the URL.
@@ -89,8 +90,10 @@ assets/data/translations.json  /admin  (SPA)
 - **ZIP immediate feedback**: Set visible progress state before any manifest or server request; private album URL may retain album context but never private code.
 - **ZIP loading icon**: Hide download SVG while animated loading indicator is active; restore it when the job ends.
 - **ZIP diagnostics**: Log job start/checkpoint, source label, HTTP/network failure, alternate-source delay, archive start, ready expiry, and terminal stop after three failures.
-- **ZIP retry cap**: Exactly three aggregate attempts per photo, with 5-second then 10-second delays. The third failure marks the job `failed`; status polling must never restart it.
-- **ZIP transient gateway errors**: `429/500/502/503/504`, metadata failures, and stream failures all advance to the next source instead of repeating the same URL.
+- **ZIP retry cap**: Exactly three aggregate attempts per photo for non-429 failures, with 5-second then 10-second delays. The third failure marks the job `failed`; status polling must never restart it.
+- **ZIP 429 handling**: HTTP 429 is a rate limit, not a source failure. It must NOT consume a normal attempt and must NOT switch source. The job pauses via `pauseForRateLimit` (`status: paused`, `resumeAt`), waits `Retry-After` when present, otherwise 60s/120s/300s, doubles the inter-photo cadence up to 8s, and resumes the same photo. Only after 6 pauses does the job fail.
+- **ZIP cadence**: `interPhotoDelayMs` defaults to 1000 ms and self-adapts upward on each 429 (max 8000 ms).
+- **ZIP transient gateway errors**: `500/502/503/504`, metadata failures, and stream failures advance to the next source instead of repeating the same URL.
 - **ZIP Flickr fallback**: Use the tested browser User-Agent and cache-busting for three distinct sources: original `_o` from owner `getInfo`, exact `Large 2048` `_k` returned by `getSizes`, then validated `_b` URL from `getInfo`. Never manually invent `_k` or accept `getSizes` widest fallback. Strict watermark albums resolve all three from the watermark Flickr photo ID only.
 - **ZIP stream safety**: Stage each Flickr stream through `stream.pipeline()`, remove failed `.part` files without masking the original error, treat archive warnings/errors as terminal before marking ready, and heartbeat `archiving` jobs so cleanup cannot delete an active large archive.
 - **ZIP route failures**: Wrap async Express 4 handlers so filesystem/JSON errors reach middleware; map temporary-storage budget overflow to HTTP 413 instead of leaving requests pending.

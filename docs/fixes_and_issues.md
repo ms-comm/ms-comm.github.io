@@ -21,6 +21,19 @@ Large album exports now prepare in the background, checkpoint each Flickr photo,
 
 The worker now logs `photo N / total` and waits 3 seconds between successful Flickr photos. The legacy stream route has the same spacing and progress logs while older cached frontend pages transition to the job flow.
 
+### [FIXED] Album ZIP — 429 impossible to avoid server-side, moved fully client-side
+**Symptom**: The 302-photo private album `Mariage Sophie&Antoine` could never be prepared; the job died around photo 272 with HTTP 429.
+**Investigation**: A Freebox relay (VM `hermes`, residential IP 91.166.153.228) was built and tested to bypass the limit. Result: the relay also received 429 (20/20 failures on the blocked range), while the browser on the same home connection downloaded the exact same URLs 10/10 in 0.4 s. The Fly IP and the relay are both rate-limited as *servers*; the visitor browser is not.
+**Fix**: Album ZIP no longer uses a server job at all. `downloadAlbumZip()` fetches the Flickr CDN directly from the browser on every device (desktop and mobile) and zips with `fflate`. The relay and its Cloudflare tunnel were disabled, and `FLICKR_RELAY_URL` / `FLICKR_RELAY_SECRET` were unset.
+**Verification**: `tests/album-zip-browser-progress.test.js` (banner/modal sync, close-does-not-cancel) plus the full `tests/` suite; live measurement of browser vs relay vs Fly on the wedding album.
+
+### [FIXED] Album ZIP — job killed at ~photo 272/302 by Flickr 429 (server-side worker)
+**Symptom**: Private album `Mariage Sophie&Antoine` (302 photos, code `JKIFGE`) always failed around photo 272; the ZIP was never produced.
+**Root cause**: `albumZipWorker.js` treated HTTP 429 like any download failure. Each 429 consumed one of the 3 attempts and switched Flickr source — useless, since a 429 rate-limits the Fly IP, not the URL. Three consecutive 429s (5s + 10s waits only) marked the job `failed` permanently. `albumZipJobs.pauseForRateLimit()` existed and `photos.html` already rendered `status: paused` with `resumeAt`, but the worker never called it.
+**Fix**: 429 is now handled separately — no attempt consumed, no source switch. The job pauses (`status: paused`), honours `Retry-After` when present, otherwise backs off 60s/120s/300s, doubles the inter-photo cadence (max 8s), then retries the same photo. Job fails only after 6 pauses. Inter-photo delay lowered from 3s to 1s as the nominal cadence, since the adaptive backoff now absorbs rate limits.
+**Files**: `photo-server/services/albumZipWorker.js`, `photo-server/services/albumZipJobs.js` (`rateLimitPauses` counter).
+**Verification**: `tests/album-zip-worker.test.js` — 429 must not consume an attempt, must pause/resume to `ready`, and must honour `Retry-After`; full `tests/` suite passing.
+
 ### [FIXED] Album ZIP — archive aborted after Flickr 429
 **Root cause**: Production logs showed a 302-photo private album with 213 entries, then Flickr CDN HTTP 429 responses. The response close handler called `archive.abort()` during normal finalization, producing `ArchiverError: archive was aborted` and an unhandled rejection. ZIP retries also waited up to 75 seconds on an already-blocked Fly IP.
 **Fix**: Abort only on the explicit request `aborted` event and never during archive finalization; limit a CDN 429 to one controlled retry, then continue the export with an explicit failed-photo count in logs.

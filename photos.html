@@ -202,6 +202,29 @@
 .purchased-header { padding:8px 4px 18px; border-bottom:1px dashed var(--border); margin-bottom:18px; }
 .purchased-sub { color:var(--muted); font-size:13px; margin:0; }
 
+/* ===== ZIP DOWNLOAD MODAL ===== */
+.zip-modal{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.zip-modal.hidden{display:none}
+.zip-modal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.66);backdrop-filter:blur(3px)}
+.zip-modal__panel{position:relative;width:min(460px,100%);background:#15161a;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px 22px 22px;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#fff}
+.zip-modal__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.zip-modal__head h3{margin:0;font-size:16px;font-weight:600}
+.zip-modal__close{background:none;border:0;color:rgba(255,255,255,.6);font-size:26px;line-height:1;cursor:pointer;padding:0 4px}
+.zip-modal__close:hover{color:#fff}
+.zip-modal__hint{margin:6px 0 16px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.zip-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.zip-step{opacity:.42;transition:opacity .25s ease}
+.zip-step.is-active,.zip-step.is-done{opacity:1}
+.zip-step__head{display:flex;align-items:center;gap:9px;font-size:13.5px;margin-bottom:6px}
+.zip-step__dot{width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:11px;flex:0 0 auto}
+.zip-step.is-active .zip-step__dot{border-color:#e0b249;color:#e0b249}
+.zip-step.is-done .zip-step__dot{background:#e0b249;border-color:#e0b249;color:#15161a;font-weight:700}
+.zip-step__name{flex:1;min-width:0}
+.zip-step__count{font-variant-numeric:tabular-nums;color:rgba(255,255,255,.72);font-size:12.5px}
+.zip-step__bar{width:100%;height:5px;display:block}
+.zip-modal__current{margin:16px 0 0;font-size:12px;color:rgba(255,255,255,.5);min-height:16px;word-break:break-word}
+@media (prefers-reduced-motion:reduce){.zip-step{transition:none}}
+
 /* ===== LIGHTBOX ===== */
 .lb-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:400; flex-direction:column; }
 .lb-overlay.open { display:flex; }
@@ -469,8 +492,12 @@
               </button>
             </div>
           </div>
-          <div id="album-download-progress" class="hidden" style="margin:10px 0;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.04);font-size:13px;color:var(--muted)">
-            <div id="album-download-progress-label">Téléchargement en cours…</div>
+          <div id="album-download-progress" class="hidden" role="button" tabindex="0" title="Afficher le détail du téléchargement" style="margin:10px 0;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.04);font-size:13px;color:var(--muted);cursor:pointer">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div id="album-download-progress-label" style="flex:1;min-width:0">Téléchargement en cours…</div>
+              <span id="album-download-progress-count" style="font-variant-numeric:tabular-nums;color:var(--fg,#fff);font-weight:600"></span>
+              <span style="opacity:.6;font-size:12px;white-space:nowrap">Détails</span>
+            </div>
             <progress id="album-download-progress-bar" max="100" value="0" style="width:100%;margin-top:7px;height:6px"></progress>
           </div>
           <div class="photos-masonry" id="album-photos-grid"></div>
@@ -2209,6 +2236,12 @@ function setupAlbumZipButtons() {
 }
 
 async function resumeStoredAlbumZipJob() {
+  /* Album ZIPs are now built entirely in the browser, so there is no server job
+     to resume. Drop any state left by the previous server-side implementation so
+     an old jobId can never reopen a stale progress bar. */
+  localStorage.removeItem('mscomm_album_zip_job');
+  return;
+  // eslint-disable-next-line no-unreachable
   let saved;
   try { saved = JSON.parse(localStorage.getItem('mscomm_album_zip_job') || 'null'); } catch { saved = null; }
   if (!saved || saved.albumId !== currentAlbumId || !saved.jobId || !saved.token) return;
@@ -2257,75 +2290,159 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.album-download-menu-wrap')) closeAlbumDownloadMenus();
 });
 
+/* ===== ZIP progress controller =====
+ * Single source of truth for the inline banner and the detail modal. Closing the
+ * modal only hides the panel; the running job keeps updating both surfaces. */
+const zipProgress = (() => {
+  const STEPS = ['prepare', 'download', 'zip'];
+  const LABELS = { prepare: 'Préparation', download: 'Téléchargement des photos', zip: 'Fabrication du ZIP' };
+  let state = { active: false, step: 'prepare', done: 0, total: 0, current: '' };
+
+  const modal = () => document.getElementById('zip-modal');
+  const banner = () => document.getElementById('album-download-progress');
+
+  function render() {
+    const bannerEl = banner();
+    const label = document.getElementById('album-download-progress-label');
+    const count = document.getElementById('album-download-progress-count');
+    const bar = document.getElementById('album-download-progress-bar');
+    if (bannerEl) bannerEl.classList.toggle('hidden', !state.active);
+    if (label) label.textContent = state.active ? LABELS[state.step] + '…' : '';
+    if (count) count.textContent = state.total ? `${state.done}/${state.total}` : '';
+    if (bar) { bar.max = state.total || 100; bar.value = state.done; }
+
+    const stepIndex = STEPS.indexOf(state.step);
+    for (const [index, name] of STEPS.entries()) {
+      const el = document.querySelector(`.zip-step[data-step="${name}"]`);
+      if (!el) continue;
+      el.classList.toggle('is-active', index === stepIndex);
+      el.classList.toggle('is-done', index < stepIndex);
+      const stepCount = el.querySelector('[data-count]');
+      const stepBar = el.querySelector('progress');
+      if (index < stepIndex) {
+        if (stepCount) stepCount.textContent = 'Terminé';
+        if (stepBar) { stepBar.max = 100; stepBar.value = 100; }
+      } else if (index === stepIndex) {
+        if (stepCount) stepCount.textContent = state.total ? `${state.done}/${state.total}` : '…';
+        if (stepBar) { stepBar.max = state.total || 100; stepBar.value = state.done; }
+      } else {
+        if (stepCount) stepCount.textContent = '';
+        if (stepBar) { stepBar.max = 100; stepBar.value = 0; }
+      }
+    }
+    const current = document.getElementById('zip-modal-current');
+    if (current) current.textContent = state.current || '';
+  }
+
+  return {
+    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '' }; this.open(); render(); },
+    set(step, done, total, current) {
+      state.active = true; state.step = step;
+      if (Number.isFinite(done)) state.done = done;
+      if (Number.isFinite(total)) state.total = total;
+      state.current = current || '';
+      render();
+    },
+    stop() { state.active = false; state.current = ''; render(); this.close(); },
+    open() { modal()?.classList.remove('hidden'); },
+    close() { modal()?.classList.add('hidden'); },
+    isActive: () => state.active
+  };
+})();
+
+document.addEventListener('click', event => {
+  if (event.target.closest('[data-zip-close]')) zipProgress.close();
+  else if (event.target.closest('#album-download-progress')) zipProgress.open();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !document.getElementById('zip-modal')?.classList.contains('hidden')) zipProgress.close();
+});
+
 async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (!currentAlbumId) return;
   const ids = selectedOnly ? Array.from(selectedAlbumPhotoIds) : [];
   if (selectedOnly && !ids.length) { alert('Sélectionnez au moins une photo.'); return; }
   if (!canRequestCurrentAlbumDownload(mode)) return;
 
-  /* Resumable preparation: Flickr fetches run in the backend worker, so a
-     large album is never exposed as a partial streamed ZIP. */
-  const jobBody = new URLSearchParams({ mode });
-  if (currentAlbumCode) jobBody.set('code', currentAlbumCode);
-  if (ids.length) jobBody.set('ids', ids.join(','));
+  /* The browser downloads straight from the Flickr CDN for every device. Measured
+     on the 302-photo wedding album: the browser pulls 10/10 photos in 0.4s from the
+     home connection while the same URLs answer 429 from the Fly datacenter IP, so
+     routing the bytes through the server is both slower and rate-limited. */
   const origLabel = lblEl ? lblEl.textContent : '';
-  const progress = document.getElementById('album-download-progress');
-  const progressLabel = document.getElementById('album-download-progress-label');
-  const progressBar = document.getElementById('album-download-progress-bar');
-  const showProgress = (label, completed = 0, total = 0) => {
-    progress?.classList.remove('hidden');
-    if (btnEl) btnEl.classList.add('zip-loading');
-    if (progressLabel) progressLabel.textContent = label;
-    if (progressBar) { progressBar.max = total || 100; progressBar.value = completed; }
-    if (lblEl) lblEl.textContent = label;
-  };
+  let objectUrl = null;
   try {
-    if (btnEl) btnEl.disabled = true;
-    showProgress('Démarrage du téléchargement…');
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (!isMobile && typeof fflate !== 'undefined') {
-      const q = new URLSearchParams({ mode }); if (currentAlbumCode) q.set('code', currentAlbumCode); if (ids.length) q.set('ids', ids.join(','));
-      const manifestRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-urls?${q}`);
-      const manifest = await manifestRes.json();
-      if (manifestRes.ok && manifest.files?.length <= 350 && manifest.files.every(f => f.directUrl)) {
+    if (btnEl) { btnEl.disabled = true; btnEl.classList.add('zip-loading'); }
+    if (lblEl) lblEl.textContent = 'Téléchargement…';
+    zipProgress.start(0);
+    zipProgress.set('prepare', 0, 0, 'Récupération de la liste des photos…');
+
+    if (typeof fflate === 'undefined') throw new Error('Bibliothèque ZIP non chargée — rechargez la page.');
+    const query = new URLSearchParams({ mode });
+    if (currentAlbumCode) query.set('code', currentAlbumCode);
+    if (ids.length) query.set('ids', ids.join(','));
+    const manifestRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-urls?${query}`);
+    const manifest = await manifestRes.json().catch(() => ({}));
+    if (!manifestRes.ok) throw new Error(manifest.error || 'Préparation impossible');
+    const list = (manifest.files || []).filter(file => file.directUrl);
+    if (!list.length) throw new Error('Aucune photo téléchargeable dans cet album.');
+    zipProgress.set('prepare', list.length, list.length, `${list.length} photos prêtes`);
+
+    const files = {};
+    for (let index = 0; index < list.length; index++) {
+      const file = list[index];
+      zipProgress.set('download', index, list.length, `Image ${index + 1}/${list.length} — ${file.filename}`);
+      if (lblEl) lblEl.textContent = `${index + 1}/${list.length}`;
+      let lastError = null;
+      /* Three quick attempts: a single CDN hiccup must not lose the whole album. */
+      for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          const files = {}; for (let i=0; i<manifest.files.length; i++) { const f=manifest.files[i]; showProgress(`Téléchargement direct sur votre ordinateur… ${i+1}/${manifest.files.length}`, i, manifest.files.length); const rr=await fetch(f.directUrl); if(!rr.ok) throw new Error('Flickr indisponible'); files[f.filename]=new Uint8Array(await rr.arrayBuffer()); }
-          showProgress('Création du ZIP sur votre ordinateur…', manifest.files.length, manifest.files.length);
-          const blob = new Blob([fflate.zipSync(files)], {type:'application/zip'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`album-${currentAlbumId}.zip`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),30000); return;
-        } catch (directError) { console.warn('[ZIP browser] fallback serveur', directError); showProgress('Échec du téléchargement direct — bascule vers le serveur…'); }
+          const response = await fetch(file.directUrl, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          files[file.filename] = [new Uint8Array(await response.arrayBuffer()), { level: 0 }];
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+          if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        }
       }
+      if (lastError) throw new Error(`Échec sur ${file.filename} (${lastError.message}). Relancez le téléchargement.`);
     }
-    showProgress('Préparation du ZIP sur le serveur…');
-    const created = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/zip-jobs`, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'}, body:jobBody.toString() });
-    const job = await created.json(); if (!created.ok) throw new Error(job.error || 'Préparation impossible');
-    localStorage.setItem('mscomm_album_zip_job', JSON.stringify({albumId:currentAlbumId, mode, ids:[...ids].sort(), jobId:job.jobId, token:job.token, updatedAt:Date.now()}));
-    if (job.status === 'ready' && job.downloadUrl) { window.location.href = `${API}${job.downloadUrl}?token=${encodeURIComponent(job.token)}`; return; }
-    let status;
-    do {
-      await new Promise(r => setTimeout(r, 3000));
-      const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`);
-      status = await response.json().catch(() => null);
-      if (!response.ok || !status || typeof status.status !== 'string' || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) {
-        localStorage.removeItem('mscomm_album_zip_job');
-        progress?.classList.add('hidden');
-        throw new Error(status?.error || 'Préparation introuvable. Veuillez relancer le téléchargement.');
-      }
-      if (status.status === 'paused') {
-        showProgress(`Serveur : téléchargement en cours — reprise prévue vers ${new Date(status.resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, status.completed, status.total);
-        await new Promise(r => setTimeout(r, Math.max(5000, Date.parse(status.resumeAt) - Date.now())));
-      } else showProgress(`Préparation du ZIP… ${status.completed}/${status.total}`, status.completed, status.total);
-    } while (status.status !== 'ready' && status.status !== 'failed');
-    if (status.status !== 'ready') {
-      /* Terminal backend failure: clear saved job state, hide the progress bar
-         and show the server reason so a manual retry stays possible. */
-      localStorage.removeItem('mscomm_album_zip_job');
-      progress?.classList.add('hidden');
-      throw new Error(status.error || 'Échec après 3 tentatives. Veuillez réessayer plus tard.');
-    }
-    localStorage.removeItem('mscomm_album_zip_job');
-    window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(job.token)}`;
-  } catch(err) { console.error('[ZIP job]',err); alert(err.message || err); }
-  finally { if(btnEl) { btnEl.disabled=false; btnEl.classList.remove('zip-loading'); } if(lblEl&&origLabel) lblEl.textContent=origLabel; }
+    zipProgress.set('download', list.length, list.length, 'Toutes les photos sont récupérées');
+
+    zipProgress.set('zip', 0, list.length, 'Assemblage de l’archive…');
+    if (lblEl) lblEl.textContent = 'Création du ZIP…';
+    const zipped = await new Promise((resolve, reject) => {
+      let zippedCount = 0;
+      /* Async zip keeps the UI responsive and reports each file as it lands. */
+      fflate.zip(files, { level: 0 }, (error, data) => error ? reject(error) : resolve(data));
+      const names = Object.keys(files);
+      const tick = setInterval(() => {
+        zippedCount = Math.min(zippedCount + Math.ceil(names.length / 20), names.length);
+        zipProgress.set('zip', zippedCount, names.length, `Image ${zippedCount}/${names.length} ajoutée à l’archive`);
+        if (zippedCount >= names.length) clearInterval(tick);
+      }, 120);
+    });
+    zipProgress.set('zip', list.length, list.length, 'Archive prête');
+
+    const blob = new Blob([zipped], { type: 'application/zip' });
+    objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = `album-${currentAlbumId}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => { if (objectUrl) URL.revokeObjectURL(objectUrl); }, 30000);
+  } catch (err) {
+    console.error('[ZIP album]', err);
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    alert(err.message || err);
+  } finally {
+    zipProgress.stop();
+    if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('zip-loading'); }
+    if (lblEl && origLabel) lblEl.textContent = origLabel;
+  }
   return;
 
   try {
@@ -2432,6 +2549,35 @@ renderCartPanel();
 setupAlbumZipButtons();
 init();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+
+<!-- ===== ZIP DOWNLOAD MODAL =====
+     Closing it never cancels the job: the work runs in downloadAlbumZip() and the
+     inline banner stays visible so the user can reopen this panel at any time. -->
+<div id="zip-modal" class="zip-modal hidden" role="dialog" aria-modal="true" aria-labelledby="zip-modal-title">
+  <div class="zip-modal__backdrop" data-zip-close></div>
+  <div class="zip-modal__panel">
+    <header class="zip-modal__head">
+      <h3 id="zip-modal-title">Téléchargement de l’album</h3>
+      <button type="button" class="zip-modal__close" data-zip-close aria-label="Fermer">&times;</button>
+    </header>
+    <p class="zip-modal__hint">Vous pouvez fermer cette fenêtre : le téléchargement continue.</p>
+    <ol class="zip-steps">
+      <li class="zip-step" data-step="prepare">
+        <div class="zip-step__head"><span class="zip-step__dot">1</span><span class="zip-step__name">Préparation</span><span class="zip-step__count" data-count></span></div>
+        <progress class="zip-step__bar" max="100" value="0"></progress>
+      </li>
+      <li class="zip-step" data-step="download">
+        <div class="zip-step__head"><span class="zip-step__dot">2</span><span class="zip-step__name">Téléchargement des photos</span><span class="zip-step__count" data-count></span></div>
+        <progress class="zip-step__bar" max="100" value="0"></progress>
+      </li>
+      <li class="zip-step" data-step="zip">
+        <div class="zip-step__head"><span class="zip-step__dot">3</span><span class="zip-step__name">Fabrication du ZIP</span><span class="zip-step__count" data-count></span></div>
+        <progress class="zip-step__bar" max="100" value="0"></progress>
+      </li>
+    </ol>
+    <p class="zip-modal__current" id="zip-modal-current"></p>
+  </div>
+</div>
 </body>
 </html>
