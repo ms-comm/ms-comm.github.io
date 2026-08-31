@@ -44,6 +44,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 ### publicApi.js - Album ZIP
 - `POST /api/public/albums/:id/download` streams a ZIP directly from Fly to the browser. The website sends a form POST so private album codes stay in the body, not the URL.
 - `POST /api/public/albums/:id/zip-jobs` creates a resumable asynchronous ZIP job; `GET /api/public/zip-jobs/:jobId` reports progress and `GET /api/public/zip-jobs/:jobId/download` serves the complete ZIP after all photos are staged. Jobs and ZIPs expire automatically after 1 hour.
+- Repeated requests for the same album, mode, and exact photo selection reuse the existing active or unexpired ready job; this prevents duplicate Flickr workers.
 - Body fields: `mode=watermark|original`, optional `code=xxx`, optional `ids=id1,id2`.
 - The ZIP uses `archiver` with `store:true` and appends one local/Flickr stream at a time. Fly does not buffer the full ZIP or all photos in memory. A normal response close during archive finalization must not abort the archive; only the request `aborted` event may do so.
 - `POST /api/public/albums/:id/download-check` probes several candidate Flickr sources before the website starts the form download. If every checked source is blocked by Flickr 429, the site shows an error with `mscomm.contact@gmail.com`; one 429 must not block the album if another selected photo is reachable.

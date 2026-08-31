@@ -82,6 +82,7 @@ assets/data/translations.json  /admin  (SPA)
 ## Key Constraints
 
 - **Photo downloads (ZIP)**: Purchases still use client-side ZIP (`/api/orders/:id/download-urls`). Public/private album ZIP uses server streaming `POST /api/public/albums/:id/download` so mobile/desktop do not build the ZIP in browser memory; optional `ids=` downloads only selected album photos.
+- **Album ZIP reuse**: Identical album/mode/photo selections reuse one queued, running, paused, or unexpired ready job; browser stores temporary job tracking across reloads.
 - **Album ZIP precheck**: `/api/public/albums/:id/download-check` must not block an album on one Flickr 429; it tests several candidate sources and only blocks if all checked sources fail.
 - **Album ZIP security**: Public albums expose only the watermarked ZIP. Original/sans-filigrane ZIP is allowed only for private albums after code validation, or through purchase tokens.
 - **Private watermark albums**: `private-watermark` requires a code but exposes only baked watermarked copies. Individual, ZIP, precheck, and URL-list endpoints must reject originals and must fail closed when no safe watermark exists; never fall back to an original.

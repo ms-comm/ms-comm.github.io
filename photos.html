@@ -2202,7 +2202,6 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   const origLabel = lblEl ? lblEl.textContent : '';
   try {
     if (btnEl) btnEl.disabled = true;
-    if (lblEl) lblEl.textContent = 'Préparation du ZIP…';
     const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     if (!isMobile && typeof fflate !== 'undefined') {
       const q = new URLSearchParams({ mode }); if (currentAlbumCode) q.set('code', currentAlbumCode); if (ids.length) q.set('ids', ids.join(','));
@@ -2210,16 +2209,20 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
       const manifest = await manifestRes.json();
       if (manifestRes.ok && manifest.files?.length <= 350 && manifest.files.every(f => f.directUrl)) {
         try {
-          const files = {}; for (let i=0; i<manifest.files.length; i++) { const f=manifest.files[i]; const rr=await fetch(f.directUrl); if(!rr.ok) throw new Error('Flickr indisponible'); files[f.filename]=new Uint8Array(await rr.arrayBuffer()); if(lblEl) lblEl.textContent=`Création du ZIP sur votre ordinateur… ${i+1}/${manifest.files.length}`; }
+          const files = {}; for (let i=0; i<manifest.files.length; i++) { const f=manifest.files[i]; if(lblEl) lblEl.textContent=`Téléchargement direct sur votre ordinateur… ${i+1}/${manifest.files.length}`; const rr=await fetch(f.directUrl); if(!rr.ok) throw new Error('Flickr indisponible'); files[f.filename]=new Uint8Array(await rr.arrayBuffer()); }
           const blob = new Blob([fflate.zipSync(files)], {type:'application/zip'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`album-${currentAlbumId}.zip`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),30000); return;
         } catch (directError) { console.warn('[ZIP browser] fallback serveur', directError); if(lblEl) lblEl.textContent='Préparation du ZIP sur le serveur…'; }
       }
     }
+    if (lblEl) lblEl.textContent = 'Préparation du ZIP sur le serveur…';
     const created = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/zip-jobs`, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'}, body:jobBody.toString() });
     const job = await created.json(); if (!created.ok) throw new Error(job.error || 'Préparation impossible');
+    localStorage.setItem('mscomm_album_zip_job', JSON.stringify({albumId:currentAlbumId, mode, ids:[...ids].sort(), jobId:job.jobId, token:job.token, updatedAt:Date.now()}));
+    if (job.status === 'ready' && job.downloadUrl) { window.location.href = `${API}${job.downloadUrl}?token=${encodeURIComponent(job.token)}`; return; }
     let status;
     do { await new Promise(r=>setTimeout(r,3000)); const r=await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`); status=await r.json(); if(status.status==='paused'){ if(lblEl) lblEl.textContent='Flickr temporairement indisponible — reprise automatique…'; await new Promise(r=>setTimeout(r,Math.max(5000,Date.parse(status.resumeAt)-Date.now()))); } else if(lblEl) lblEl.textContent=`Préparation du ZIP… ${status.completed}/${status.total}`; } while(status.status!=='ready'&&status.status!=='failed');
     if(status.status!=='ready') throw new Error('Veuillez réessayer plus tard.');
+    localStorage.removeItem('mscomm_album_zip_job');
     window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(job.token)}`;
   } catch(err) { console.error('[ZIP job]',err); alert(err.message || err); }
   finally { if(btnEl) btnEl.disabled=false; if(lblEl&&origLabel) lblEl.textContent=origLabel; }

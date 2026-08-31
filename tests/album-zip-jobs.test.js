@@ -32,6 +32,7 @@ async function main() {
   assert.strictEqual(created.id, 'job-1');
   assert.strictEqual(created.status, 'queued');
   assert.strictEqual(created.downloadToken, 'token-1');
+  assert.strictEqual((await jobs.findReusableJob({ albumId: 'album-private', mode: 'watermark', photoIds: ['photo-2', 'photo-1'] })).id, 'job-1');
   assert.deepStrictEqual(created.photos.map(photo => photo.status), ['pending', 'pending']);
 
   const reloaded = createAlbumZipJobs(options);
@@ -75,11 +76,13 @@ async function main() {
   const ready = await jobs.markReady('job-1', { zipPath: 'album.zip', sizeBytes: 444 });
   assert.strictEqual(ready.status, 'ready');
   assert.strictEqual(ready.expiresAt, '2026-08-31T11:00:00.000Z');
+  assert.strictEqual((await jobs.findReusableJob({ albumId: 'album-private', mode: 'watermark', photoIds: ['photo-1', 'photo-2'] })).id, 'job-1');
 
   const jobDir = jobs.getJobDirectory('job-1');
   fs.mkdirSync(jobDir, { recursive: true });
   fs.writeFileSync(path.join(jobDir, 'album.zip'), 'temporary zip');
   nowMs += 60 * 60 * 1000 + 1;
+  assert.strictEqual(await jobs.findReusableJob({ albumId: 'album-private', mode: 'watermark', photoIds: ['photo-1', 'photo-2'] }), null);
   const cleanup = await jobs.cleanup();
   assert.deepStrictEqual(cleanup.removedJobIds, ['job-1']);
   assert.strictEqual(await jobs.getJob('job-1'), null);
