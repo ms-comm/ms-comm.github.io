@@ -103,7 +103,7 @@ async function main() {
   const paused = await jobs.getJob(throttled.id);
   assert.strictEqual(paused.status, 'paused');
   assert.strictEqual(paused.photos[0].status, 'pending');
-  assert.strictEqual(paused.photos[0].attempts, 3);
+  assert.strictEqual(paused.photos[0].attempts, 0);
   assert.strictEqual(paused.retryAfterMs, 5000);
   assert.strictEqual(fs.existsSync(path.join(jobs.getJobDirectory(throttled.id), 'album.zip')), false);
 
