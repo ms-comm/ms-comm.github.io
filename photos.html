@@ -2258,7 +2258,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
           const files = {}; for (let i=0; i<manifest.files.length; i++) { const f=manifest.files[i]; showProgress(`Téléchargement direct sur votre ordinateur… ${i+1}/${manifest.files.length}`, i, manifest.files.length); const rr=await fetch(f.directUrl); if(!rr.ok) throw new Error('Flickr indisponible'); files[f.filename]=new Uint8Array(await rr.arrayBuffer()); }
           showProgress('Création du ZIP sur votre ordinateur…', manifest.files.length, manifest.files.length);
           const blob = new Blob([fflate.zipSync(files)], {type:'application/zip'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`album-${currentAlbumId}.zip`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),30000); return;
-        } catch (directError) { console.warn('[ZIP browser] fallback serveur', directError); if(lblEl) lblEl.textContent='Préparation du ZIP sur le serveur…'; }
+        } catch (directError) { console.warn('[ZIP browser] fallback serveur', directError); showProgress('Échec du téléchargement direct — bascule vers le serveur…'); }
       }
     }
     showProgress('Préparation du ZIP sur le serveur…');
