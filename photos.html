@@ -2203,6 +2203,16 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   try {
     if (btnEl) btnEl.disabled = true;
     if (lblEl) lblEl.textContent = 'Préparation du ZIP…';
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (!isMobile && typeof fflate !== 'undefined') {
+      const q = new URLSearchParams({ mode }); if (currentAlbumCode) q.set('code', currentAlbumCode); if (ids.length) q.set('ids', ids.join(','));
+      const manifestRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-urls?${q}`);
+      const manifest = await manifestRes.json();
+      if (manifestRes.ok && manifest.files?.length <= 350 && manifest.files.every(f => f.directUrl)) {
+        const files = {}; for (let i=0; i<manifest.files.length; i++) { const f=manifest.files[i]; const rr=await fetch(f.directUrl); if(!rr.ok) throw new Error('Flickr indisponible'); files[f.filename]=new Uint8Array(await rr.arrayBuffer()); if(lblEl) lblEl.textContent=`Création du ZIP sur votre ordinateur… ${i+1}/${manifest.files.length}`; }
+        const blob = new Blob([fflate.zipSync(files)], {type:'application/zip'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`album-${currentAlbumId}.zip`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),30000); return;
+      }
+    }
     const created = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/zip-jobs`, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'}, body:jobBody.toString() });
     const job = await created.json(); if (!created.ok) throw new Error(job.error || 'Préparation impossible');
     let status;

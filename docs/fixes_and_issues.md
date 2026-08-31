@@ -7,6 +7,17 @@
 
 ## Applied Fixes
 
+### [IMPLEMENTED] Asynchronous resumable album ZIP jobs
+Large album exports now prepare in the background, checkpoint each Flickr photo, pause/resume on HTTP 429, and expose a ready ZIP only after every requested photo is staged. Jobs use `storage/tmp/zip-jobs`, expire after one hour, and reserve 1 GB headroom on the 5 GB volume. The gallery shows progress and a retry-later message when Flickr remains unavailable.
+
+The worker now logs `photo N / total` and waits 3 seconds between successful Flickr photos. The legacy stream route has the same spacing and progress logs while older cached frontend pages transition to the job flow.
+
+### [FIXED] Album ZIP — archive aborted after Flickr 429
+**Root cause**: Production logs showed a 302-photo private album with 213 entries, then Flickr CDN HTTP 429 responses. The response close handler called `archive.abort()` during normal finalization, producing `ArchiverError: archive was aborted` and an unhandled rejection. ZIP retries also waited up to 75 seconds on an already-blocked Fly IP.
+**Fix**: Abort only on the explicit request `aborted` event and never during archive finalization; limit a CDN 429 to one controlled retry, then continue the export with an explicit failed-photo count in logs.
+**Files changed**: `photo-server/routes/publicApi.js`, `photo-server/services/zipDownloadPolicy.js`
+**Verification**: `tests/zip-download-policy.test.js`; production replay should confirm no `archive was aborted`/`unhandledRejection` after a 429.
+
 ### [FIXED] ZIP download — 429 Flickr rate limit on server
 **Symptom**: "Tout télécharger (ZIP)" failed silently or with 429 errors.  
 **Root cause**: Server-side ZIP assembled photos by fetching each from Flickr CDN → server IP got CloudFront-banned after a few requests.  

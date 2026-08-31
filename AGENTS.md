@@ -1,5 +1,8 @@
 # AGENTS.md
 
+Recent ZIP hardening: album ZIP must only abort on an explicit client request abort, never on a normal response close during archive finalization; Flickr CDN 429 retries must remain bounded.
+Async album ZIP work uses resumable jobs, one Flickr download at a time, one-hour retention, 5 GB target volume, and one shared CPU.
+
 > **Update this file + the relevant `docs/` file at every code change.**
 
 ---

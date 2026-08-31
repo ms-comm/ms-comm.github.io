@@ -91,7 +91,7 @@ No local preview files generated for Flickr uploads — storage/previews/ is onl
 - `assertCircuitClosed()` is in the REST API path only — does NOT block CDN streaming
 - Streaming: `streamFlickrSized()` pipes Flickr CDN → client, ~64 KB constant memory
 - ZIP downloads: purchases stay client-side (`/api/orders/:id/download-urls`). Album ZIP uses server streaming (`POST /api/public/albums/:id/download`) with one Flickr/local file appended at a time. Never buffer a full album ZIP in browser or server memory.
-- Album ZIP must call `/api/public/albums/:id/download-check` before form download so a Flickr 429 can be shown to the visitor with the contact email.
+- Album ZIP uses resumable asynchronous jobs. Flickr 429 pauses the job and resumes later; the UI must never present a partial ZIP as complete.
 - `downloadType: private` means both Flickr copies private (`flickrOriginalId` + `flickrWatermarkId`). `private-nocode` albums force the same behavior as private albums.
 - `live.staticflickr.com` has `Access-Control-Allow-Origin: *` → browser fetch works
 
