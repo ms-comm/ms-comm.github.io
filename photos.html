@@ -2057,6 +2057,7 @@ async function submitCode() {
     }
     const found = await res.json();
     sessionStorage.setItem('mscomm_private_access', JSON.stringify({ albumId: found.album?.id || targetAlbumId, code }));
+    if (found.album?.id) history.replaceState(null, '', `?private=1&album=${encodeURIComponent(found.album.id)}`);
     closeAccessModal();
     /* Keep code + album type on each photo so the lightbox exposes only the
        download modes authorized for this private album. */
@@ -2266,6 +2267,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   };
   try {
     if (btnEl) btnEl.disabled = true;
+    showProgress('Démarrage du téléchargement…');
     const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     if (!isMobile && typeof fflate !== 'undefined') {
       const q = new URLSearchParams({ mode }); if (currentAlbumCode) q.set('code', currentAlbumCode); if (ids.length) q.set('ids', ids.join(','));
