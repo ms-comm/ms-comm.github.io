@@ -224,6 +224,15 @@
 .zip-step__name{flex:1;min-width:0}
 .zip-step__count{font-variant-numeric:tabular-nums;color:rgba(255,255,255,.72);font-size:12.5px}
 .zip-step__bar{width:100%;height:5px;display:block}
+/* Smooth the discrete progress ticks into a continuous fill. */
+.zip-step__bar::-webkit-progress-value{transition:width .22s linear}
+.zip-step__bar::-moz-progress-bar{transition:width .22s linear}
+#album-download-progress-bar::-webkit-progress-value{transition:width .22s linear}
+#album-download-progress-bar::-moz-progress-bar{transition:width .22s linear}
+@media (prefers-reduced-motion:reduce){
+  .zip-step__bar::-webkit-progress-value,#album-download-progress-bar::-webkit-progress-value{transition:none}
+  .zip-step__bar::-moz-progress-bar,#album-download-progress-bar::-moz-progress-bar{transition:none}
+}
 .zip-modal__current{margin:16px 0 0;font-size:12px;color:rgba(255,255,255,.5);min-height:16px;word-break:break-word}
 @media (prefers-reduced-motion:reduce){.zip-step{transition:none}}
 
@@ -1834,6 +1843,7 @@ function openDlModal() {
      download options he asked for. */
   if (window.MSAccount && !window.MSAccount.isSignedIn()) {
     window.MSAccount.requireAccount({
+      eyebrow: 'Téléchargement',
       title: 'Connexion requise pour télécharger',
       message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
     }).then(ok => { if (ok) openDlModal(); });
@@ -1878,6 +1888,7 @@ async function withDownloadTicket(url, replay) {
   const signed = await window.MSAccount.signDownloadUrl(url);
   if (signed) return signed;
   const ok = await window.MSAccount.requireAccount({
+    eyebrow: 'Téléchargement',
     title: 'Connexion requise pour télécharger',
     message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
   });
@@ -2368,9 +2379,21 @@ document.addEventListener('click', e => {
 const zipProgress = (() => {
   const STEPS = ['prepare', 'download', 'zip'];
   const LABELS = { prepare: 'Préparation', download: 'Téléchargement des photos', zip: 'Fabrication du ZIP' };
-  let state = { active: false, step: 'prepare', done: 0, total: 0, current: '', waiting: false, waitStartedAt: 0 };
+  let state = { active: false, step: 'prepare', done: 0, total: 0, current: '', waiting: false, waitStartedAt: 0, etaMs: 0 };
   let pulseTimer = null;
   let pulseTicks = 0;
+
+  /* Human-readable remaining time. Kept coarse on purpose: a precise-looking
+     countdown that drifts feels less trustworthy than a rounded estimate. */
+  function formatRemaining(ms) {
+    const seconds = Math.max(0, Math.round(ms / 1000));
+    if (seconds < 10) return 'quelques secondes';
+    if (seconds < 60) return `environ ${Math.ceil(seconds / 5) * 5} s`;
+    const minutes = Math.floor(seconds / 60);
+    const rest = seconds % 60;
+    if (minutes < 10 && rest >= 15) return `environ ${minutes} min ${String(Math.round(rest / 15) * 15).padStart(2, '0')} s`;
+    return `environ ${minutes} min`;
+  }
 
   const modal = () => document.getElementById('zip-modal');
   const banner = () => document.getElementById('album-download-progress');
@@ -2382,16 +2405,22 @@ const zipProgress = (() => {
     const bar = document.getElementById('album-download-progress-bar');
     if (bannerEl) bannerEl.classList.toggle('hidden', !state.active);
     /* A step stuck on one long request (the manifest resolves every Flickr URL
-       server-side and can take ~20s) must still look alive: we drop the `value`
-       attribute so the browser renders its native animated indeterminate bar
-       instead of a frozen one, and we show the elapsed seconds. */
-    const indeterminate = state.active && (!state.total || state.waiting);
-    const waitedSeconds = state.waiting ? Math.floor((Date.now() - state.waitStartedAt) / 1000) : 0;
+       server-side) has nothing to count, so instead of an indeterminate bar we
+       fill it smoothly against a time estimate derived from the photo count. */
+    const elapsedMs = state.waiting ? Date.now() - state.waitStartedAt : 0;
+    const remainingMs = state.waiting ? Math.max(0, state.etaMs - elapsedMs) : 0;
+    /* Asymptotic fill: reaches ~92% at the estimate and never hits 100% early,
+       so a slower-than-expected server still looks like it is progressing. */
+    const waitRatio = state.waiting && state.etaMs ? 1 - Math.exp(-2.5 * (elapsedMs / state.etaMs)) : 0;
     if (label) label.textContent = state.active ? LABELS[state.step] + '…' : '';
-    if (count) count.textContent = state.total ? `${state.done}/${state.total}` : (state.active ? 'en cours' : '');
+    if (count) {
+      if (state.waiting) count.textContent = formatRemaining(remainingMs);
+      else count.textContent = state.total ? `${state.done}/${state.total}` : (state.active ? 'en cours' : '');
+    }
     if (bar) {
-      bar.max = state.total || 100;
-      if (indeterminate) bar.removeAttribute('value'); else bar.value = state.done;
+      if (state.waiting) { bar.max = 100; bar.value = Math.round(waitRatio * 100); }
+      else if (state.active && !state.total) { bar.max = 100; bar.removeAttribute('value'); }
+      else { bar.max = state.total || 100; bar.value = state.done; }
     }
 
     const stepIndex = STEPS.indexOf(state.step);
@@ -2407,12 +2436,14 @@ const zipProgress = (() => {
         if (stepBar) { stepBar.max = 100; stepBar.value = 100; }
       } else if (index === stepIndex) {
         if (stepCount) {
-          const base = state.total ? `${state.done}/${state.total}` : 'en cours' + '.'.repeat(pulseTicks % 4);
-          stepCount.textContent = state.waiting ? `${base} · ${waitedSeconds}s` : base;
+          stepCount.textContent = state.waiting
+            ? formatRemaining(remainingMs)
+            : (state.total ? `${state.done}/${state.total}` : 'en cours' + '.'.repeat(pulseTicks % 4));
         }
         if (stepBar) {
-          stepBar.max = state.total || 100;
-          if (indeterminate) stepBar.removeAttribute('value'); else stepBar.value = state.done;
+          if (state.waiting) { stepBar.max = 100; stepBar.value = Math.round(waitRatio * 100); }
+          else if (!state.total) { stepBar.max = 100; stepBar.removeAttribute('value'); }
+          else { stepBar.max = state.total; stepBar.value = state.done; }
         }
       } else {
         if (stepCount) stepCount.textContent = '';
@@ -2420,35 +2451,40 @@ const zipProgress = (() => {
       }
     }
     const current = document.getElementById('zip-modal-current');
-    if (current) current.textContent = state.current ? state.current + (state.waiting ? '.'.repeat(pulseTicks % 4) : '') : '';
+    if (current) current.textContent = state.current || '';
   }
 
   /* Keeps the countless steps visibly ticking so the user never wonders whether
      the download froze. Stopped as soon as a real count takes over. */
   function syncPulse() {
     const needed = state.active && (!state.total || state.waiting);
-    if (needed && !pulseTimer) pulseTimer = setInterval(() => { pulseTicks++; render(); }, 450);
+    /* 200 ms while an estimate is running: fast enough for a smooth fill,
+       slow enough to avoid a jittery countdown. */
+    const period = state.waiting ? 200 : 450;
+    if (needed && !pulseTimer) pulseTimer = setInterval(() => { pulseTicks++; render(); }, period);
     if (!needed && pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; pulseTicks = 0; }
   }
 
   return {
-    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '', waiting: false, waitStartedAt: 0 }; this.open(); syncPulse(); render(); },
+    start(total) { state = { active: true, step: 'prepare', done: 0, total: total || 0, current: '', waiting: false, waitStartedAt: 0, etaMs: 0 }; this.open(); syncPulse(); render(); },
     /* `waiting` marks a step that cannot report a count while it runs: the bar
        animates and an elapsed-seconds counter proves the app is not stuck. */
-    set(step, done, total, current, waiting = false) {
+    set(step, done, total, current, waiting = false, etaMs = 0) {
       state.active = true; state.step = step;
       if (Number.isFinite(done)) state.done = done;
       if (Number.isFinite(total)) state.total = total;
       state.current = current || '';
       if (waiting && !state.waiting) state.waitStartedAt = Date.now();
+      if (Number.isFinite(etaMs) && etaMs > 0) state.etaMs = etaMs;
       state.waiting = Boolean(waiting);
       syncPulse();
       render();
     },
-    stop() { state.active = false; state.current = ''; state.waiting = false; syncPulse(); render(); this.close(); },
+    stop() { state.active = false; state.current = ''; state.waiting = false; state.etaMs = 0; syncPulse(); render(); this.close(); },
     open() { modal()?.classList.remove('hidden'); },
     close() { modal()?.classList.add('hidden'); },
-    isActive: () => state.active
+    isActive: () => state.active,
+    formatRemaining
   };
 })();
 
@@ -2470,6 +2506,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
      the visitor never sees a bar start and then die on a 401. */
   if (window.MSAccount && !window.MSAccount.isSignedIn()) {
     const ok = await window.MSAccount.requireAccount({
+      eyebrow: 'Téléchargement',
       title: 'Connexion requise pour télécharger',
       message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
     });
@@ -2501,7 +2538,12 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
       const ticket = await window.MSAccount.downloadTicket();
       if (ticket) query.set('dlTicket', ticket);
     }
-    zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
+    /* The album photo count is already known client-side, so the estimate is
+       available before the request starts instead of after it returns.
+       ~60 ms per photo of Flickr URL resolution, measured on the 302-photo album. */
+    const knownCount = (ids.length || _albumPhotosAll.length || 0);
+    const prepareEtaMs = Math.max(3000, knownCount * 60);
+    zipProgress.set('prepare', 2, 3, `Le serveur prépare la liste de ${knownCount || '…'} photos`, true, prepareEtaMs);
     const manifestRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/download-urls?${query}`);
     const manifest = await manifestRes.json().catch(() => ({}));
     if (!manifestRes.ok) throw new Error(manifest.error || 'Préparation impossible');
@@ -2510,9 +2552,14 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     zipProgress.set('prepare', 3, 3, `${list.length} photos prêtes à être téléchargées`);
 
     const files = {};
+    /* Live estimate: measured average per photo so far, plus the 500 ms spacing.
+       Seeded with a plausible first value so a figure shows from photo 1. */
+    const downloadStartedAt = Date.now();
     for (let index = 0; index < list.length; index++) {
       const file = list[index];
-      zipProgress.set('download', index, list.length, `Image ${index + 1}/${list.length} — ${file.filename}`);
+      const perPhotoMs = index > 0 ? (Date.now() - downloadStartedAt) / index : 900;
+      const remainingMs = Math.round(perPhotoMs * (list.length - index));
+      zipProgress.set('download', index, list.length, `Image ${index + 1}/${list.length} — ${file.filename} · reste ${zipProgress.formatRemaining(remainingMs)}`);
       if (lblEl) lblEl.textContent = `${index + 1}/${list.length}`;
       let lastError = null;
       /* Three quick attempts: a single CDN hiccup must not lose the whole album. */

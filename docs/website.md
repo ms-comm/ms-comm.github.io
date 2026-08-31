@@ -14,6 +14,7 @@
 | `contact.html` | Contact form |
 | `photos.html` | Public photo gallery + checkout + "Mes achats" |
 | `checkout.html` | Stripe payment + order confirmation |
+| `compte.html` | Client space: favorites, orders, profile, password. `noindex`. Tabs are deep-linkable (`#favoris`, `#commandes`, `#profil`) |
 
 ## Design System
 
@@ -31,6 +32,39 @@
 | `assets/js/i18n.js` | Language switcher + full translation engine |
 | `assets/js/services-catalog.js` | Renders editable services/prices on `services.html` from `translations.json._servicesCatalog` |
 | `assets/js/faces.js` | Face detection UI in photo gallery |
+| `assets/js/account.js` | Client accounts: header control, sign-in sheet, favorites, download tickets. Exposes `window.MSAccount`. Loaded on every public page |
+
+`assets/css/account.css` holds the account surfaces (header control, sheet, toast,
+favorite affordance) and reuses the existing `style.css` tokens.
+
+
+## Client accounts — « Mon espace »
+
+Browsing stays anonymous. **Downloading requires an account**; the rule is
+enforced server-side (see [server.md](server.md), download gate), not just in
+the UI.
+
+`window.MSAccount` (from `assets/js/account.js`) is the single entry point:
+
+| Method | Use |
+|---|---|
+| `isSignedIn()` / `account` / `counts` | current session state |
+| `requireAccount({ eyebrow, title, message })` | opens the sheet, resolves `true` after sign-in, `false` if dismissed |
+| `signDownloadUrl(url)` / `downloadTicket()` | appends/returns the `dlTicket` needed for cross-site downloads |
+| `isFavorite(id)` / `toggleFavorite(id)` | favorites, self-gated (opens the sheet then applies) |
+| `logEvent(type, extra)` | best-effort `photo_view` / `album_view` |
+| `onChange(fn)` | repaint hook |
+
+**Gated paths in `photos.html`:** `openDlModal()`, `downloadPhoto()`,
+`downloadPrivateAlbumPhoto()` and `downloadAlbumZip()`. Each one replays itself
+after a successful sign-in, so the visitor lands back on the action he asked
+for instead of an empty page.
+
+**Never gate a purchase token.** `downloadPhoto()` skips the gate when a token
+from `mscomm_tokens` is present: the buyer paid and may have no account.
+
+The heart stays visible when signed out — hiding it would hide the reason to
+have an account.
 
 ## i18n System
 
@@ -90,7 +124,8 @@
 - A 500 ms pause separates two photos (skipped after the last one) to stay well under any Flickr CDN burst threshold. Cost: ~2 min 30 s of added wait on a 302-photo album.
 - Progress is shown in two synchronized surfaces driven by the `zipProgress` controller: the inline banner (clickable, always visible while running) and the `#zip-modal` dialog with the three steps **Préparation → Téléchargement des photos → Fabrication du ZIP**, each with its own bar and live `n/total` count plus the current image name.
 - **Préparation** has no countable photo unit (it is one manifest request that resolves every Flickr URL server-side and can take ~20s on a big album), so it is reported as 3 explicit sub-steps — access check, server building the list, list ready.
-- Sub-step 2 sits at `2/3` for the whole manifest request, so `zipProgress.set(..., waiting = true)` marks it: the bar loses its `value` attribute to render the browser's animated indeterminate bar, the count becomes `2/3 · Ns` with live elapsed seconds, and the caption gains a pulsing ellipsis. The same treatment applies to any step running with `total = 0`.
+- Sub-step 2 sits at `2/3` for the whole manifest request, so `zipProgress.set(step, done, total, current, waiting = true, etaMs)` marks it with a time estimate instead of an indeterminate bar. The estimate is seeded from the photo count (`max(3000, count * 60)` ms) and the bar fills asymptotically (`1 - exp(-2.5 * elapsed / etaMs)`), reaching ~92 % at the estimate and never 100 % early, so a slower server still looks like it is progressing. The count shows the remaining time via `formatRemaining()` (`quelques secondes` / `environ N s` rounded to 5 s / `environ N min`), refreshed every 200 ms with a `.22s linear` CSS transition on the progress value (disabled under `prefers-reduced-motion`).
+- The **Téléchargement des photos** step shows the same estimate, recomputed live from the measured average per photo so far (seeded at 900 ms so a figure appears from photo 1): `Image n/total — file.jpg · reste <estimation>`. It reuses the exported `zipProgress.formatRemaining()`.
 - Closing the modal (cross, backdrop or `Escape`) never cancels the download: the job keeps running and the banner stays visible; clicking the banner reopens the panel with the live state.
 - `resumeStoredAlbumZipJob()` only clears the legacy `mscomm_album_zip_job` key so an old server job can never reopen a stale progress bar.
 - Private album access is restored after refresh from session storage, scoped to the album; code remains absent from URL and is cleared when the session ends.

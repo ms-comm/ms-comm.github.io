@@ -3,6 +3,7 @@
 Recent ZIP hardening: album ZIP must only abort on an explicit client request abort, never on a normal response close during archive finalization; Flickr CDN requests use the tested browser User-Agent and stop permanently after three distinct source failures.
 Async album ZIP work uses resumable jobs, one Flickr download at a time, one-hour retention, 5 GB target volume, and one shared CPU.
 Admin Overview rework: the dashboard reads one aggregate (`GET /api/admin/overview`) with period comparison and an actionable `attention[]` queue, and a Clients section (`GET /api/admin/clients`) derives clients from orders by normalised email until real accounts exist. Roadmap and API contracts: [docs/PLAN_REFONTE.md](docs/PLAN_REFONTE.md).
+Visitor accounts: browsing stays anonymous, but every download exit point is gated server-side in `publicApi.js` (`downloadGate`, `401 ACCOUNT_REQUIRED`). Purchase tokens are never gated, and an album code does not replace an account. Cross-site downloads carry a signed `dlTicket`; a client session sets `req.session.accountId` only, never `authenticated`.
 
 > **Update this file + the relevant `docs/` file at every code change.**
 
@@ -83,8 +84,13 @@ assets/data/translations.json  /admin  (SPA)
 
 ## Key Constraints
 
+- **Download requires an account**: `/photos/:id/download`, `/albums/:id/download`, `/albums/:id/download-check` and `/albums/:id/download-urls` reject anonymous callers with `401 { code: 'ACCOUNT_REQUIRED' }` (`downloadGate` in `publicApi.js`). Browsing stays anonymous. Exception: purchase tokens (`?token=`, every `orders.js` route) are never gated. An album code authorises WHICH photos, the account authorises WHO — both apply.
+- **Client vs admin session**: never set `req.session.authenticated` on a client login. `requireAuth` tests `authenticated`, `requireAccount` tests `accountId`; the two perimeters must not bleed.
+- **Session cookie**: `SameSite=None; Secure` in production because GitHub Pages and Fly are cross-site; `Lax` in dev. Reverting this silently signs every visitor out.
+- **Download tickets**: browser-initiated downloads (`<a download>`, form POST) carry a 10-minute HMAC `dlTicket` instead of the cookie. It proves identity only — album privacy, tokens and watermark policy stay enforced downstream.
 - **Photo downloads (ZIP)**: Album ZIP is built **client-side on every device** from `/api/public/albums/:id/download-urls` + `fflate`. Never route album photo bytes through the server: Flickr 429-rate-limits the Fly IP while the visitor's connection is not limited (measured: browser 10/10 in 0.4s vs 429 from Fly on the same URLs). Purchases also use client-side ZIP (`/api/orders/:id/download-urls`).
 - **Album ZIP UI**: One `zipProgress` controller drives the inline banner and the `#zip-modal` three-step dialog (Préparation / Téléchargement des photos / Fabrication du ZIP), each step with its own bar and live `n/total`. Closing the modal must never cancel the download; the banner stays visible and reopens the panel.
+- **Album ZIP estimates**: A step with no countable unit must never use an indeterminate bar. It fills asymptotically against an ETA (seeded from the photo count) and displays a remaining-time estimate from the first frame, refreshed as the real pace is measured. Never let such a bar reach 100 % before the step actually ends.
 - **Album ZIP browser cadence**: 500 ms between two photo downloads in `downloadAlbumZip()`, skipped after the last photo.
 - **Album ZIP reuse**: Identical album/mode/policy/exact-Flickr-source selections reuse one queued, running, paused, failed, archiving, or unexpired ready job; a failed job restarts from its checkpoint only after an explicit new POST/click, never from status polling. A policy/source change must invalidate old ZIPs.
 - **Album ZIP progress**: The gallery must show a dedicated progress bar for both PC-local downloads and server preparation; fallback from local to server must be explicit and visible.

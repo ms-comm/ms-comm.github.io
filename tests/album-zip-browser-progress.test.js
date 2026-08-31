@@ -71,20 +71,27 @@ zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste…');
 assert.strictEqual(steps.prepare.count.textContent, '2/3', 'preparation keeps advancing');
 assert.strictEqual(steps.prepare.bar.value, 2);
 
-/* The manifest request can take ~20s at 2/3: the bar must animate (no `value`)
-   and the elapsed-seconds counter must keep changing so it never looks frozen. */
-zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
-assert.strictEqual(steps.prepare.bar.attributes.has('value'), false, 'waiting bar is indeterminate/animated');
+/* The manifest request can take ~20s at 2/3. Instead of an indeterminate bar,
+   the step fills against a time estimate derived from the photo count and shows
+   the remaining time, which must decrease as the wait goes on. */
+const prepareEtaMs = 302 * 60;
+zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true, prepareEtaMs);
+assert.strictEqual(steps.prepare.bar.attributes.has('value'), true, 'waiting bar stays determinate');
+assert.strictEqual(steps.prepare.bar.max, 100, 'waiting bar is expressed as a percentage');
+const firstWaitValue = steps.prepare.bar.value;
+assert.ok(firstWaitValue >= 0 && firstWaitValue < 20, 'waiting bar starts near empty');
 const firstWaitText = steps.prepare.count.textContent;
-assert.match(firstWaitText, /^2\/3 · \d+s$/, 'waiting shows elapsed seconds');
-/* Simulate the wait having started 3s earlier instead of sleeping in the test. */
-zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
+assert.match(firstWaitText, /^environ \d+ s$/, 'waiting shows an initial time estimate');
+/* Simulate the wait having started 8s earlier instead of sleeping in the test. */
 const realNow = Date.now;
-Date.now = () => realNow() + 3000;
-zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true);
+Date.now = () => realNow() + 8000;
+zipProgress.set('prepare', 2, 3, 'Le serveur prépare la liste des photos', true, prepareEtaMs);
 Date.now = realNow;
-assert.notStrictEqual(steps.prepare.count.textContent, firstWaitText, 'elapsed seconds keep moving');
-assert.match(steps.prepare.count.textContent, /^2\/3 · [1-9]\d*s$/, 'counter reflects the real wait');
+assert.ok(steps.prepare.bar.value > firstWaitValue, 'waiting bar keeps filling');
+assert.ok(steps.prepare.bar.value < 100, 'waiting bar never completes before the step ends');
+assert.notStrictEqual(steps.prepare.count.textContent, firstWaitText, 'remaining time keeps updating');
+assert.strictEqual(steps.prepare.count.textContent, 'environ 10 s', 'remaining time decreases with the wait');
+assert.strictEqual(byId['album-download-progress-count'].textContent, 'environ 10 s', 'banner mirrors the estimate');
 zipProgress.set('prepare', 3, 3, '302 photos prêtes');
 assert.strictEqual(steps.prepare.count.textContent, '3/3', 'preparation completes');
 assert.strictEqual(byId['album-download-progress-count'].textContent, '3/3', 'banner mirrors preparation');
