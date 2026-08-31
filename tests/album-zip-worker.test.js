@@ -86,25 +86,27 @@ async function main() {
   let archiveCalled = false;
   const throttleWorker = createAlbumZipWorker({
     jobs,
-    max429Retries: 2,
+    maxAttempts: 3,
     sleep: async ms => waits.push(ms),
-    download: async () => {
+    download: async ({ attempt }) => {
       attempts += 1;
+      assert.strictEqual(attempt, attempts - 1);
       const error = new Error('rate limited');
-      error.response = { status: 429, headers: { 'retry-after': attempts === 1 ? '2' : '5' } };
+      error.response = { status: 429, headers: {} };
       throw error;
     },
     createArchive: async () => { archiveCalled = true; }
   });
   await throttleWorker.processJob(throttled.id);
-  assert.deepStrictEqual(waits, [2000, 5000]);
+  assert.deepStrictEqual(waits, [5000, 10000]);
   assert.strictEqual(attempts, 3);
   assert.strictEqual(archiveCalled, false);
-  const paused = await jobs.getJob(throttled.id);
-  assert.strictEqual(paused.status, 'paused');
-  assert.strictEqual(paused.photos[0].status, 'pending');
-  assert.strictEqual(paused.photos[0].attempts, 0);
-  assert.strictEqual(paused.retryAfterMs, 5000);
+  const failed = await jobs.getJob(throttled.id);
+  assert.strictEqual(failed.status, 'failed');
+  assert.strictEqual(failed.photos[0].status, 'failed');
+  assert.strictEqual(failed.photos[0].attempts, 3);
+  assert.strictEqual(failed.failedPhotoId, 'limited');
+  assert.match(failed.error, /3 tentatives/);
   assert.strictEqual(fs.existsSync(path.join(jobs.getJobDirectory(throttled.id), 'album.zip')), false);
 
   const gateway = await jobs.createJob({ albumId: 'album-4', estimatedBytes: 10, photos: [{ id: 'gateway', source: 'flickr-gateway', filename: 'gateway.jpg' }] });
@@ -117,6 +119,35 @@ async function main() {
   await gatewayWorker.processJob(gateway.id);
   assert.strictEqual(gatewayAttempts, 2);
   assert.strictEqual((await jobs.getJob(gateway.id)).status, 'ready');
+
+  const brokenStreamJob = await jobs.createJob({ albumId: 'album-5', estimatedBytes: 10, photos: [{ id: 'broken-stream', source: 'flickr-broken', filename: 'broken.jpg' }] });
+  let streamAttempts = 0;
+  const brokenStreamWorker = createAlbumZipWorker({
+    jobs,
+    retryDelaysMs: [0, 0],
+    download: async () => {
+      streamAttempts += 1;
+      if (streamAttempts === 1) {
+        return new Readable({
+          read() {
+            this.push('partial');
+            this.destroy(new Error('socket reset during transfer'));
+          }
+        });
+      }
+      return Readable.from(['complete']);
+    },
+    createArchive: async ({ destinationPath }) => fs.writeFileSync(destinationPath, 'ready')
+  });
+  await brokenStreamWorker.processJob(brokenStreamJob.id);
+  assert.strictEqual(streamAttempts, 2);
+  assert.strictEqual((await jobs.getJob(brokenStreamJob.id)).status, 'ready');
+  assert.strictEqual(fs.existsSync(path.join(jobs.getJobDirectory(brokenStreamJob.id), 'photos', 'broken.jpg.part')), false);
+
+  const failedBeforeRestart = await jobs.getJob(throttled.id);
+  await throttleWorker.processJob(throttled.id);
+  assert.strictEqual(attempts, 3);
+  assert.deepStrictEqual(await jobs.getJob(throttled.id), failedBeforeRestart);
 
   console.log('album ZIP worker tests passed');
 }

@@ -112,10 +112,13 @@ readDimensionsFromCdn(flickrWatermarkUrl) // reads EXIF/dimensions from CDN stre
 
 **Rule**: Purchases still use the client-side approach (`download-urls`). Album ZIP downloads use server streaming because mobile browsers cannot reliably build large ZIP files in memory. The album stream appends one Flickr/local file at a time with `archiver` and `store:true`; do not buffer the whole ZIP.
 
-Album ZIP workers treat Flickr CDN `500/502/503/504` as transient: they request a fresh Flickr URL on every attempt, log the exact photo and retry schedule, and pause at most 60 seconds before continuing.
-Each attempt first uses the refreshed original CDN URL, then Flickr `getSizes` fallback, with a cache-busting query parameter; private-watermark selection remains restricted to the watermarked Flickr photo.
+Production diagnosis proved a separate CloudFront `502` mode: from the same Fly machine and exact CDN URL, Axios' default User-Agent returned `502 Error from cloudfront`, while the tested browser User-Agent returned `200/206 image/jpeg`. This is not an expired Flickr URL or an IP-wide ban.
 
-Album ZIP streaming can still hit Flickr 429 because Fly's server IP fetches the CDN files. The website probes `/api/public/albums/:id/download-check` before opening the download; the check tests several sources and only blocks when all checked sources fail. The server uses a browser-like User-Agent for Flickr CDN fetches and shows a contact message when Flickr is already blocking Fly.
+Asynchronous album ZIP jobs therefore use that browser User-Agent and exactly three distinct CDN sources per photo: original `_o`, `Large 2048` `_k`, then `Large 1024` `_b`. These URLs are constructed strictly from one owner-authenticated `getInfo` response; `getSizes` cannot silently repeat a fallback URL. Requests include image `Accept`, cache-busting, and a 60-second timeout. Failures wait 5 then 10 seconds; the third failure marks the job `failed` and stops it permanently. Polling never resets attempts or restarts a failed job.
+
+A new explicit download click within the 10-minute failed-job retention reuses completed checkpoint files and retries only the failed/pending photo. Reuse keys include album policy and every exact Flickr source ID. `private-watermark` keeps using its `flickrWatermarkId` for all three sizes, rejects a missing safe source, and never falls back to the original photo ID or an older public ZIP.
+
+Album ZIP streaming can still hit a true Flickr 429 because Fly's server IP fetches CDN files. The website probes `/api/public/albums/:id/download-check` before opening the legacy stream download; the check tests several sources and only blocks when all checked sources fail.
 
 ## Visibility Permissions
 

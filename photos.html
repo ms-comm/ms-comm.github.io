@@ -2218,14 +2218,20 @@ async function resumeStoredAlbumZipJob() {
   const progressLabel = document.getElementById('album-download-progress-label');
   const progressBar = document.getElementById('album-download-progress-bar');
   const showProgress = (text, completed, total) => { progress?.classList.remove('hidden'); if (btn) btn.classList.add('zip-loading'); if (label) label.textContent = text; if (progressLabel) progressLabel.textContent = text; if (progressBar) { progressBar.max = total || 100; progressBar.value = completed || 0; } };
+  const resumeOrigLabel = label ? label.textContent : '';
   if (btn) btn.disabled = true;
   try {
     let status;
     do {
       const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(saved.jobId)}?token=${encodeURIComponent(saved.token)}`);
-      if (response.status === 404 || response.status === 410) { localStorage.removeItem('mscomm_album_zip_job'); return; }
-      status = await response.json();
-      if (!status || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) { localStorage.removeItem('mscomm_album_zip_job'); return; }
+      status = await response.json().catch(() => null);
+      if (!response.ok || !status || typeof status.status !== 'string' || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) {
+        localStorage.removeItem('mscomm_album_zip_job');
+        progress?.classList.add('hidden');
+        if (label && resumeOrigLabel) label.textContent = resumeOrigLabel;
+        alert(status?.error || 'Préparation introuvable. Veuillez relancer le téléchargement.');
+        return;
+      }
       if (status.status === 'paused') {
         showProgress(`Serveur : téléchargement en cours — reprise prévue vers ${new Date(status.resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, status.completed, status.total);
         await new Promise(resolve => setTimeout(resolve, Math.max(5000, (Date.parse(status.resumeAt) || Date.now() + 5000) - Date.now())));
@@ -2235,7 +2241,14 @@ async function resumeStoredAlbumZipJob() {
     if (status.status === 'ready' && status.downloadUrl) {
       localStorage.removeItem('mscomm_album_zip_job');
       window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(saved.token)}`;
-    } else localStorage.removeItem('mscomm_album_zip_job');
+    } else {
+      /* Terminal backend failure: surface the server reason immediately, drop
+         the saved job, and leave the button usable for a manual retry. */
+      localStorage.removeItem('mscomm_album_zip_job');
+      progress?.classList.add('hidden');
+      if (label && resumeOrigLabel) label.textContent = resumeOrigLabel;
+      alert(status.error || 'Échec après 3 tentatives. Veuillez réessayer plus tard.');
+    }
   } catch (error) { console.warn('[ZIP resume]', error); }
   finally { if (btn) { btn.disabled = false; btn.classList.remove('zip-loading'); } }
 }
@@ -2288,8 +2301,27 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     localStorage.setItem('mscomm_album_zip_job', JSON.stringify({albumId:currentAlbumId, mode, ids:[...ids].sort(), jobId:job.jobId, token:job.token, updatedAt:Date.now()}));
     if (job.status === 'ready' && job.downloadUrl) { window.location.href = `${API}${job.downloadUrl}?token=${encodeURIComponent(job.token)}`; return; }
     let status;
-    do { await new Promise(r=>setTimeout(r,3000)); const r=await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`); status=await r.json(); if(status.status==='paused'){ showProgress(`Serveur : téléchargement en cours — reprise prévue vers ${new Date(status.resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,status.completed,status.total); await new Promise(r=>setTimeout(r,Math.max(5000,Date.parse(status.resumeAt)-Date.now()))); } else showProgress(`Préparation du ZIP… ${status.completed}/${status.total}`,status.completed,status.total); } while(status.status!=='ready'&&status.status!=='failed');
-    if(status.status!=='ready') throw new Error('Veuillez réessayer plus tard.');
+    do {
+      await new Promise(r => setTimeout(r, 3000));
+      const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(job.jobId)}?token=${encodeURIComponent(job.token)}`);
+      status = await response.json().catch(() => null);
+      if (!response.ok || !status || typeof status.status !== 'string' || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) {
+        localStorage.removeItem('mscomm_album_zip_job');
+        progress?.classList.add('hidden');
+        throw new Error(status?.error || 'Préparation introuvable. Veuillez relancer le téléchargement.');
+      }
+      if (status.status === 'paused') {
+        showProgress(`Serveur : téléchargement en cours — reprise prévue vers ${new Date(status.resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, status.completed, status.total);
+        await new Promise(r => setTimeout(r, Math.max(5000, Date.parse(status.resumeAt) - Date.now())));
+      } else showProgress(`Préparation du ZIP… ${status.completed}/${status.total}`, status.completed, status.total);
+    } while (status.status !== 'ready' && status.status !== 'failed');
+    if (status.status !== 'ready') {
+      /* Terminal backend failure: clear saved job state, hide the progress bar
+         and show the server reason so a manual retry stays possible. */
+      localStorage.removeItem('mscomm_album_zip_job');
+      progress?.classList.add('hidden');
+      throw new Error(status.error || 'Échec après 3 tentatives. Veuillez réessayer plus tard.');
+    }
     localStorage.removeItem('mscomm_album_zip_job');
     window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(job.token)}`;
   } catch(err) { console.error('[ZIP job]',err); alert(err.message || err); }

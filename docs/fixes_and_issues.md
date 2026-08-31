@@ -7,8 +7,17 @@
 
 ## Applied Fixes
 
+### [FIXED] Async album ZIP — CloudFront 502 loop with Axios User-Agent
+**Symptom**: A 302-photo job repeatedly failed on the same photo with `502`, reset its attempt counter, and restarted forever when the browser polled status.
+
+**Root cause**: Live probes from the same Fly machine and exact Flickr URL returned `502 Error from cloudfront` with Axios' default User-Agent, but `200/206 image/jpeg` with a browser User-Agent. The previous “original + getSizes Original” fallback could also resolve to the same `_o` URL, and the worker reset attempts after exhaustion.
+
+**Fix**: Use the tested browser User-Agent and three strictly constructed Flickr sources (`_o`, `_k`, `_b`) with cache-busting. Wait 5/10 seconds, then mark the job `failed` after the third aggregate failure. Polling cannot restart failed jobs; an explicit new click within 10 minutes reuses completed checkpoint files. Reuse keys include album policy and exact Flickr source IDs. Streams use `pipeline()`, active archives heartbeat, archive warnings fail closed, async route errors reach Express middleware, and the gallery stops on failed, missing, or malformed job responses while restoring the button.
+
+**Verification**: `tests/flickr-zip-downloader.test.js`, `tests/album-zip-worker.test.js`, `tests/album-zip-jobs.test.js`, `tests/zip-archive.test.js`, `tests/async-route.test.js`, JavaScript syntax checks, and a live Fly-to-Flickr probe with the production headers.
+
 ### [IMPLEMENTED] Asynchronous resumable album ZIP jobs
-Large album exports now prepare in the background, checkpoint each Flickr photo, pause/resume on HTTP 429, and expose a ready ZIP only after every requested photo is staged. Jobs use `storage/tmp/zip-jobs`, expire after one hour, and reserve 1 GB headroom on the 5 GB volume. The gallery shows progress and a retry-later message when Flickr remains unavailable.
+Large album exports now prepare in the background, checkpoint each Flickr photo, stop after three failed sources, and expose a ready ZIP only after every requested photo is staged. Jobs use `storage/tmp/zip-jobs`, ready artifacts expire after one hour, and reserve 1 GB headroom on the 5 GB volume. The gallery shows progress and the exact terminal error when Flickr remains unavailable.
 
 The worker now logs `photo N / total` and waits 3 seconds between successful Flickr photos. The legacy stream route has the same spacing and progress logs while older cached frontend pages transition to the job flow.
 

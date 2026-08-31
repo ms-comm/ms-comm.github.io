@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Recent ZIP hardening: album ZIP must only abort on an explicit client request abort, never on a normal response close during archive finalization; Flickr CDN 429 retries must remain bounded.
+Recent ZIP hardening: album ZIP must only abort on an explicit client request abort, never on a normal response close during archive finalization; Flickr CDN requests use the tested browser User-Agent and stop permanently after three distinct source failures.
 Async album ZIP work uses resumable jobs, one Flickr download at a time, one-hour retention, 5 GB target volume, and one shared CPU.
 
 > **Update this file + the relevant `docs/` file at every code change.**
@@ -82,16 +82,18 @@ assets/data/translations.json  /admin  (SPA)
 ## Key Constraints
 
 - **Photo downloads (ZIP)**: Purchases still use client-side ZIP (`/api/orders/:id/download-urls`). Public/private album ZIP uses server streaming `POST /api/public/albums/:id/download` so mobile/desktop do not build the ZIP in browser memory; optional `ids=` downloads only selected album photos.
-- **Album ZIP reuse**: Identical album/mode/photo selections reuse one queued, running, paused, or unexpired ready job; browser stores temporary job tracking across reloads.
+- **Album ZIP reuse**: Identical album/mode/policy/exact-Flickr-source selections reuse one queued, running, paused, failed, archiving, or unexpired ready job; a failed job restarts from its checkpoint only after an explicit new POST/click, never from status polling. A policy/source change must invalidate old ZIPs.
 - **Album ZIP progress**: The gallery must show a dedicated progress bar for both PC-local downloads and server preparation; fallback from local to server must be explicit and visible.
 - **Private album refresh**: Keep private album route context and temporary access in session storage; never place private code in the URL.
 - **ZIP visual state**: While local or server ZIP work runs, button shows animated progress; invalid/stale saved job state must be cleared without displaying `undefined` values.
 - **ZIP immediate feedback**: Set visible progress state before any manifest or server request; private album URL may retain album context but never private code.
 - **ZIP loading icon**: Hide download SVG while animated loading indicator is active; restore it when the job ends.
-- **ZIP diagnostics**: Log job start/checkpoint, each 429 retry with exact seconds and resume timestamp, archive start, ready expiry, and terminal failures.
-- **ZIP retry cap**: Flickr retry/pause wait is capped at 60 seconds; never persist a longer ZIP resume delay.
-- **ZIP transient gateway errors**: Refresh Flickr URL and retry `500/502/503/504` like rate limits; log photo ID and attempt; reset attempt counter after a pause so a temporary CDN error cannot strand the job forever.
-- **ZIP Flickr fallback**: For each photo, try refreshed original CDN URL then `getSizes` widest source with cache-busting; strict watermark albums may use only the watermark photo source.
+- **ZIP diagnostics**: Log job start/checkpoint, source label, HTTP/network failure, alternate-source delay, archive start, ready expiry, and terminal stop after three failures.
+- **ZIP retry cap**: Exactly three aggregate attempts per photo, with 5-second then 10-second delays. The third failure marks the job `failed`; status polling must never restart it.
+- **ZIP transient gateway errors**: `429/500/502/503/504`, metadata failures, and stream failures all advance to the next source instead of repeating the same URL.
+- **ZIP Flickr fallback**: Use the tested browser User-Agent and cache-busting for three distinct sources: original `_o`, `Large 2048` `_k`, then `Large 1024` `_b`. Strict watermark albums resolve all three from the watermark Flickr photo ID only.
+- **ZIP stream safety**: Stage each Flickr stream through `stream.pipeline()`, remove failed `.part` files without masking the original error, treat archive warnings/errors as terminal before marking ready, and heartbeat `archiving` jobs so cleanup cannot delete an active large archive.
+- **ZIP route failures**: Wrap async Express 4 handlers so filesystem/JSON errors reach middleware; map temporary-storage budget overflow to HTTP 413 instead of leaving requests pending.
 - **Production sessions**: Default `SESSION_DIR` must be `/data/sessions` on Fly, not OS temp; stale cookies may produce one recoverable `ENOENT` and require login once.
 - **ZIP cleanup**: Queued, running, paused, or failed ZIP jobs with no update for 10 minutes are deleted with their temporary files; ready ZIPs keep their existing one-hour TTL.
 - **Album ZIP precheck**: `/api/public/albums/:id/download-check` must not block an album on one Flickr 429; it tests several candidate sources and only blocks if all checked sources fail.
@@ -122,6 +124,7 @@ assets/data/translations.json  /admin  (SPA)
 | Admin panel blank | Backend not running | `npm run dev` in photo-server/ |
 | Flickr uploads fail | Circuit breaker open | Wait 10 min or reset in Settings |
 | ZIP download 429 | Server IP rate-limited by Flickr CDN | Album ZIP probes `/download-check` and shows contact email before starting when Flickr already blocks Fly |
+| ZIP download 502 only with Axios | CloudFront rejects the default Axios User-Agent | Async ZIP uses the tested browser User-Agent and `_o` → `_k` → `_b` source fallback |
 | Mobile ZIP memory error | Browser cannot allocate enough RAM for a full album ZIP | Album ZIP uses server streaming; purchases may still need selected/smaller downloads |
 | Session errors on Windows | OneDrive/Defender lock | Ignore (suppressed), or set `SESSION_DIR` to temp |
 | `SESSION_SECRET` error on Fly | Env var missing | `fly secrets set SESSION_SECRET="..."` |
