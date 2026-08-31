@@ -8,7 +8,7 @@ async function main() {
   const httpCalls = [];
   const flickr = {
     async getPhotoInfo(id) {
-      sourceCalls.push(id);
+      sourceCalls.push(['info', id]);
       return {
         id: '10',
         server: '1',
@@ -16,6 +16,12 @@ async function main() {
         originalsecret: 'original-secret',
         originalformat: 'jpg'
       };
+    },
+    async getPhotoUrlExact(id, label) {
+      sourceCalls.push(['size', id, label]);
+      if (label === 'Large 2048') return 'https://live.staticflickr.com/1/10_sizes-secret_k.jpg';
+      if (label === 'Large 1024') return 'https://live.staticflickr.com/1/10_sizes-secret_b.jpg';
+      throw new Error(`Unexpected size ${label}`);
     }
   };
   const axiosGet = async (url, options) => {
@@ -40,11 +46,15 @@ async function main() {
   const stream = await download({ photo, attempt: 2 });
   assert.strictEqual(stream.read().toString(), 'jpeg');
 
-  assert.deepStrictEqual(sourceCalls, ['flickr-1']);
+  assert.deepStrictEqual(sourceCalls, [
+    ['info', 'flickr-1'],
+    ['size', 'flickr-1', 'Large 2048'],
+    ['size', 'flickr-1', 'Large 1024']
+  ]);
   assert.deepStrictEqual(httpCalls.map(call => new URL(call.url).pathname), [
     '/1/10_original-secret_o.jpg',
-    '/1/10_secret_k.jpg',
-    '/1/10_secret_b.jpg'
+    '/1/10_sizes-secret_k.jpg',
+    '/1/10_sizes-secret_b.jpg'
   ]);
   assert.strictEqual(new Set(httpCalls.map(call => new URL(call.url).pathname)).size, 3);
   for (const call of httpCalls) {
