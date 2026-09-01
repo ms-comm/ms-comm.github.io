@@ -5,6 +5,8 @@ Async album ZIP work uses resumable jobs, one Flickr download at a time, one-hou
 Admin Overview rework: the dashboard reads one aggregate (`GET /api/admin/overview`) with period comparison and an actionable `attention[]` queue, and a Clients section (`GET /api/admin/clients`) derives clients from orders by normalised email until real accounts exist. Roadmap and API contracts: [docs/PLAN_REFONTE.md](docs/PLAN_REFONTE.md).
 Visitor accounts: browsing stays anonymous, but every download exit point is gated server-side in `publicApi.js` (`downloadGate`, `401 ACCOUNT_REQUIRED`). Purchase tokens are never gated, and an album code does not replace an account. Cross-site downloads carry a signed `dlTicket`; a client session sets `req.session.accountId` only, never `authenticated`.
 
+Gallery bar: `assets/css/gallery-bar.css` owns the sticky gallery controls through `--bar-w`/`--bar-h` only. The FR/EN switcher lives inside `.topbar-inner` just before `#acct-control` at every width. `html`/`body` must keep `overflow-x: clip` — `hidden` silently kills every `position: sticky`. Details: [docs/website.md](docs/website.md).
+
 > **Update this file + the relevant `docs/` file at every code change.**
 
 ---

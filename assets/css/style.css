@@ -32,14 +32,19 @@
 html { scroll-behavior: smooth; }
 
 html {
-  overflow-x: hidden;
+  /* clip et non hidden : `overflow: hidden` fait de l'element un
+     conteneur de defilement, ce qui DESACTIVE silencieusement tout
+     `position: sticky` a l'interieur. `clip` coupe exactement pareil
+     sans creer ce conteneur, donc les barres collantes fonctionnent. */
+  overflow-x: clip;
 }
 
 body {
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
-  overflow-x: hidden;
+  /* Voir la note sur html plus haut : hidden tuerait position:sticky. */
+  overflow-x: clip;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   position: relative;
@@ -235,6 +240,19 @@ main {
   transition: transform 0.2s, box-shadow 0.2s;
   border: none;
   cursor: pointer;
+}
+
+/* Un libellé d'action courte ne doit jamais se casser en deux lignes :
+ * la hauteur fixe de 40px transforme le retour a la ligne en texte tronque.
+ * Regle globale, pas seulement dans le palier 961-1180. */
+.nav-cta,
+.acct-trigger { white-space: nowrap; flex-shrink: 0; }
+
+/* Sous 560px la baseline de marque se replie sur trois lignes et fait
+ * doubler la hauteur du bandeau. Le nom suffit a identifier la marque. */
+@media (max-width: 560px) {
+  .brand-text span { display: none; }
+  .brand-text strong { white-space: nowrap; }
 }
 
 .nav-cta:hover {
@@ -2175,15 +2193,55 @@ textarea:focus {
    devis" CTA never slides underneath the switcher at intermediate widths.
    `.topbar` is already `position: fixed`, which creates the positioning
    context we need, so no extra override is required. */
-@media (min-width: 961px) {
-  .topbar > .lang-switch {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
+/* The switcher now lives INSIDE the topbar flex row (i18n.js places it just
+   before the account control), so it no longer needs to be pulled out of
+   the flow. The previous absolute rule only applied above 961px; below it
+   the element fell back into normal flow as the last child of a block
+   <header> and landed on a second line, flush left, overflowing the bar.
+   Keeping it in the row means one position at every width.
+   The rule below only survives for any page where the switcher is still a
+   direct child of <header> (no .topbar-inner found). */
+.topbar > .lang-switch {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+.topbar-inner > .lang-switch { flex-shrink: 0; }
+
+/* ── Compression de la rangée entre 961 et 1180px ──────────────────────
+ * À ces largeurs la navigation complète est encore affichée (elle ne
+ * disparaît qu'à 960px) mais la rangée demande plus de place qu'il n'y
+ * en a : six liens, le bouton devis, le compte et le sélecteur FR/EN.
+ * Rien n'étant autorisé à se comprimer, les blocs se chevauchaient
+ * littéralement — « Demander un devis » passait par-dessus le lien de
+ * la page courante, et « Mon espace » se cassait sur deux lignes.
+ * Élargir la marge ne change rien : le contenu la traverse. Il faut
+ * réduire la demande. */
+@media (min-width: 961px) and (max-width: 1180px) {
+  .topbar-inner { gap: 10px; min-width: 0; }
+  .topbar-inner .nav { gap: 2px; min-width: 0; flex-shrink: 1; }
+  .topbar-inner .nav a {
+    white-space: nowrap;
+    font-size: 13px;
+    padding-left: 6px;
+    padding-right: 6px;
   }
-  .topbar .topbar-inner { padding-right: 100px; }
+  .topbar-inner .brand { min-width: 0; flex-shrink: 1; gap: 10px; }
+  /* La baseline part avant le nom : c'est l'élément le plus sacrifiable
+     de la marque à cette largeur. */
+  .topbar-inner .brand-text span { display: none; }
+  /* Un nom de marque ne doit jamais se couper entre ses deux mots. */
+  .topbar-inner .brand-text strong { white-space: nowrap; }
+  .topbar-inner .nav-cta {
+    padding: 8px 12px; font-size: 12.5px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .topbar-inner .acct-trigger {
+    padding: 8px 10px; font-size: 12.5px;
+    white-space: nowrap; flex-shrink: 0;
+  }
 }
 .lang-switch {
   display: inline-flex;

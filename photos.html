@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/css/account.css" />
+  <link rel="stylesheet" href="assets/css/gallery-bar.css" />
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/i18n.js" defer></script>
   <script src="assets/js/account.js" defer></script>
@@ -26,22 +27,26 @@
 :root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --red:#ef4444; --green:#22c55e; }
 .hidden { display: none !important; }
 
-.offline-banner { display:none; background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; text-align:center; padding:12px 20px; font-size:13px; position:sticky; top:70px; z-index:50; }
+/* Le bandeau suit la topbar comme la barre d'outils : sans --chrome-h il
+   restait colle a 70px alors que la topbar s'etait retiree, laissant un
+   vide, et il passait sous la barre de galerie (z-index 60). */
+.offline-banner { display:none; background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; text-align:center; padding:12px 20px; font-size:13px; position:sticky; top:var(--chrome-h,70px); z-index:61; transition:top .62s cubic-bezier(.16,1,.3,1); }
 .offline-banner.show { display:block; }
 
 .gal-hero { padding:72px 0 40px; text-align:center; }
 .gal-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); margin-bottom:10px; }
 .gal-hero p { color:var(--muted); font-size:15px; max-width:54ch; margin:0 auto; }
 
-/* toolbar */
-.gal-controls { margin-bottom:20px; }
-.gal-controls-top { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
-.gal-search { width:100%; max-width:560px; display:block; margin:0 auto; background:#141414; border:1px solid var(--border); border-radius:10px; color:#f0f0f0; padding:10px 14px; font-size:14px; outline:none; transition:border-color .2s; }
+/* toolbar — le gabarit (largeurs, hauteurs, verre, adaptatif) vit dans
+   assets/css/gallery-bar.css. On ne garde ici que l'apparence de base des
+   pieces, sans aucune dimension : toute valeur figee posee ici serait en
+   conflit avec les variables --bar-w / --bar-h de la feuille dediee. */
+.gal-search { width:100%; background:#141414; border:1px solid var(--border); border-radius:10px; color:#f0f0f0; font-size:14px; outline:none; transition:border-color .2s; }
 .gal-search:focus { border-color:var(--gold); }
-.gal-tabs { display:flex; gap:3px; background:#141414; border:1px solid var(--border); border-radius:10px; padding:3px; }
-.gal-tab { padding:6px 14px; border-radius:7px; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; transition:all .15s; }
+.gal-tabs { display:flex; background:#141414; border:1px solid var(--border); border-radius:10px; }
+.gal-tab { font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; font-family:inherit; }
 .gal-tab.active { background:var(--gold); color:#0a0a0a; }
-.btn-private-album { display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:9px; border:1px solid var(--border); background:#141414; color:var(--muted); font-size:13px; cursor:pointer; transition:all .15s; }
+.btn-private-album { display:flex; align-items:center; border:1px solid var(--border); background:#141414; color:var(--muted); font-size:13px; cursor:pointer; transition:all .15s; font-family:inherit; }
 .btn-private-album:hover { border-color:var(--gold); color:#f0f0f0; }
 .btn-private-album svg { width:15px; height:15px; }
 .gal-content-box { background:rgba(255,255,255,.015); border:1px solid var(--border); border-radius:18px; padding:28px 24px; }
@@ -345,8 +350,13 @@
 .cart-btn:hover { transform:scale(1.08); }
 .cart-btn svg { width:20px; height:20px; margin-bottom:2px; }
 .cart-badge { position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; font-size:10px; font-weight:700; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.cart-panel { position:fixed; top:0; right:-420px; width:400px; height:100vh; background:#111; border-left:1px solid var(--border); z-index:600; display:flex; flex-direction:column; transition:right .28s ease; box-shadow:-8px 0 32px rgba(0,0,0,.5); }
-.cart-panel.open { right:0; }
+/* Le panneau sort de l'ecran par un deplacement RELATIF a sa propre
+   largeur. Avec l'ancien right:-420px fige, le palier <=600px qui passe
+   la largeur a 100% ne corrigeait pas le decalage : sur un ecran de
+   600px il restait 180px de panneau visibles en permanence sur le cote. */
+.cart-panel { position:fixed; top:0; right:0; width:400px; max-width:100vw; height:100vh; background:#111; border-left:1px solid var(--border); z-index:600; display:flex; flex-direction:column; transform:translateX(101%); transition:transform .32s cubic-bezier(.16,1,.3,1); box-shadow:-8px 0 32px rgba(0,0,0,.5); }
+.cart-panel.open { transform:translateX(0); }
+@media (prefers-reduced-motion: reduce) { .cart-panel { transition:none; } }
 .cart-panel-header { display:flex; align-items:center; justify-content:space-between; padding:20px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .cart-panel-header h3 { font-family:'Poppins',sans-serif; font-size:17px; display:flex; align-items:center; gap:8px; }
 .cart-panel-header h3 svg { width:18px; height:18px; }
@@ -425,6 +435,7 @@
 </head>
 <body>
   <canvas id="sparkle-canvas"></canvas>
+  <div class="fx-halo" aria-hidden="true"></div>
   <div class="offline-banner" id="offline-banner">
     <span id="offline-banner-msg">Le serveur photo n'est pas disponible — démarrez <code>node server.js</code> dans <code>photo-server/</code>.</span>
   </div>
@@ -471,13 +482,25 @@
 
     <section class="container" style="padding-bottom:80px">
       <div class="gal-controls">
+        <div class="gal-controls-inner">
         <div class="gal-controls-top">
           <div class="gal-tabs">
-            <button class="gal-tab active" data-view="timeline" data-i18n="photos.tab.gallery">Galerie</button>
-            <button class="gal-tab" data-view="albums" data-i18n="photos.tab.albums">Albums</button>
-            <button class="gal-tab" data-view="faces" data-i18n="photos.tab.faces">Visages</button>
+            <span class="gal-tabs-thumb" aria-hidden="true"></span>
+            <button class="gal-tab active" data-view="timeline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <span data-i18n="photos.tab.gallery">Galerie</span>
+            </button>
+            <button class="gal-tab" data-view="albums">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2.5h9A1.5 1.5 0 0 1 21 10v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18Z"/></svg>
+              <span data-i18n="photos.tab.albums">Albums</span>
+            </button>
+            <button class="gal-tab" data-view="faces">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+              <span data-i18n="photos.tab.faces">Visages</span>
+            </button>
             <button class="gal-tab" data-view="purchased" id="tab-purchased" style="display:none">
-              Mes achats <span id="tab-purchased-count" class="gal-tab-badge"></span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Mes achats</span> <span id="tab-purchased-count" class="gal-tab-badge"></span>
             </button>
           </div>
           <button class="btn-private-album" id="btn-private">
@@ -485,12 +508,14 @@
             <span data-i18n="photos.private.btn">Album privé</span>
           </button>
         </div>
-        <div class="gal-search-row" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:760px;margin:0 auto">
-          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." data-i18n-placeholder="photos.search.ph" style="flex:1;min-width:240px" />
-          <select class="gal-search" id="gal-album-filter" style="max-width:220px;cursor:pointer" aria-label="Filtrer par album">
+        <div class="gal-search-row">
+          <svg class="gal-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <input class="gal-search" id="gal-search" type="text" placeholder="Rechercher une photo ou un album..." data-i18n-placeholder="photos.search.ph" />
+          <select class="gal-search" id="gal-album-filter" aria-label="Filtrer par album">
             <option value="">Tous les albums</option>
             <option value="none">Sans album</option>
           </select>
+        </div>
         </div>
       </div>
 
@@ -2941,5 +2966,138 @@ init();
     </div>
   </div>
 </div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+ * BARRE DE GALERIE — comportement (porté de design/photographie-v2)
+ *   a) topbar qui sort par le haut en descendant, revient en remontant ;
+ *   b) --chrome-h = hauteur réellement visible de la topbar, ce qui permet
+ *      à la barre d'outils collante de suivre son mouvement au lieu de
+ *      sauter d'un bloc pendant qu'elle glisse ;
+ *   c) halo doré fixe qui prend le relais de la nappe du haut de page ;
+ *   d) curseur glissant sur les onglets + repli du filtre album.
+ * ═══════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  var topbar   = document.querySelector('.topbar');
+  var controls = document.querySelector('.gal-controls');
+  var halo     = document.querySelector('.fx-halo');
+  var root     = document.documentElement;
+  var lastY    = window.scrollY;
+  var hidden   = false;
+  var ticking  = false;
+  var NAV_H    = topbar ? topbar.offsetHeight : 72;
+
+  /* --chrome-h suit la position RÉELLE de la topbar, image par image. Une
+     simple bascule 72px → 0px ferait sauter la barre d'outils pendant que
+     la topbar, elle, glisse : les deux se désolidarisent et on voit un
+     décrochage. En lisant la matrice de transformation en cours, la barre
+     reste soudée au bas de la topbar sur toute la durée du mouvement. */
+  var chromeRaf = 0, chromeLast = -1;
+
+  function readChrome() {
+    if (!topbar) return 0;
+    var m = new DOMMatrixReadOnly(getComputedStyle(topbar).transform);
+    return Math.max(0, Math.min(NAV_H, NAV_H + m.m42));
+  }
+  function followChrome() {
+    var h = readChrome();
+    if (Math.abs(h - chromeLast) > 0.5) {
+      chromeLast = h;
+      root.style.setProperty('--chrome-h', h.toFixed(1) + 'px');
+    }
+    var target = hidden ? 0 : NAV_H;
+    if (Math.abs(h - target) > 0.5) {
+      chromeRaf = requestAnimationFrame(followChrome);
+    } else {
+      chromeRaf = 0;
+      root.style.setProperty('--chrome-h', target + 'px');
+      chromeLast = target;
+    }
+  }
+  function startFollow() { if (!chromeRaf) chromeRaf = requestAnimationFrame(followChrome); }
+  function setHidden(next) {
+    if (hidden === next || !topbar) return;
+    hidden = next;
+    topbar.classList.toggle('is-hidden', hidden);
+    startFollow();
+  }
+
+  function onScrollFrame() {
+    ticking = false;
+    var y = window.scrollY, dy = y - lastY;
+    if (topbar) {
+      topbar.classList.toggle('at-threshold', y < window.innerHeight * 0.55);
+      /* Seuils asymétriques : il faut un geste franc pour faire
+         disparaître la barre (14px), un geste minime pour la rappeler
+         (4px). Remonter EST la demande de navigation. */
+      if (dy > 14 && y > NAV_H * 2) { setHidden(true); lastY = y; }
+      else if (dy < -4) { setHidden(false); lastY = y; }
+      else if (Math.abs(dy) > 24) { lastY = y; }
+      if (y <= NAV_H * 2) setHidden(false);
+    }
+    /* Relève du halo : la nappe du haut de page s'efface en défilant, la
+       nappe fixe prend le relais au même instant, donc la page ne perd
+       jamais sa couleur entre les deux. */
+    if (halo) halo.classList.toggle('is-lit', y >= window.innerHeight * 0.55);
+    if (controls) {
+      var top = controls.getBoundingClientRect().top;
+      controls.classList.toggle('is-stuck', top <= chromeLast + 2);
+    }
+  }
+  function requestScrollFrame() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(onScrollFrame);
+  }
+
+  root.style.setProperty('--chrome-h', NAV_H + 'px');
+  chromeLast = NAV_H;
+  onScrollFrame();
+  window.addEventListener('scroll', requestScrollFrame, { passive: true });
+  window.addEventListener('resize', function () {
+    NAV_H = topbar ? topbar.offsetHeight : 72;
+    startFollow();
+    requestScrollFrame();
+  });
+
+  /* ── Curseur glissant + repli du filtre album ──────────────────────
+   * L'onglet actif est changé depuis une dizaine d'endroits (switchView,
+   * openAlbum, retour depuis un album, code privé…). Accrocher chacun
+   * serait fragile et en oublierait. Un MutationObserver sur la classe
+   * .active couvre tous les chemins, présents et à venir. */
+  var tabsBox = document.querySelector('.gal-tabs');
+  var thumb   = document.querySelector('.gal-tabs-thumb');
+
+  function syncTabs(instant) {
+    if (!tabsBox || !thumb) return;
+    var act = tabsBox.querySelector('.gal-tab.active');
+    if (!act || act.offsetParent === null) { thumb.classList.remove('is-ready'); return; }
+    if (instant) thumb.style.transition = 'none';
+    thumb.style.width = act.offsetWidth + 'px';
+    thumb.style.transform = 'translateX(' + act.offsetLeft + 'px)';
+    thumb.classList.add('is-ready');
+    if (instant) { void thumb.offsetWidth; thumb.style.transition = ''; }
+    /* Filtrer par album n'a de sens que dans la vue Galerie. */
+    if (controls) {
+      controls.classList.toggle('filter-off', act.dataset.view !== 'timeline');
+    }
+  }
+
+  if (tabsBox && thumb) {
+    var obs = new MutationObserver(function () { syncTabs(false); });
+    tabsBox.querySelectorAll('.gal-tab').forEach(function (t) {
+      obs.observe(t, { attributes: true, attributeFilter: ['class', 'style'] });
+    });
+    syncTabs(true);
+    window.addEventListener('resize', function () { syncTabs(true); });
+    /* Les polices arrivent après le premier rendu et changent la largeur
+       des libellés : sans ce recalage la pastille reste décalée. */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { syncTabs(true); });
+    }
+  }
+})();
+</script>
 </body>
 </html>

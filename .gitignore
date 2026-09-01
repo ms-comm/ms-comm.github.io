@@ -46,3 +46,8 @@ dist/
 build/
 .cache/
 *.log
+
+# ── Maquettes et captures de verification (local uniquement) ─────────
+#  Les explorations visuelles et les captures CDP n'ont pas a etre
+#  servies par GitHub Pages ni a alourdir le depot public.
+design/

@@ -339,6 +339,11 @@
     if (cta && cta.parentNode) cta.parentNode.insertBefore(wrap, cta);
     else host.appendChild(wrap);
     render();
+    /* The FR/EN switcher anchors itself just before this control. It is
+       built by i18n.js before we mount, so it must be re-placed now. */
+    if (typeof window.msPositionLangSwitch === 'function') {
+      window.msPositionLangSwitch();
+    }
   }
 
   function initials(account) {

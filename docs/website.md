@@ -89,6 +89,20 @@ have an account.
 ## photos.html — Gallery
 
 ### Views
+
+### Gallery bar (`assets/css/gallery-bar.css`)
+- One sticky control block `.gal-controls` under the topbar, driven by two variables `--bar-w` / `--bar-h`. Breakpoints (1024 / 900 / 720 / 600 / 430 / 360) only redefine those variables; no rule may set a per-case width, otherwise the three rows drift to different widths again.
+- `.gal-tabs-thumb` is a single sliding pill: its `transform` and `width` are written in JS by `syncTabs()`, itself driven by a `MutationObserver` on the tab classes — the active tab is changed from ~10 call sites (`switchView`, `openAlbum`, album return, private code unlock).
+- Search field and album filter live in one frame (`.gal-search-row`, `flex-wrap: nowrap`, `#gal-search { width: 0 }`). `.gal-controls.filter-off` collapses the album filter with an animation on non-timeline views.
+- The bar becomes glass (`backdrop-filter`) only once `.is-stuck` is set; the topbar hides on scroll down (`.topbar.is-hidden`) and returns on scroll up, with asymmetric thresholds (14px hide / 4px show). `--chrome-h` is tracked frame by frame from the topbar transform matrix so the sticky offset follows the animation.
+- `.fx-halo` is a fixed golden veil at `z-index: 0`; the bar sits at 60, so the halo stays visible behind the gallery while scrolling.
+
+### Topbar order
+- The FR/EN switcher is inserted **inside** `.topbar-inner`, right before `#acct-control` (`positionSwitcher()` in `i18n.js`, re-called by `account.js` `mount()` because i18n runs first and the anchor does not exist yet). Never restore the old absolutely-positioned rule: below 961px it fell back into normal flow and dropped to a second line.
+- `html`/`body` use `overflow-x: clip`, never `hidden`: `hidden` turns the element into a scroll container and silently disables every `position: sticky` on the site.
+- `.nav-cta` and `.acct-trigger` are `white-space: nowrap; flex-shrink: 0` globally — their fixed 40px height turns any line break into clipped text.
+- Below 560px the brand baseline (`.brand-text span`) is hidden; it wrapped onto three lines and doubled the topbar height.
+
 - **Timeline**: all photos sorted by date, infinite lazy-load (sentinel IntersectionObserver)
 - **Albums**: grouped by album with the same justified masonry image style as the main gallery; public/private album photo grids use the same visual language and sort photos newest-first (`takenAt || createdAt`)
 - **Faces**: AI face detection results

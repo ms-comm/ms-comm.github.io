@@ -961,32 +961,52 @@
     });
   }
 
-  /* Desktop: the switcher lives as a direct child of `.topbar` (the outer
-     <header>), not `.topbar-inner`. That way it can be absolutely
-     positioned against the viewport's right edge — well outside the
-     centred `.container` — so it sits clearly isolated from the rest of
-     the header.
-     Mobile: we re-parent it inside the CTA wrapper, next to the hamburger,
-     keeping the header compact. */
+  /* The switcher sits INSIDE the topbar row, immediately before the account
+     control ("Mon espace"), at every screen size.
+
+     It used to be a direct child of `.topbar` (the outer <header>) and was
+     absolutely positioned against the viewport's right edge above 961px.
+     Below that breakpoint the absolute rule stopped applying and the
+     element fell back into normal flow: as the last child of a block-level
+     <header>, it landed on a SECOND line, flush left under the logo, and
+     overflowed the bar. Keeping it in the flex row removes that failure
+     mode entirely — one position, all widths.
+
+     Order in the row: quote CTA, then FR/EN, then the account. Language is
+     a setting, so it reads before the personal space rather than after it. */
   function positionSwitcher() {
     if (!switchTarget) return;
-    const topbar = document.querySelector('.topbar');
-    const inner  = document.querySelector('.topbar-inner');
-    if (!topbar || !inner) { document.body.appendChild(switchTarget); return; }
-    const isMobile = window.matchMedia('(max-width: 960px)').matches;
-    const menuBtn = document.getElementById('menuBtn');
-    if (isMobile && menuBtn && menuBtn.parentNode) {
-      if (switchTarget.parentNode !== menuBtn.parentNode
-          || switchTarget.nextElementSibling !== menuBtn) {
-        menuBtn.parentNode.insertBefore(switchTarget, menuBtn);
+    const inner = document.querySelector('.topbar-inner');
+    if (!inner) { document.body.appendChild(switchTarget); return; }
+
+    /* account.js may mount `#acct-control` after us, hence the re-position
+       on resize and the anchor lookup on every call. */
+    const anchor = inner.querySelector('#acct-control')
+                || inner.querySelector('.acct-control')
+                || document.getElementById('menuBtn');
+
+    if (anchor && anchor.parentNode) {
+      if (switchTarget.nextElementSibling !== anchor) {
+        anchor.parentNode.insertBefore(switchTarget, anchor);
       }
-    } else {
-      if (switchTarget.parentNode !== topbar
-          || topbar.lastElementChild !== switchTarget) {
-        topbar.appendChild(switchTarget);
-      }
+      return;
     }
+    /* No account control on this page: sit right after the quote CTA. */
+    const cta = inner.querySelector('.nav-cta');
+    if (cta && cta.parentNode) {
+      if (cta.nextElementSibling !== switchTarget) {
+        cta.parentNode.insertBefore(switchTarget, cta.nextSibling);
+      }
+      return;
+    }
+    if (switchTarget.parentNode !== inner) inner.appendChild(switchTarget);
   }
+
+  /* account.js mounts `#acct-control` after this script has already run, so
+     the anchor does not exist on the first pass. It calls this hook once
+     mounted; without it the switcher would stay after the account control
+     until the next resize. */
+  window.msPositionLangSwitch = positionSwitcher;
 
   function updateSwitcherUI() {
     if (!switchTarget) return;

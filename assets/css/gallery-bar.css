@@ -1,0 +1,342 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * MS Comm' — Barre de galerie (photos.html)
+ * Portage de la maquette design/photographie-v2.
+ *
+ * Le defaut de la version precedente n'etait pas un reglage isole mais le
+ * gabarit lui-meme : trois rangees empilees, chacune avec sa propre
+ * largeur maximale (onglets en largeur automatique, recherche plafonnee a
+ * 560px, rangee de recherche a 760px). Trois bords gauches, trois bords
+ * droits, jamais alignes, et une hauteur qui gonflait des que la place
+ * manquait — jusqu'a 175px sur telephone.
+ *
+ * Ici deux variables commandent tout :
+ *   --bar-w  largeur commune de chaque rangee
+ *   --bar-h  hauteur commune des controles
+ * Aucune regle adaptative ne redefinit une largeur au cas par cas : les
+ * paliers ne touchent que ces variables et ce qui doit disparaitre. Les
+ * bords s'alignent par construction.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --gal-ease-soft: cubic-bezier(.16, 1, .3, 1);
+  --gal-ease-fade: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── 1. Le halo persistant ──────────────────────────────────────────────
+ * La nappe doree du haut de page appartient au haut du DOCUMENT : on la
+ * traverse en descendant et elle disparait. Cette seconde nappe est FIXE,
+ * elle appartient au haut de l'ECRAN et ne quitte jamais le champ, pour
+ * que l'onglet Photographie garde sa couleur propre partout dans la page.
+ * z-index 0 contre 60 pour la barre : le halo passe DERRIERE elle. */
+.fx-halo {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 340px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .7s var(--gal-ease-fade);
+  background:
+    radial-gradient(ellipse 78% 100% at 50% -30%, rgba(198,155,0,0.20), transparent 72%),
+    linear-gradient(to bottom, rgba(24,18,4,0.42), rgba(10,10,10,0) 88%);
+}
+.fx-halo.is-lit { opacity: 1; }
+
+/* ── 2. La topbar au defilement ─────────────────────────────────────── */
+.topbar {
+  will-change: transform;
+  transition: transform .62s var(--gal-ease-soft),
+              background .5s var(--gal-ease-fade),
+              border-color .5s var(--gal-ease-fade);
+}
+.topbar.is-hidden { transform: translateY(-101%); }
+.topbar.at-threshold {
+  background: rgba(26,20,6,0.72);
+  border-bottom-color: rgba(198,155,0,0.28);
+}
+
+/* ── 3. La barre d'outils collante ──────────────────────────────────── */
+.gal-controls {
+  --bar-h: 42px;
+  --bar-w: min(720px, 100%);
+  --bar-gap: 10px;
+  position: sticky;
+  top: var(--chrome-h, 72px);
+  z-index: 60;
+  margin-bottom: 20px;
+  padding: 14px 0;
+  transition: padding .5s var(--gal-ease-soft);
+}
+.gal-controls.is-stuck { --bar-h: 38px; padding: 9px 0; }
+
+/* Le verre. La barre doit se lire comme une surface POSEE SUR les photos,
+   pas comme un bloc opaque qui les masque : on voit la matiere defiler,
+   floutee, dessous. La plaque deborde de 50vw lateralement et remonte de
+   200px pour couvrir la bande liberee quand la topbar se retire — c'etait
+   la fuite par laquelle les photos passaient au-dessus du bandeau. */
+.gal-controls::before {
+  content: '';
+  position: absolute;
+  inset: -200px -50vw 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgba(12,10,6,0.82) 0%,
+    rgba(12,10,6,0.82) calc(100% - 78px),
+    rgba(12,10,6,0.66) 100%
+  );
+  backdrop-filter: blur(22px) saturate(1.45);
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+  opacity: 0;
+  transition: opacity .46s var(--gal-ease-fade);
+  pointer-events: none;
+}
+/* Le rebord : un filet dore qui materialise l'arete de la plaque, degrade
+   vers les bords pour ne pas trancher l'ecran en deux. */
+.gal-controls::after {
+  content: '';
+  position: absolute;
+  left: -50vw; right: -50vw; bottom: 0;
+  height: 1px;
+  z-index: -1;
+  background: linear-gradient(to right,
+    transparent, rgba(198,155,0,.34) 22%,
+    rgba(198,155,0,.34) 78%, transparent);
+  opacity: 0;
+  transition: opacity .46s var(--gal-ease-fade);
+  pointer-events: none;
+}
+.gal-controls.is-stuck::before,
+.gal-controls.is-stuck::after { opacity: 1; }
+
+.gal-controls-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bar-gap);
+}
+.gal-controls .gal-controls-top,
+.gal-controls .gal-search-row {
+  width: var(--bar-w);
+  max-width: 100%;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Rangee 1 — navigation. Les onglets prennent la place disponible, la
+   porte privee garde sa taille propre : c'est une sortie du parcours,
+   pas une destination supplementaire. */
+.gal-controls .gal-controls-top {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.gal-controls .gal-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--bar-h);
+  display: flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 11px;
+  border: 1px solid rgba(198,155,0,0.16);
+  align-items: stretch;
+  position: relative;
+  isolation: isolate;
+}
+.gal-controls .gal-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color .28s var(--gal-ease-fade);
+}
+.gal-controls .gal-tab svg {
+  flex: 0 0 auto;
+  width: 14px; height: 14px;
+  transition: transform .42s cubic-bezier(.34,1.24,.44,1);
+}
+.gal-controls .gal-tab.active svg { transform: scale(1.08); }
+
+/* Le curseur glissant : une seule pastille qui se DEPLACE, au lieu de
+   trois fonds qui s'allument. Le mouvement porte la relation entre
+   l'onglet quitte et l'onglet rejoint, donc l'oeil suit au lieu de
+   rechercher. Position et largeur sont posees par photos.html, mesurees
+   sur l'onglet actif : c'est la seule facon d'obtenir un deplacement
+   continu quand les onglets ont des largeurs differentes. */
+.gal-tabs-thumb {
+  position: absolute;
+  top: 3px; left: 0;
+  height: calc(100% - 6px);
+  border-radius: 8px;
+  background: var(--gold);
+  z-index: -1;
+  opacity: 0;
+  transition: transform .42s cubic-bezier(.34,1.24,.44,1),
+              width .42s cubic-bezier(.34,1.24,.44,1),
+              opacity .2s var(--gal-ease-fade);
+}
+.gal-tabs-thumb.is-ready { opacity: 1; }
+.gal-controls .gal-tabs .gal-tab.active { background: none; color: #0a0a0a; }
+.gal-controls .gal-tab:hover:not(.active) { color: #f0f0f0; background: rgba(255,255,255,0.05); }
+
+.gal-controls .btn-private-album {
+  flex: 0 0 auto;
+  height: var(--bar-h);
+  padding: 0 15px;
+  gap: 8px;
+  border-radius: 11px;
+  border-color: rgba(198,155,0,0.30);
+  background: rgba(198,155,0,0.05);
+  color: rgba(255,255,255,0.78);
+  font-size: 13px; font-weight: 500;
+  white-space: nowrap;
+}
+.gal-controls .btn-private-album svg { color: var(--gold-2); }
+.gal-controls .btn-private-album:hover {
+  border-color: var(--gold);
+  background: rgba(198,155,0,0.12);
+  color: #f0f0f0;
+}
+
+/* Rangee 2 — recherche et filtre dans UNE seule piece. Le champ et le
+   selecteur partagent le cadre : une bordure, un rayon, une hauteur.
+   C'est ce qui supprime la troisieme rangee pleine largeur. */
+.gal-controls .gal-search-row {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 0;
+  height: var(--bar-h);
+  border: 1px solid rgba(198,155,0,0.16);
+  border-radius: 11px;
+  background: #141414;
+  overflow: hidden;
+  transition: border-color .2s var(--gal-ease-fade);
+}
+.gal-controls .gal-search-row:focus-within { border-color: rgba(198,155,0,0.42); }
+.gal-search-icon {
+  width: 16px; height: 16px;
+  flex: 0 0 auto;
+  margin-left: 13px;
+  align-self: center;
+  color: rgba(255,255,255,0.34);
+}
+.gal-controls .gal-search-row .gal-search {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  margin: 0;
+  max-width: none;
+  font-family: inherit;
+  padding: 0 12px;
+}
+.gal-controls .gal-search-row #gal-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Sans width:0, la largeur intrinseque d'un input (~20 caracteres) sert
+     de plancher et pousse son voisin hors du cadre. */
+  width: 0;
+  text-overflow: ellipsis;
+}
+.gal-controls .gal-search-row #gal-album-filter {
+  flex: 0 0 auto;
+  width: 190px;
+  max-width: none;
+  padding: 0 30px 0 13px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.72);
+  border-left: 1px solid rgba(255,255,255,0.09);
+  appearance: none; -webkit-appearance: none;
+  /* Chevron dessine a la main : l'apparence native ajoutait un fond et un
+     cadre systeme au milieu du cadre commun. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='.45' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 15px;
+  transition: width .44s var(--gal-ease-soft),
+              padding .44s var(--gal-ease-soft),
+              opacity .26s var(--gal-ease-fade),
+              border-color .3s var(--gal-ease-fade);
+  overflow: hidden;
+}
+/* Filtrer par album n'a pas de sens hors de la vue Galerie : le controle
+   se replie et la recherche occupe la place liberee dans le meme geste.
+   width/padding/opacite sont animables, display ne l'est pas. */
+.gal-controls.filter-off #gal-album-filter {
+  width: 0;
+  padding-left: 0; padding-right: 0;
+  opacity: 0;
+  border-left-color: transparent;
+  pointer-events: none;
+}
+
+.gal-controls .gal-tabs,
+.gal-controls .btn-private-album,
+.gal-controls .gal-search-row,
+.gal-controls .gal-controls-inner {
+  transition: height .5s var(--gal-ease-soft),
+              gap .5s var(--gal-ease-soft),
+              width .5s var(--gal-ease-soft);
+}
+
+/* ── 4. Adaptation : seules les variables changent ───────────────────── */
+@media (min-width: 1024px) {
+  .gal-controls { --bar-w: 780px; }
+  .gal-controls .gal-search-row #gal-album-filter { width: 200px; }
+}
+@media (max-width: 900px) {
+  .gal-controls { --bar-w: 100%; --bar-gap: 9px; }
+  .gal-controls .gal-search-row #gal-album-filter { width: 168px; }
+}
+/* L'icone part avant le libelle : le texte porte le sens, pas l'ornement. */
+@media (max-width: 720px) {
+  .gal-controls .gal-tab svg { display: none; }
+  .gal-controls .gal-tab { gap: 0; }
+  .gal-controls .gal-search-row #gal-album-filter { width: 148px; }
+}
+/* Le libelle « Album prive » se reduit a son cadenas : une serrure, pas
+   un bouton tronque. Le nom reste annonce aux lecteurs d'ecran. */
+@media (max-width: 600px) {
+  .gal-controls { --bar-h: 40px; --bar-gap: 8px; }
+  .gal-controls.is-stuck { --bar-h: 36px; }
+  .gal-controls .btn-private-album {
+    width: var(--bar-h); padding: 0; justify-content: center; gap: 0;
+  }
+  .gal-controls .btn-private-album span {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .gal-controls .gal-tab { font-size: 12.5px; padding: 0 6px; }
+  .gal-controls .gal-search-row #gal-album-filter { width: 132px; font-size: 12.5px; }
+  .gal-controls .gal-search-row #gal-search { padding: 0 10px; }
+}
+/* A cette largeur, deux champs cote a cote sont illisibles tous les deux.
+   La recherche seule couvre le besoin : elle trouve deja les albums. */
+@media (max-width: 430px) {
+  .gal-controls { --bar-h: 38px; }
+  .gal-controls.is-stuck { --bar-h: 35px; }
+  .gal-controls .gal-search-row #gal-album-filter { display: none; }
+  .gal-controls .gal-tab { font-size: 12px; padding: 0 4px; }
+  .gal-search-icon { margin-left: 11px; }
+  .gal-controls .gal-search-row #gal-search { font-size: 13px; }
+}
+@media (max-width: 360px) {
+  .gal-controls .gal-tab { font-size: 11.5px; padding: 0 3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-halo, .topbar, .gal-controls,
+  .gal-controls::before, .gal-controls::after,
+  .gal-tabs-thumb, .gal-controls .gal-tab, .gal-controls .gal-tab svg,
+  .gal-controls .gal-tabs, .gal-controls .btn-private-album,
+  .gal-controls .gal-search-row,
+  .gal-controls .gal-search-row #gal-album-filter { transition: none; }
+}
