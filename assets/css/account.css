@@ -1,0 +1,322 @@
+
+/* =========================================================================
+   ESPACE CLIENT — header control, auth sheet, toast
+   Reuses the existing tokens (--gold, --stroke, --panel) so the account
+   surface reads as part of the site, not as a bolted-on widget.
+   ========================================================================= */
+
+.acct-control { position: relative; display: inline-flex; }
+
+.acct-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s cubic-bezier(.22,1,.36,1), border-color .2s, color .2s;
+}
+.acct-trigger svg { width: 17px; height: 17px; color: var(--muted); transition: color .2s; }
+.acct-trigger:hover { background: var(--panel-hover); border-color: var(--stroke-hover); }
+.acct-trigger:hover svg { color: var(--gold-2); }
+.acct-trigger:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+
+.acct-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #0a0a0a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.acct-name { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Menu — fixed-free absolute inside .acct-control, which is not clipped. */
+.acct-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 120;
+  width: 250px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke-hover);
+  background: #141414;
+  box-shadow: 0 18px 44px rgba(0,0,0,.55);
+}
+.acct-menu[hidden] { display: none; }
+.acct-menu-head { padding: 10px 12px 12px; border-bottom: 1px solid var(--stroke); }
+.acct-menu-head strong { display: block; font-size: 13.5px; font-weight: 600; }
+.acct-menu-head span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.acct-menu-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--stroke);
+}
+.acct-menu-stats a {
+  display: grid;
+  gap: 1px;
+  padding: 7px 4px;
+  border-radius: 9px;
+  text-align: center;
+  text-decoration: none;
+  transition: background .15s;
+}
+.acct-menu-stats a:hover { background: rgba(255,255,255,.06); }
+.acct-menu-stats b {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--gold-2);
+  font-variant-numeric: tabular-nums;
+}
+.acct-menu-stats span { font-size: 10.5px; color: rgba(255,255,255,.55); }
+
+.acct-menu a[role="menuitem"],
+.acct-menu button[role="menuitem"] {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: rgba(255,255,255,.78);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.acct-menu a[role="menuitem"]:first-of-type { margin-top: 6px; }
+.acct-menu a[role="menuitem"]:hover,
+.acct-menu button[role="menuitem"]:hover { background: rgba(255,255,255,.07); color: var(--text); }
+.acct-menu button#acct-logout { margin-top: 4px; border-top: 1px solid var(--stroke); border-radius: 0 0 9px 9px; color: rgba(255,255,255,.6); }
+
+/* ── Auth sheet ─────────────────────────────────────────────────────────
+   Modal is justified here: the download is already in flight and must be
+   suspended, then resumed. Anything inline would lose the action. */
+.acct-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(6,6,6,.82);
+  backdrop-filter: blur(6px);
+}
+.acct-overlay.is-open { display: flex; }
+body.acct-locked { overflow: hidden; }
+
+.acct-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 30px 30px 26px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke-hover);
+  background: #131313;
+  animation: acct-in .28s cubic-bezier(.22,1,.36,1);
+}
+@keyframes acct-in { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+
+.acct-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.acct-close svg { width: 16px; height: 16px; }
+.acct-close:hover { background: rgba(255,255,255,.08); color: var(--text); }
+
+.acct-reason {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-2);
+}
+.acct-title {
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.acct-sub {
+  margin-top: 7px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.68);
+}
+
+.acct-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 20px 0 18px;
+  padding: 4px;
+  border-radius: 11px;
+  background: rgba(255,255,255,.05);
+}
+.acct-tab {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: rgba(255,255,255,.6);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.acct-tab.is-on { background: rgba(255,255,255,.1); color: var(--text); }
+.acct-tab:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 1px; }
+
+.acct-form { display: grid; gap: 13px; }
+.acct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.acct-field { display: grid; gap: 6px; }
+.acct-field > span { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.72); }
+.acct-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke-hover);
+  background: #0d0d0d;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color .18s, background .18s;
+}
+.acct-field input::placeholder { color: rgba(255,255,255,.42); }
+.acct-field input:focus { outline: none; border-color: var(--gold); background: #101010; }
+
+.acct-hint { font-size: 12px; color: rgba(255,255,255,.5); }
+.acct-error { min-height: 17px; font-size: 12.5px; color: #fca5a5; }
+.acct-error:empty { min-height: 0; }
+
+.acct-submit {
+  height: 46px;
+  border: none;
+  border-radius: 11px;
+  background: var(--gold);
+  color: #0a0a0a;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .18s, opacity .18s;
+}
+.acct-submit:hover:not(:disabled) { background: var(--gold-2); }
+.acct-submit:disabled { opacity: .6; cursor: progress; }
+.acct-submit.is-busy span { opacity: .65; }
+.acct-submit:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+
+.acct-switch { margin-top: 16px; font-size: 12.5px; color: rgba(255,255,255,.55); text-align: center; }
+.acct-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--gold-2);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Toast ─────────────────────────────────────────────────────────────── */
+.acct-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 800;
+  transform: translate(-50%, 14px);
+  max-width: min(92vw, 400px);
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke-hover);
+  background: #161616;
+  color: var(--text);
+  font-size: 13.5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease-out, transform .28s cubic-bezier(.22,1,.36,1);
+}
+.acct-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── Favorite affordance (gallery + lightbox) ──────────────────────────── */
+.fav-btn { position: relative; }
+.fav-btn svg { transition: transform .2s cubic-bezier(.22,1,.36,1), fill .2s, color .2s; }
+.fav-btn.is-fav svg { fill: var(--gold-2); color: var(--gold-2); }
+.fav-btn.is-fav:not(.no-anim) svg { animation: fav-pop .32s cubic-bezier(.22,1,.36,1); }
+@keyframes fav-pop { 0% { transform: scale(1); } 45% { transform: scale(1.22); } 100% { transform: scale(1); } }
+
+.card-fav {
+  position: absolute;
+  top: 9px; right: 9px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(10,10,10,.6);
+  backdrop-filter: blur(6px);
+  color: rgba(255,255,255,.85);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .18s, background .18s;
+}
+.card-fav svg { width: 16px; height: 16px; }
+.g-card:hover .card-fav,
+.card-fav:focus-visible,
+.card-fav.is-fav { opacity: 1; }
+.card-fav:hover { background: rgba(10,10,10,.85); }
+
+@media (max-width: 960px) {
+  /* The trigger keeps its icon only; the label would crowd the hamburger. */
+  .acct-control { order: 2; }
+  .acct-name { display: none; }
+  .acct-trigger { padding: 0 11px; }
+  .acct-trigger #acct-signin span,
+  .acct-trigger > span:not(.acct-avatar):not(.acct-name) { display: none; }
+  .acct-menu { width: 230px; }
+  .card-fav { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acct-sheet { animation: none; }
+  .acct-toast { transition: opacity .15s; transform: translate(-50%, 0); }
+  .fav-btn.is-fav svg { animation: none; }
+}
+

@@ -38,6 +38,9 @@ desktop.ini
 *.swp
 *.swo
 
+# ── Codex / Claude agent workspace (local worktrees, session state) ───
+.claude/
+
 # ── Build / cache ────────────────────────────────────────────────────
 dist/
 build/

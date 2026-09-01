@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Mon espace | MS Comm'</title>
+  <meta name="description" content="Votre espace MS Comm' : vos photos favorites, vos commandes et vos informations personnelles." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" />
+  <link rel="apple-touch-icon" href="assets/data/logo_white-removebg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/account.css" />
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/account.js" defer></script>
+  <style>
+    /* Page-local layout only. Everything visual reuses the site tokens. */
+    .space-wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+    .space-head { padding: 40px 0 26px; border-bottom: 1px solid var(--stroke); }
+    .space-head h1 { font-family: var(--font-heading); font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+    .space-head p { margin-top: 8px; color: rgba(255,255,255,.62); font-size: 14.5px; }
+
+    .space-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 24px 0 8px; }
+    .space-stat { padding: 16px 18px; border: 1px solid var(--stroke); border-radius: 12px; background: var(--panel); }
+    .space-stat b { display: block; font-size: 24px; font-weight: 650; color: var(--gold-2); font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .space-stat span { display: block; margin-top: 3px; font-size: 12.5px; color: rgba(255,255,255,.6); }
+
+    .space-tabs { display: flex; gap: 4px; margin: 26px 0 22px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,.05); width: fit-content; max-width: 100%; overflow-x: auto; }
+    .space-tab { padding: 9px 16px; border: none; border-radius: 9px; background: none; color: rgba(255,255,255,.62); font-family: var(--font-body); font-size: 13.5px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background .18s, color .18s; }
+    .space-tab.is-on { background: rgba(255,255,255,.1); color: var(--text); }
+    .space-tab:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 1px; }
+
+    .space-panel { display: none; padding-bottom: 70px; }
+    .space-panel.is-on { display: block; }
+
+    .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .fav-card { position: relative; overflow: hidden; border-radius: 12px; border: 1px solid var(--stroke); background: #101010; }
+    .fav-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+    .fav-card:hover img { transform: scale(1.03); }
+    .fav-card-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; }
+    .fav-card-bar strong { font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fav-drop { border: none; background: none; padding: 4px; color: rgba(255,255,255,.5); cursor: pointer; border-radius: 6px; }
+    .fav-drop:hover { color: #fca5a5; background: rgba(255,255,255,.06); }
+    .fav-drop svg { width: 15px; height: 15px; display: block; }
+
+    .order-list { display: grid; gap: 12px; }
+    .order-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border: 1px solid var(--stroke); border-radius: 12px; background: var(--panel); }
+    .order-row b { font-size: 14px; font-weight: 600; }
+    .order-row span { display: block; margin-top: 3px; font-size: 12.5px; color: rgba(255,255,255,.58); }
+    .order-total { font-size: 17px; font-weight: 650; color: var(--gold-2); font-variant-numeric: tabular-nums; }
+    .order-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .order-badge.ok { background: rgba(74,222,128,.14); color: #86efac; }
+    .order-badge.wait { background: rgba(198,155,0,.16); color: var(--gold-2); }
+
+    .profile-form { display: grid; gap: 14px; max-width: 460px; }
+    .profile-form .acct-row { grid-template-columns: 1fr 1fr; }
+
+    .space-empty { padding: 56px 24px; border: 1px dashed var(--stroke-hover); border-radius: 14px; text-align: center; }
+    .space-empty h3 { font-family: var(--font-heading); font-size: 16px; font-weight: 600; margin-bottom: 7px; }
+    .space-empty p { font-size: 13.5px; color: rgba(255,255,255,.6); max-width: 46ch; margin: 0 auto 18px; line-height: 1.6; }
+    .space-empty a { display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border-radius: 11px; background: var(--gold); color: #0a0a0a; font-size: 13.5px; font-weight: 650; text-decoration: none; }
+    .space-empty a:hover { background: var(--gold-2); }
+
+    .space-skel { height: 78px; border-radius: 12px; background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.08), rgba(255,255,255,.04)); background-size: 200% 100%; animation: space-shimmer 1.3s linear infinite; }
+    @keyframes space-shimmer { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .space-skel { animation: none; }
+      .fav-card:hover img { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" />
+          <div class="brand-text"><strong>MS Comm'</strong><span data-i18n="nav.tagline">Prestataire de services de communication</span></div>
+        </a>
+        <nav class="nav">
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+          <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
+          <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer" id="drawer">
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
+  </div>
+
+  <main style="padding-top:var(--nav-h)">
+    <div class="space-wrap">
+
+      <div class="space-head">
+        <h1 id="space-hello">Mon espace</h1>
+        <p id="space-sub">Chargement de votre espace…</p>
+      </div>
+
+      <!-- Signed out -->
+      <section id="space-anon" hidden>
+        <div class="space-empty" style="margin-top:36px">
+          <h3>Connectez-vous pour accéder à votre espace</h3>
+          <p>Vos photos favorites, vos téléchargements et vos commandes sont conservés dans votre espace MS&nbsp;Comm'. La galerie reste librement consultable sans compte.</p>
+          <a href="#" id="space-signin">Se connecter ou créer un compte</a>
+        </div>
+      </section>
+
+      <!-- Signed in -->
+      <section id="space-in" hidden>
+        <div class="space-stats" id="space-stats"></div>
+
+        <div class="space-tabs" role="tablist">
+          <button class="space-tab is-on" type="button" role="tab" data-tab="favoris" aria-selected="true">Mes favoris</button>
+          <button class="space-tab" type="button" role="tab" data-tab="commandes" aria-selected="false">Mes commandes</button>
+          <button class="space-tab" type="button" role="tab" data-tab="profil" aria-selected="false">Mes informations</button>
+        </div>
+
+        <div class="space-panel is-on" id="panel-favoris">
+          <div id="fav-body"><div class="space-skel"></div></div>
+        </div>
+
+        <div class="space-panel" id="panel-commandes">
+          <div id="orders-body"><div class="space-skel"></div></div>
+        </div>
+
+        <div class="space-panel" id="panel-profil">
+          <form class="profile-form" id="profile-form" novalidate>
+            <div class="acct-row">
+              <label class="acct-field"><span>Prénom</span><input name="firstName" type="text" autocomplete="given-name" /></label>
+              <label class="acct-field"><span>Nom</span><input name="lastName" type="text" autocomplete="family-name" /></label>
+            </div>
+            <label class="acct-field"><span>Adresse e-mail</span><input name="email" type="email" disabled /></label>
+            <p class="acct-hint">L'adresse e-mail sert de clé à vos commandes et ne peut pas être modifiée ici. Écrivez-nous pour la changer.</p>
+            <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:rgba(255,255,255,.72)">
+              <input type="checkbox" name="marketingOptIn" style="width:17px;height:17px;margin-top:2px;accent-color:var(--gold)" />
+              <span>Je souhaite être informé(e) des nouvelles galeries et actualités MS Comm'.</span>
+            </label>
+            <p class="acct-error" id="profile-msg"></p>
+            <button class="acct-submit" type="submit"><span>Enregistrer</span></button>
+          </form>
+
+          <form class="profile-form" id="password-form" novalidate style="margin-top:34px;padding-top:28px;border-top:1px solid var(--stroke)">
+            <h3 style="font-family:var(--font-heading);font-size:15px;font-weight:600">Changer de mot de passe</h3>
+            <label class="acct-field"><span>Mot de passe actuel</span><input name="currentPassword" type="password" autocomplete="current-password" required /></label>
+            <label class="acct-field"><span>Nouveau mot de passe</span><input name="newPassword" type="password" autocomplete="new-password" required /></label>
+            <p class="acct-hint">10 caractères minimum.</p>
+            <p class="acct-error" id="password-msg"></p>
+            <button class="acct-submit" type="submit"><span>Mettre à jour</span></button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="assets/data/logo_black-removebg.png" alt="MS" />
+          <span>MS Comm'</span>
+        </div>
+        <div class="footer-links">
+          <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+          <a href="contact.html" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="footer-copy">© <span id="year"></span> MS Comm' — Melody. Tous droits réservés.</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    const $ = id => document.getElementById(id);
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+    function euro(n) {
+      return (Number(n) || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+    }
+    function frDate(v) {
+      if (!v) return '';
+      const d = new Date(v);
+      return isNaN(d) ? '' : d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
+    function resolveUrl(u) {
+      if (!u) return '';
+      return /^https?:\/\//.test(u) ? u : window.MSAccount.API + u;
+    }
+
+    /* Tabs, deep-linkable so the header menu can point straight at a section. */
+    function selectTab(name) {
+      const valid = ['favoris', 'commandes', 'profil'];
+      const tab = valid.indexOf(name) >= 0 ? name : 'favoris';
+      document.querySelectorAll('.space-tab').forEach(b => {
+        const on = b.dataset.tab === tab;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      valid.forEach(v => $('panel-' + v).classList.toggle('is-on', v === tab));
+      if (history.replaceState) history.replaceState(null, '', '#' + tab);
+    }
+    document.querySelectorAll('.space-tab').forEach(b => {
+      b.addEventListener('click', () => selectTab(b.dataset.tab));
+    });
+
+    async function renderFavorites() {
+      const body = $('fav-body');
+      const r = await fetch(window.MSAccount.API + '/api/account/favorites', { credentials: 'include' });
+      if (!r.ok) { body.innerHTML = '<p class="acct-error">Impossible de charger vos favoris.</p>'; return; }
+      const data = await r.json();
+      const photos = data.photos || [];
+      if (!photos.length) {
+        body.innerHTML =
+          '<div class="space-empty"><h3>Aucun favori pour l\'instant</h3>' +
+          '<p>Ouvrez une photo dans la galerie et touchez le cœur : elle sera conservée ici, prête à être téléchargée ou commandée.</p>' +
+          '<a href="photos.html">Parcourir la galerie</a></div>';
+        return;
+      }
+      body.innerHTML = '<div class="fav-grid">' + photos.map(p =>
+        '<figure class="fav-card">' +
+        '  <a href="photos.html?photo=' + encodeURIComponent(p.id) + '">' +
+        '    <img src="' + esc(resolveUrl(p.downloadType === 'free' ? p.previewUrl : (p.watermarkedUrl || p.previewUrl))) + '" alt="' + esc(p.title) + '" loading="lazy" />' +
+        '  </a>' +
+        '  <figcaption class="fav-card-bar">' +
+        '    <strong>' + esc(p.title || 'Sans titre') + '</strong>' +
+        '    <button class="fav-drop" type="button" data-remove="' + esc(p.id) + '" aria-label="Retirer des favoris">' +
+        '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"/></svg>' +
+        '    </button>' +
+        '  </figcaption>' +
+        '</figure>').join('') + '</div>';
+
+      body.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          await window.MSAccount.toggleFavorite(btn.dataset.remove);
+          window.MSAccount.toast('Photo retirée de vos favoris.');
+          renderFavorites();
+          renderStats();
+        });
+      });
+    }
+
+    async function renderOrders() {
+      const body = $('orders-body');
+      const r = await fetch(window.MSAccount.API + '/api/account/orders', { credentials: 'include' });
+      if (!r.ok) { body.innerHTML = '<p class="acct-error">Impossible de charger vos commandes.</p>'; return; }
+      const data = await r.json();
+      const orders = data.orders || [];
+      if (!orders.length) {
+        body.innerHTML =
+          '<div class="space-empty"><h3>Aucune commande</h3>' +
+          '<p>Vos achats de photos apparaîtront ici, avec leurs liens de téléchargement, même ceux passés avant la création de votre compte.</p>' +
+          '<a href="photos.html">Voir la galerie</a></div>';
+        return;
+      }
+      body.innerHTML = '<div class="order-list">' + orders.map(o => {
+        const paid = !o.status || o.status === 'paid' || o.status === 'completed';
+        return '<article class="order-row">' +
+          '<div><b>' + (o.photos || []).length + ' photo' + ((o.photos || []).length > 1 ? 's' : '') + '</b>' +
+          '<span>' + frDate(o.completedAt || o.createdAt) + ' · n° ' + esc(String(o.id).slice(0, 8)) + '</span></div>' +
+          '<span class="order-badge ' + (paid ? 'ok' : 'wait') + '">' + (paid ? 'Payée' : 'En attente') + '</span>' +
+          '<div class="order-total">' + euro(o.total) + '</div>' +
+          '</article>';
+      }).join('') + '</div>';
+    }
+
+    function renderStats() {
+      const c = window.MSAccount.counts || {};
+      $('space-stats').innerHTML = [
+        ['Favoris', window.MSAccount.favorites.size || c.favorites || 0],
+        ['Commandes', c.orders || 0],
+        ['Photos achetées', c.photosBought || 0],
+        ['Total dépensé', euro(c.totalSpent || 0)]
+      ].map(([label, value]) =>
+        '<div class="space-stat"><b>' + esc(String(value)) + '</b><span>' + label + '</span></div>'
+      ).join('');
+    }
+
+    function fillProfile() {
+      const a = window.MSAccount.account;
+      const f = $('profile-form');
+      f.firstName.value = a.firstName || '';
+      f.lastName.value  = a.lastName || '';
+      f.email.value     = a.email || '';
+      f.marketingOptIn.checked = !!a.marketingOptIn;
+    }
+
+    $('profile-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = e.currentTarget, msg = $('profile-msg');
+      msg.textContent = '';
+      msg.style.color = '';
+      const r = await fetch(window.MSAccount.API + '/api/account/me', {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: f.firstName.value.trim(),
+          lastName: f.lastName.value.trim(),
+          marketingOptIn: f.marketingOptIn.checked
+        })
+      });
+      if (!r.ok) { msg.textContent = 'Enregistrement impossible. Réessayez.'; return; }
+      await window.MSAccount.refresh();
+      msg.style.color = '#86efac';
+      msg.textContent = 'Informations enregistrées.';
+      paint();
+    });
+
+    $('password-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = e.currentTarget, msg = $('password-msg');
+      msg.textContent = '';
+      msg.style.color = '';
+      const r = await fetch(window.MSAccount.API + '/api/account/change-password', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: f.currentPassword.value, newPassword: f.newPassword.value })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { msg.textContent = data.error || 'Modification impossible.'; return; }
+      f.reset();
+      msg.style.color = '#86efac';
+      msg.textContent = 'Mot de passe mis à jour.';
+    });
+
+    $('space-signin').addEventListener('click', e => {
+      e.preventDefault();
+      window.MSAccount.openDialog({});
+    });
+
+    function paint() {
+      const a = window.MSAccount.account;
+      $('space-anon').hidden = !!a;
+      $('space-in').hidden   = !a;
+      if (!a) {
+        $('space-hello').textContent = 'Mon espace';
+        $('space-sub').textContent = 'Connectez-vous pour retrouver vos favoris et vos commandes.';
+        return;
+      }
+      $('space-hello').textContent = a.firstName ? ('Bonjour ' + a.firstName) : 'Mon espace';
+      $('space-sub').textContent = 'Membre depuis le ' + frDate(a.createdAt) + '.';
+      renderStats();
+      fillProfile();
+      renderFavorites();
+      renderOrders();
+    }
+
+    function boot() {
+      if (!window.MSAccount) { setTimeout(boot, 60); return; }
+      selectTab((location.hash || '').replace('#', ''));
+      window.MSAccount.onChange(() => { $('space-anon').hidden = !!window.MSAccount.account; });
+      window.MSAccount.refresh().then(paint).catch(paint);
+    }
+    boot();
+
+    const y = document.getElementById('year');
+    if (y) y.textContent = new Date().getFullYear();
+  })();
+  </script>
+
+</body>
+</html>
+
