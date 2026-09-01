@@ -84,6 +84,9 @@ assets/data/translations.json  /admin  (SPA)
 
 ## Key Constraints
 
+- **Admin client sheet (phase 3)**: `GET /api/admin/clients/:id` carries `counters`, `engagement` and an enriched `timeline`. `engagement.activityByDay` is always 30 points, empty days included — a variable-length series misrepresents the time axis. `topAlbums[]` keeps `purchased` and `viewed` apart: a browse must never be shown as a purchase. A `guest` client legitimately has zeros; the sheet explains why instead of showing dashes.
+- **Album views must be journalled**: `photos.html` logs `album_view` in `openAlbum()` and after a private-code unlock. Without it the "Albums vus" counter stays at zero and the client sheet lies by omission.
+- **Charts vs the global SVG rule**: `admin.css` styles icons with `svg { stroke: currentColor }`. Every chart built by `charts.js` carries the class `.ms-chart`, which resets that inheritance; removing it draws a white outline around every bar and hover zone.
 - **Download requires an account**: `/photos/:id/download`, `/albums/:id/download`, `/albums/:id/download-check` and `/albums/:id/download-urls` reject anonymous callers with `401 { code: 'ACCOUNT_REQUIRED' }` (`downloadGate` in `publicApi.js`). Browsing stays anonymous. Exception: purchase tokens (`?token=`, every `orders.js` route) are never gated. An album code authorises WHICH photos, the account authorises WHO — both apply.
 - **Client vs admin session**: never set `req.session.authenticated` on a client login. `requireAuth` tests `authenticated`, `requireAccount` tests `accountId`; the two perimeters must not bleed.
 - **Session cookie**: `SameSite=None; Secure` in production because GitHub Pages and Fly are cross-site; `Lax` in dev. Reverting this silently signs every visitor out.

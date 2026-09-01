@@ -11,6 +11,7 @@
 | File | Mount | Responsibility |
 |------|-------|----------------|
 | `auth.js` | `/api/auth` | Login/logout, password change, bcrypt migration |
+| `account.js` | `/api/account` | Visitor accounts: register/login/logout/me, profile, favorites, orders, browsing events |
 | `adminPhotos.js` | `/api/admin/photos` | CRUD photos, Flickr/local upload, sharp resize, download |
 | `adminAlbums.js` | `/api/admin/albums` | CRUD albums, email codes for private albums, Flickr photoset sync |
 | `adminOrders.js` | `/api/admin/orders` | Order list, token generation, download |
@@ -78,7 +79,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - `POST /api/admin/photos/bulk/create-watermark` repairs old imports that have `flickrOriginalId` but no `flickrWatermarkId`: download original, generate watermark, upload the watermark copy, store the Flickr metadata, then run the same visibility sync.
 - `GET/POST /api/admin/photos/upload-history` stores and lists upload batch history in `db/upload-history.json`.
 
-+### adminOverview.js / adminClients.js - Dashboard aggregation
+### adminOverview.js / adminClients.js - Dashboard aggregation
 
 - `GET /api/admin/overview?range=7d|30d|90d|12m` returns one payload for the whole dashboard: `kpis` (each with
   `value`, `previous`, `deltaPct`), `series` (`revenue`, `traffic`, `hourly`, `photoGrowth`), `top`
@@ -97,9 +98,70 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
   `db/accounts.json` appears (phase 2), accounts merge on the same key and become `type: account`.
 - Only paid orders (`paid`, `completed`, or no status) count towards revenue and order counts; a `pending` order
   still creates the client record with zero revenue.
-- `GET /api/admin/clients/:id` adds `orders[]` with photo thumbnails, `topAlbums[]` (album affinity computed from
-  bought photos), `favorites[]`, `creations[]` and a merged `timeline[]` capped at 30 entries.
-- Both routes are read-only and mounted behind `requireAuth`. Tests: `node tests/insights.test.js`.
+- `GET /api/admin/clients/:id` returns the enriched sheet (phase 3):
+  - `counters` — `orders`, `spent`, `photosBought`, `favorites`, `downloads`, `creations`, `albumsViewed`,
+    `photoViews`, `logins`.
+  - `engagement` — `daysSinceSignup`, `daysSinceActivity`, `firstOrderAt`, `lastOrderAt`, `avgOrderValue`, and
+    `activityByDay` which is **always 30 points including empty days**: a variable-length series would misrepresent
+    the time axis, and a gap is itself information.
+  - `orders[]` with photo thumbnails, `favorites[]`, `downloads[]`, `creations[]`.
+  - `topAlbums[]` keeps `purchased` and `viewed` in **separate fields**: a browse must never be presented as a
+    purchase. Sorted by purchases first, then views.
+  - `timeline[]` merges the journal, the orders and a synthesised `signup` entry, newest first, capped at 60. Each
+    entry carries `at` (ISO), `label` (the event type in French) and `detail` (the photo or album name).
+- Journal-derived counters only exist for accounts. A `guest` client (bought without signing up) legitimately has
+  zeros everywhere and a timeline containing only orders; the admin sheet says so explicitly instead of showing a
+  wall of dashes.
+- Favourites pointing at a trashed photo are hidden from the sheet but kept in storage, exactly like
+  `/api/account/favorites`, so admin and client never disagree.
+- Attention labels are accorded in French (`1 photo` / `2 photos`) and the UI displays `item.label` directly.
+- Both routes are read-only and mounted behind `requireAuth`.
+  Tests: `node tests/insights.test.js` and `node tests/insights-detail.test.js`.
+
+
+### account.js + publicApi.js - Download gate (visitor accounts)
+
+Browsing is anonymous by design: albums, photos, faces and translations are all
+readable without an account. Taking bytes out of the gallery requires one.
+
+The gate is enforced **server-side** in `publicApi.js` (`downloadGate`) on all four
+exit points, because hiding the UI button would be bypassed by calling the URL:
+
+```
+GET  /api/public/photos/:id/download
+POST /api/public/albums/:id/download
+POST /api/public/albums/:id/download-check
+GET  /api/public/albums/:id/download-urls
+```
+
+Refusal is `401 { error, code: 'ACCOUNT_REQUIRED' }` so the front end can tell it
+apart from a wrong album code and open the sign-in sheet instead of an error.
+
+Deliberate exceptions, each an authorisation of its own:
+
+- **Purchase tokens** (`?token=` and every route in `orders.js`). The buyer paid,
+  may have no account, and the emailed link must keep working.
+- **Album codes do NOT replace the account.** A code decides *which* photos a
+  visitor may see; the account is *who* is taking them. Both apply.
+
+**Download tickets.** The public site runs on GitHub Pages while the API runs on
+Fly, so an `<a download>` navigation or a top-level form POST is cross-site and
+cannot rely on the session cookie. `accounts.issueDownloadTicket()` mints a
+10-minute HMAC-signed string (`SESSION_SECRET`) passed as `dlTicket`. It proves
+"a signed-in account asked for this" and nothing else: album privacy, purchase
+tokens and watermark policy are still enforced downstream unchanged.
+
+The session cookie is `SameSite=None; Secure` in production for the same
+cross-site reason (`Lax` in dev, where http origins reject `None`).
+
+**Perimeter isolation.** A client session sets `req.session.accountId` only and
+never `req.session.authenticated`, so it can never reach `/api/admin/*`.
+`requireAuth` and `requireAccount` each test their own field.
+
+**Order attachment.** On signup, every order whose `customer.email` matches the
+normalised account email gets `accountId` written. New orders carry `accountId`
+when checkout happens in a client session. Email stays the fallback key, so
+history is visible without a destructive migration.
 
 ## Services
 
@@ -112,6 +174,7 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 | `stripeService.js` | Stripe SDK: create payment intent, validate webhook signature. |
 | `analytics.js` | Lightweight download/visit counters in JSON files (capped at 5000 entries). |
 | `insights.js` | Read-only aggregation for Overview + Clients. `getOverview(range)`, `getClients(query)`, `getClientDetail(id)`. Never mutates state. |
+| `accounts.js` | Visitor account store: register (bcrypt 12), credentials, profile, favorites, bounded `client-events` journal, signed download tickets. Attaches past orders by normalised email. |
 
 ## Database — photo-server/db/ (JSON files on Fly volume)
 
@@ -121,6 +184,9 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 | `photos.json` | `id`, `title`, `albumId`, `flickrOriginalId`, `flickrWatermarkId`, `flickrWatermarkUrl`, `downloadType`, `price`, `ext`, `width`, `height` |
 | `albums.json` | `id`, `name`, `type` (public/private/private-watermark/private-nocode/paid), `code`, `flickrSetId`, `maxDownloads` |
 | `orders.json` | `id`, `status`, `photos[]` (photoId + downloadToken), `orderDownloadToken`, `total`, `customer{}` |
+| `accounts.json` | `id`, `email`, `emailNormalized`, `firstName`, `lastName`, `passwordHash` (bcrypt 12), `status`, `createdAt`, `lastLoginAt`, `lastSeenAt`, `marketingOptIn` |
+| `favorites.json` | `accountId`, `photoId`, `createdAt` |
+| `client-events.json` | `accountId`, `type` (login/photo_view/album_view/favorite_add/favorite_remove/download), `photoId`, `albumId`, `ts`. Capped at 20000 entries / 365 days |
 | `promo-codes.json` | `code`, `discountType` (fixed/percent), `discountValue`, `maxUses`, `uses`, `active` |
 | `persons.json` | `id`, `name` — named faces |
 | `appearances.json` | `personId`, `photoId`, `bbox{}` — face detection results |
@@ -139,6 +205,8 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 
 ```
 /api/auth/login      → 10 req / 15 min  (brute-force)
+/api/account/login    → 10 req / 15 min  (same authLimiter)
+/api/account/register → 10 req / 15 min  (same authLimiter)
 /api/orders          → 20 req / 10 min  (card-testing)
 /api/admin/worker/*  → 30000 req / 15 min (parallel face-scan workers)
 /api/admin/*         → 3000 req / 15 min  (admin heartbeat + bulk ops)

@@ -16,6 +16,7 @@
 | Tab | `navigate()` key | What it does |
 |-----|-----------------|--------------|
 | Dashboard | `dashboard` | Stats overview: photo/album counts, revenue, downloads, visits, histogram, top photos, recent orders |
+| Clients | `clients` | Client list derived from orders (email key), segments, and per-client detail sheet |
 | Photos | `photos` | Photo grid/list with search/filter, inline edit, upload queue, Flickr badge |
 | Albums | `albums` | Album CRUD, public/private toggle, email code sender, Flickr photoset sync |
 | Faces | `faces` | Face detection results grid, person tagging, bulk scan launch |
@@ -131,3 +132,44 @@ state = {
 3. Add `else if (page === 'key') loadKey();` in `navigate()`
 4. Add `async function loadKey() { ... }` in `admin.js`
 5. Add tab title: `const titles = { ..., key: 'Tab Title' }`
++
+## Vue d'ensemble (Overview) — refonte
+
+- Onglet `Dashboard` -> `window.loadOverview(range)` dans `admin/js/dashboard.js`. `loadDashboard()` (ancien rendu)
+  reste en repli si `/api/admin/overview` echoue ; l'ancien balisage est conserve masque dans `#dash-legacy`.
+- Une seule requete alimente la page : `GET /api/admin/overview?range=7d|30d|90d|12m` (contrat : docs/server.md).
+- Structure : en-tete + selecteur de periode / bandeau `A traiter` (masque si `attention[]` est vide, chaque item
+  renvoie vers la page concernee) / 4 KPI avec delta vs periode precedente et sparkline / graphes principaux et top
+  listes / bloc repliable `Catalogue & systeme`.
+- `admin/js/charts.js` expose `window.lineChart`, `window.barChart`, `window.sparkline` : SVG pur, sans dependance,
+  avec axes, grille, tooltip, `aria-label` et respect de `prefers-reduced-motion`. Chart.js n'est pas utilise.
+- Ordre de chargement obligatoire dans `index.html` : `charts.js` puis `dashboard.js` puis `admin.js`.
+
+## Clients
+
+- Onglet `Clients` -> `window.loadClients(params)` et `window.openClientDetail(id)`.
+- Un client porte `type: account` s'il a un compte (`db/accounts.json`), sinon `type: guest` : il est alors derive de
+  `orders.json` et identifie par son email normalise, donc son `id` vaut `guest:email@example.com`. Deux commandes
+  passees avec la meme adresse en casses differentes forment un seul client, et une inscription ulterieure avec le
+  meme email fait basculer la fiche de `guest` a `account` en conservant l'historique.
+- Liste : synthese, recherche, segments (Tous / Acheteurs / Prospects / Recurrents / Inactifs), tri, pagination.
+  Sous 600 px le tableau devient des cartes.
+- Fiche client (refonte phase 3) : lecture en quatre niveaux au lieu d'une pile de blocs de meme poids.
+  1. En-tete identite : nom, badges `type` / `Bloque` / opt-in e-mails, contact, anciennete, derniere activite.
+  2. Bandeau principal : `Total depense` et `Commandes` dominants a gauche, graphe d'activite 30 jours a droite
+     (`barChart` bleu — c'est du comportement, l'or reste reserve a la donnee principale).
+  3. Six compteurs secondaires : favoris, telechargements, creations, albums vus, photos vues, connexions.
+  4. Deux colonnes : transactionnel a gauche (commandes, favoris, telechargements), comportemental a droite
+     (journal d'activite, albums marquants, creations).
+- Trois etats sont traites distinctement, ce ne sont pas des cas degrades :
+  - `guest` : pas de compteurs a zero ni de graphe vide, mais un encart « Achat sans compte » qui explique pourquoi
+    la navigation est inconnue et ce qui se passera si la personne s'inscrit.
+  - prospect (compte sans commande) : structure complete, etats vides qui concluent au lieu d'afficher « Aucun ».
+  - photo supprimee dans une commande (`exists: false`) : vignette grisee plutot qu'un trou.
+- `album_view` est journalise depuis `photos.html` (`openAlbum` et l'ouverture d'un album prive apres code), sinon le
+  compteur « Albums vus » resterait a zero.
+- Correction transverse : la regle globale `svg { stroke: currentColor }` (prevue pour les icones) cerclait chaque
+  barre et chaque zone de survol des graphes d'un trait blanc. `charts.js` marque desormais ses SVG avec la classe
+  `.ms-chart`, neutralisee dans `admin.css`. Cela corrige la vue d'ensemble autant que la fiche client.
+- Verification : rendu prouve en navigateur reel (Chrome headless, login admin reel sur un `DATA_DIR` isole) aux
+  largeurs 1440 / 900 / 390 pour les trois etats, sans erreur JS.
