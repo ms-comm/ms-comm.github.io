@@ -563,6 +563,26 @@
     "Galerie": "Gallery",
     "Albums": "Albums",
     "Album privé": "Private album",
+    "Mon espace": "My space",
+    "Mes favoris": "My favourites",
+    "Mes albums": "My albums",
+    "Mes achats": "My purchases",
+    "Mes albums partagés": "My shared albums",
+    "Votre espace vous attend": "Your space is waiting",
+    "Vos favoris": "Your favourites",
+    "Vos achats": "Your purchases",
+    "Vos albums partagés": "Your shared albums",
+    "Créer mon espace": "Create my space",
+    "Gérer mon compte": "Manage my account",
+    "Partagé avec vous": "Shared with you",
+    "Vos favoris, vos achats et les albums qui vous sont partagés — sur tous vos appareils.":
+      "Your favourites, your purchases and the albums shared with you — on all your devices.",
+    "Créez votre espace pour retrouver ici tout ce qui vous appartient, sur tous vos appareils :":
+      "Create your space to find everything that belongs to you here, on all your devices:",
+    "Aucun album partagé pour l'instant. Quand un album vous est attribué, il apparaît ici automatiquement — sans code à retenir.":
+      "No shared album yet. When an album is assigned to you, it appears here automatically — with no code to remember.",
+    "Aucun achat pour l'instant. Vos commandes apparaîtront ici automatiquement après paiement.":
+      "No purchase yet. Your orders will appear here automatically after payment.",
     "Rechercher une photo ou un album...": "Search for a photo or an album...",
     "Tous les albums": "All albums",
     "Sans album": "No album",

@@ -176,6 +176,37 @@ Deliberate exceptions, each an authorisation of its own:
 - **Album codes do NOT replace the account.** A code decides *which* photos a
   visitor may see; the account is *who* is taking them. Both apply.
 
+### albumGrants.js - Named access to a private album
+
+A private album can be opened by two different proofs: the shared code, or a
+**named grant** attached to an account. `services/albumGrants.js` stores them in
+`db/album-grants.json` through `db.mutate()`, keyed by **normalised e-mail**, so
+a grant can be created *before* the person signs up; `accounts.register()` calls
+`albumGrants.attachAccount(account)` right after `attachOrders` to bind it.
+
+API: `listAll`, `listForAlbum(albumId, accounts)`, `albumIdsForAccount`,
+`hasGrant`, `grant` (idempotent), `revoke`, `revokeByEmail`, `attachAccount`.
+
+Routes:
+
+```
+GET    /api/admin/albums/:id/access            → { grants, accountExists }
+POST   /api/admin/albums/:id/access            { email }
+DELETE /api/admin/albums/:id/access/:grantId
+GET    /api/account/albums                     (requireAccount) granted albums
+GET    /api/account/albums/:id/photos          (requireAccount) 403 without a grant
+```
+
+`publicApi.js` gained `currentAccount(req)` (memoised on `req._msAccount`),
+`hasGrantedAlbumAccess(req, album)` and `hasAlbumAccess(req, album, code)`. The
+three album exits (`/albums/:id/download`, `/download-check`, `/download-urls`)
+now call `hasAlbumAccess(...)` instead of `hasValidAlbumCode(...)`, and
+`/photos/:id/download` accepts `albumAccess.hasCodeAccess || grantedAccess`.
+A grant replaces the CODE only. The account gate, purchase tokens and the
+watermark policy are unchanged: **a code says WHICH photos, an account says WHO,
+a grant says TO WHOM**.
+`sessionPayload` exposes `counts.albums` so the account menu can badge it.
+
 **Download tickets.** The public site runs on GitHub Pages while the API runs on
 Fly, so an `<a download>` navigation or a top-level form POST is cross-site and
 cannot rely on the session cookie. `accounts.issueDownloadTicket()` mints a
@@ -272,6 +303,7 @@ The official account export is read **only for photos that carry `flickrWatermar
 | `orders.json` | `id`, `status`, `photos[]` (photoId + downloadToken), `orderDownloadToken`, `total`, `customer{}` |
 | `accounts.json` | `id`, `email`, `emailNormalized`, `firstName`, `lastName`, `passwordHash` (bcrypt 12), `status`, `createdAt`, `lastLoginAt`, `lastSeenAt`, `marketingOptIn` |
 | `favorites.json` | `accountId`, `photoId`, `createdAt` |
+| `album-grants.json` | `id`, `albumId`, `email`, `emailNormalized`, `accountId` (null until signup), `createdAt`. Named access to a private album, granted from the admin album modal |
 | `client-events.json` | `accountId`, `type` (login/photo_view/album_view/favorite_add/favorite_remove/download), `photoId`, `albumId`, `ts`. Capped at 20000 entries / 365 days |
 | `track-events.json` | Visitor journal: `id`, `ts`, `vid`, `sid`, `accountId`, `type`, `path`, `page`, `photoId`, `albumId`, `meta`, `ip`, `ua`, `lang`, `ref`, `tz`, `screen`, `device{type,os,browser}`. Capped at 60000 entries / 180 days |
 | `track-sessions.json` | One row per `sid`: `vid`, `accountId`, `startAt`, `lastAt`, `endAt`, `activeMs`, `durationMs`, counters, `pages[]`, `landing`, `exit`, `refHost`, `ip`, `device` |

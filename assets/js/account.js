@@ -336,8 +336,11 @@
   /* ── Header control ──────────────────────────────────────────────────── */
 
   const MENU = [
+    /* Les trois facettes de l'espace pointent vers le MEME onglet de la
+       galerie, ouvert sur la bonne section. */
     { href: 'photos.html?view=favorites', label: 'Mes favoris', key: 'favorites' },
-    { href: 'compte.html#commandes', label: 'Mes commandes', key: 'orders' },
+    { href: 'photos.html?view=albums_partages', label: 'Mes albums partagés', key: 'albums' },
+    { href: 'photos.html?view=purchased', label: 'Mes achats', key: 'orders' },
     { href: 'compte.html#profil',    label: 'Mes informations' }
   ];
 
@@ -395,9 +398,9 @@
       '    <span>' + escapeHtml(state.account.email) + '</span>',
       '  </div>',
       '  <div class="acct-menu-stats">',
-      '    <a href="compte.html#favoris"><b>' + (state.favorites.size || c.favorites || 0) + '</b><span>Favoris</span></a>',
-      '    <a href="compte.html#commandes"><b>' + (c.orders || 0) + '</b><span>Commandes</span></a>',
-      '    <a href="compte.html#commandes"><b>' + (c.photosBought || 0) + '</b><span>Photos</span></a>',
+      '    <a href="photos.html?view=favorites"><b>' + (state.favorites.size || c.favorites || 0) + '</b><span>Favoris</span></a>',
+      '    <a href="photos.html?view=albums_partages"><b>' + (c.albums || 0) + '</b><span>Albums</span></a>',
+      '    <a href="photos.html?view=purchased"><b>' + (c.photosBought || 0) + '</b><span>Photos</span></a>',
       '  </div>',
       MENU.map(m => '<a role="menuitem" href="' + m.href + '">' + m.label + '</a>').join(''),
       '  <button role="menuitem" type="button" id="acct-logout">Se déconnecter</button>',
