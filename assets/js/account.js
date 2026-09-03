@@ -38,6 +38,10 @@
 
   async function api(pathname, options) {
     const opts = Object.assign({ credentials: 'include' }, options || {});
+    /* Visitor id: lets the server tie this account to the anonymous journey
+       recorded before sign-in (docs/tracking.md). */
+    const vid = (window.MSTrack && window.MSTrack.vid) || (function () { try { return localStorage.getItem('ms_vid'); } catch (_) { return null; } })();
+    if (vid) opts.headers = Object.assign({ 'X-MS-Vid': vid }, opts.headers || {});
     if (opts.body && typeof opts.body !== 'string') {
       opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
       opts.body = JSON.stringify(opts.body);
@@ -56,6 +60,7 @@
     state.dlTicket = (data && data.dlTicket) || null;
     state.ticketAt = state.dlTicket ? Date.now() : 0;
     if (!state.account) state.favorites = new Set();
+    if (state.account && window.MSTrack) window.MSTrack.identify(state.account.id);
     render();
     emit();
   }
@@ -164,6 +169,8 @@
       '    <label class="acct-field"><span>Mot de passe</span>',
       '      <input name="password" type="password" autocomplete="current-password" required placeholder="••••••••••" /></label>',
       '    <p class="acct-hint" id="acct-hint">10 caractères minimum.</p>',
+      '    <label class="acct-optin" id="acct-optin"><input type="checkbox" name="marketingOptIn" />',
+      '      <span>J\'accepte de recevoir les actualités et offres de MS Comm\' par e-mail.</span></label>',
       '    <p class="acct-error" id="acct-error" role="alert"></p>',
       '    <button class="acct-submit" type="submit"><span>Se connecter</span></button>',
       '  </form>',
@@ -194,6 +201,9 @@
     });
     d.querySelector('.acct-names').style.display = mode === 'register' ? '' : 'none';
     d.querySelector('#acct-hint').style.display  = mode === 'register' ? '' : 'none';
+    /* Consent is only ever asked at sign-up. Showing it on sign-in would ask
+       an existing account to re-consent on every login. */
+    d.querySelector('#acct-optin').style.display = mode === 'register' ? '' : 'none';
     d.querySelector('.acct-submit span').textContent = mode === 'register' ? 'Créer mon espace' : 'Se connecter';
     d.querySelector('[name=password]').setAttribute('autocomplete', mode === 'register' ? 'new-password' : 'current-password');
     d.querySelector('#acct-switch-text').textContent = mode === 'register' ? 'Vous avez déjà un compte ?' : 'Pas encore de compte ?';
@@ -207,6 +217,7 @@
     const o = opts || {};
     const d = buildDialog();
     lastFocus = document.activeElement;
+    if (window.MSTrack) window.MSTrack.event('account_open', { mode: o.mode || 'login', reason: o.eyebrow || '' });
     /* The eyebrow carries the trigger ("Téléchargement"), the title carries
        the ask. Repeating the same sentence twice was pure noise. */
     const reason = d.querySelector('#acct-reason');
@@ -256,6 +267,9 @@
     if (mode === 'register') {
       data.firstName = form.firstName.value.trim();
       data.lastName  = form.lastName.value.trim();
+      /* Opt-in: unticked by default, sent explicitly so the stored value is a
+         real choice and not an absence of data. */
+      data.marketingOptIn = !!form.marketingOptIn.checked;
     }
     err.textContent = '';
     btn.disabled = true;
@@ -322,7 +336,7 @@
   /* ── Header control ──────────────────────────────────────────────────── */
 
   const MENU = [
-    { href: 'compte.html#favoris',   label: 'Mes favoris',   key: 'favorites' },
+    { href: 'photos.html?view=favorites', label: 'Mes favoris', key: 'favorites' },
     { href: 'compte.html#commandes', label: 'Mes commandes', key: 'orders' },
     { href: 'compte.html#profil',    label: 'Mes informations' }
   ];
@@ -334,9 +348,10 @@
     const wrap = document.createElement('div');
     wrap.className = 'acct-control';
     wrap.id = 'acct-control';
-    /* Placed just before the quote CTA: the primary action of the site stays
-       the primary action; the account is a persistent secondary affordance. */
-    if (cta && cta.parentNode) cta.parentNode.insertBefore(wrap, cta);
+    /* Placed right AFTER the quote CTA, at the far right of the row. The
+       final order is: Demander un devis, FR/EN, Mon espace — the language
+       switcher re-anchors itself just before this control (see i18n.js). */
+    if (cta && cta.parentNode) cta.parentNode.insertBefore(wrap, cta.nextSibling);
     else host.appendChild(wrap);
     render();
     /* The FR/EN switcher anchors itself just before this control. It is

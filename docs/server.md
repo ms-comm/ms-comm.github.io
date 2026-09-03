@@ -17,11 +17,12 @@
 | `adminOrders.js` | `/api/admin/orders` | Order list, token generation, download |
 | `adminOverview.js` | `/api/admin/overview` | Dashboard aggregate: KPI + delta vs previous window, series, top lists, health, attention queue |
 | `adminClients.js` | `/api/admin/clients` | Client list/detail derived from orders (email key). See [PLAN_REFONTE.md](PLAN_REFONTE.md) |
+| `adminStats.js` | `/api/admin/stats` | Visitor tracking statistics: summary, per-photo, per-album, visitors, events log. Contract: [tracking.md](tracking.md) |
 | `adminPromoCodes.js` | `/api/admin/promo-codes` | Promo code CRUD, discount application |
 | `adminSettings.js` | `/api/admin/settings` | Config (prices, watermark, SMTP, Flickr keys, GitHub token) |
 | `adminFaces.js` | `/api/admin/faces` | Face detection + tagging via gallery-app worker |
 | `adminTranslations.js` | `/api/admin/translations` | i18n text management, GitHub sync |
-| `publicApi.js` | `/api/public` | Public: list albums/photos, download, album ZIP, verify codes |
+| `publicApi.js` | `/api/public` | Public: list albums/photos, download, album ZIP, verify codes, `POST /track` (visitor tracking ingest, always 204) |
 | `orders.js` | `/api/orders` | Stripe checkout confirm, download-all ZIP, **download-urls** (client-side ZIP), per-order retrieval |
 | `stripeWebhook.js` | `/api/stripe` | Stripe payment confirmation webhook |
 | `workerApi.js` | `/api/admin/worker` | gallery-app worker: claim/complete scan jobs |
@@ -29,7 +30,7 @@
 ## Key Route Details
 
 ### orders.js — Download Endpoints
-- `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP (Flickr → server → client). Subject to Flickr CDN 429 if server IP rate-limited.
+- `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP. Source order: local file → R2 `master` → Flickr. A migrated order no longer touches Flickr and cannot 429 the Fly IP; only rows still on Flickr remain exposed to it.
 - `GET /api/orders/:id/download-urls?token=xxx` — **Preferred.** Returns `{ photoId, filename, token }` per photo. No Flickr API calls. Client uses these tokens to call `/api/public/photos/:id/download?token=xxx` individually and builds ZIP in browser.
 - `GET /api/orders/:id` — Retrieve order + tokens (completed orders only).
 
@@ -55,12 +56,13 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - ZIP cleanup runs every 10 minutes and removes queued/running/paused/failed/archiving jobs with no update for 10 minutes, including their temporary files. Active archive creation emits a one-minute heartbeat, so cleanup cannot remove a large ZIP while it is being finalized. This gives a manual retry up to 10 minutes to reuse completed checkpoint files. Ready ZIPs expire after one hour.
 - Body fields: `mode=watermark|original`, optional `code=xxx`, optional `ids=id1,id2`.
 - The ZIP uses `archiver` with `store:true` and appends one local/Flickr stream at a time. Fly does not buffer the full ZIP or all photos in memory. A normal response close during archive finalization must not abort the archive; only the request `aborted` event may do so.
-- `POST /api/public/albums/:id/download-check` probes several candidate Flickr sources before the website starts the form download. If every checked source is blocked by Flickr 429, the site shows an error with `mscomm.contact@gmail.com`; one 429 must not block the album if another selected photo is reachable.
+- `POST /api/public/albums/:id/download-check` probes several candidate Flickr sources before the website starts the form download. If every checked source is blocked by Flickr 429, the site shows an error with `mscomm.contact@gmail.com`; one 429 must not block the album if another selected photo is reachable. When every selected photo carries `r2Key`, the route answers `checked: 'r2'` without probing anything: no Flickr request will be made, so a CDN probe could only invent a failure.
 - `ids` is optional. When present, only those selected photo IDs are streamed; used by the album selection download.
 - `mode=watermark` is allowed for public albums and code-unlocked `private`/`private-watermark` albums.
 - `mode=original` is allowed only for `private` albums with a valid code. `private-watermark` rejects originals even with a valid code; public paid originals still require order download tokens.
 - For `private-watermark`, ZIP, precheck, URL-list, and individual downloads use only `flickrWatermarkId` or `storage/watermarked/:id.jpg`. Missing safe copies return `409`; an original is never used as fallback.
-- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` remains available as metadata fallback for browser-side ZIP creation.
+- `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` returns the manifest used for browser-side ZIP creation. `directUrl` is a presigned R2 URL (1 h) as soon as the photo carries `r2Key`: `master` for an unwatermarked request or a watermark-only photo, `wm` otherwise. A `wm` level not yet built leaves `directUrl` null so the browser falls back to the server URL, which builds and persists it. Photos without `r2Key` keep the Flickr CDN URL. The response carries `source: 'r2' | 'mixte' | 'flickr'`; on `'r2'` the client drops its inter-photo delay to 0 (2,5 min saved on a 300-photo album) and keeps 500 ms as soon as one photo still comes from Flickr.
+  `r2Count` must be incremented where the presigned URL is produced. It used to live in an `else if (directUrl)` branch that the R2 presign itself made unreachable, so `source` stayed `'flickr'` on fully migrated albums and the browser kept waiting 500 ms per photo for a CDN it no longer called (fixed 2026-09-03, verified in production: `source=r2`, 187/187 `directUrl` presigned).
 
 ### adminPhotos.js - Trash
 - Default admin delete is soft-delete: sets `deletedAt`, stores `previousDownloadType`/`previousAlbumId`, changes `downloadType` to `private`, and flips the Flickr watermark copy private best-effort.
@@ -81,12 +83,21 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 
 ### adminOverview.js / adminClients.js - Dashboard aggregation
 
-- `GET /api/admin/overview?range=7d|30d|90d|12m` returns one payload for the whole dashboard: `kpis` (each with
-  `value`, `previous`, `deltaPct`), `series` (`revenue`, `traffic`, `hourly`, `photoGrowth`), `top`
-  (`photos`, `albums`, `sold`, `clients`), `health` and `attention`.
+- `GET /api/admin/overview?range=7d|30d|90d|12m|all` (or `from=YYYY-MM-DD&to=YYYY-MM-DD&granularity=day|week|month`)
+  returns one payload for the whole dashboard: `kpis` (each with `value`, `previous`, `deltaPct`), `series`
+  (`revenue`, `traffic`, `hourly`, `weekday`, `photoGrowth`), `breakdown` (device/browser/os/lang/referrer/page),
+  `top` (`photos`, `albums`, `sold`, `clients`, `pages`, `searches`), `health` and `attention`.
+  When the tracking journal has data for the window (`trackingActive: true`) `visits`/`uniqueVisitors`/`conversion`
+  and the top photos/albums come from it; otherwise the legacy `analytics-visits` log is used. Extra kpis:
+  `visitors`, `sessions`, `avgSessionMs`, `pageViews`, `photoViews`, `albumViews`, `online`, `bounceRate`.
 - `deltaPct` compares the window to the immediately preceding window of equal length. It is `null` when the previous
   window is empty, so the UI shows "nouveau" instead of an infinite percentage.
-- `granularity` is `day` up to 90 days and switches to `month` (12 points) for `12m`, keeping the payload small.
+- `granularity` is `day` up to ~90 days, `week` up to ~200 days, `month` beyond (`12m` = 13 monthly points) unless
+  forced by the query. Period resolution lives in `services/stats.js` `resolvePeriod()`.
+- `GET /api/admin/clients?segment=visitors` lists anonymous visitors (`type:'visitor'`, `id:'visitor:<vid>'`,
+  `displayName:'Visiteur <ip>'`); `segment=all` excludes them, `segment=everyone` merges both, `segment=online`
+  keeps whoever was seen in the last 2 minutes. Every client carries `online` and a `tracking{}` block; the detail
+  adds `tracking`, `sessions[]`, `journey[]`, `topPhotos[]` (see [tracking.md](tracking.md) §4).
 - `attention[]` is the actionable queue: `photos_without_watermark`, `private_album_without_code`, `orders_pending`
   (over 48 h), `trash_not_empty`, `flickr_breaker_open`, `flickr_not_configured`, `scan_jobs_failed`. Sorted
   `error` then `warn` then `info`.
@@ -175,6 +186,60 @@ history is visible without a destructive migration.
 | `analytics.js` | Lightweight download/visit counters in JSON files (capped at 5000 entries). |
 | `insights.js` | Read-only aggregation for Overview + Clients. `getOverview(range)`, `getClients(query)`, `getClientDetail(id)`. Never mutates state. |
 | `accounts.js` | Visitor account store: register (bcrypt 12), credentials, profile, favorites, bounded `client-events` journal, signed download tickets. Attaches past orders by normalised email. |
+| `r2Storage.js` | Cloudflare R2 (S3 API) client. Three levels: `master/` + `wm/` in the private bucket, `display/` in the public one. Keys are a per-photo UUID (`r2Key`), NOT the photo id. `requestChecksumCalculation: 'WHEN_REQUIRED'` is mandatory — R2 answers 400 otherwise. |
+| `albumAccess.js` | Album code/visibility resolution and source selection. `isWatermarkOnlyPhoto()` is the single point deciding whether an unwatermarked version may exist at all. |
+
+## Cloudflare R2 storage
+
+Photos live in R2; Flickr is a read-only fallback for rows not yet migrated.
+
+| Level | Bucket | Size | Built |
+|-------|--------|------|-------|
+| `master/` | `ms-comm-master` (private) | 4096 px q90, ~1,2 Mo | at migration/upload |
+| `wm/` | `ms-comm-master` (private) | full-res watermarked | lazily, on first watermarked download, then kept |
+| `display/` | `ms-comm-display` (public) | 1600 px q82 | at migration/upload |
+
+Secrets on Fly: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_PRIVATE`, `R2_BUCKET_PUBLIC`, `R2_PUBLIC_DOMAIN`.
+
+### CORS
+
+Both buckets allow `https://ms-comm.github.io`, `http://localhost:8080` and `http://127.0.0.1:8080`, methods `GET` and `HEAD`. The browser-side album ZIP reads presigned `master` URLs directly, so without this policy every album download fails in the browser while succeeding from a script. The R2 API token cannot write it (`PutBucketCors` → `AccessDenied`); set it from the dashboard, R2 → bucket → Settings → CORS Policy.
+
+### Migration
+
+`tools/migrate-to-r2.js` — resumable, state in `storage/r2-migration-state.json`.
+
+Run it **locally**, against a copy of the production `db/photos.json`, then push only the `r2*` keys back:
+
+```powershell
+node tools/migrate-to-r2.js --mbps 500          # source = Flickr export on disk, no CDN request
+node tools/push-r2-keys.js --from <photos.json local> --dry-run
+node tools/push-r2-keys.js --from <photos.json local>
+```
+
+Running it on Fly was abandoned. Flickr throttles the `_o` path after a few dozen photos, and the single shared CPU makes the re-encode the bottleneck (a 4-CPU attempt OOM-ed at ~31 photos).
+
+**Source order** (`fetchSourceBuffer`): local file → Flickr export → URL cache → Flickr API.
+
+The official account export is read **only for photos that carry `flickrWatermarkId`**, i.e. the 564 rows with a certain clean original. Measured 2026-09-03, the export is MIXED for the 1431 watermark-only rows: it returns a clean original for some and an already-stamped file for others, and no database field separates them — re-applying the watermark on a stamped file bakes a second logo. A pixel detector was built and rejected (23 % false positives on a 564-photo control), so the code does not guess: those rows fall back to the CDN copy, which is exactly what the site already published. Two traps the export carries:
+
+- It delivers **clean originals even for watermark-only photos**, whose CDN copy is already stamped. Passing those bytes through unchanged publishes unwatermarked photos. From the export the watermark is therefore ALWAYS re-applied: `watermarkOnly = src.fromExport ? false : …`, while `r2WatermarkOnly` keeps deriving from the photo, never from the source.
+- Its originals carry **orientation in EXIF** where CDN renders are pre-straightened. `buildR2Levels()` calls `.rotate()` on all three branches and computes dimensions on the straightened image, otherwise portraits are stored lying down.
+
+`tools/index-flickr-export.js` builds the `{ flickrId: path }` index. The export uses two filename shapes — `titre_<id>_o.jpg` and `<id>_<secret>_o.jpg`; a single naive regex missed 1967 of 4451 files and mistook the secret for an id.
+
+**Why `_4k` before `_o`**: Flickr throttles only the `_o` path, which is built from `originalsecret`. Measured on one photo at one instant with identical headers: `_o` → 429, while `_6k`/`_5k`/`_4k`/`_3k`/`_k`/`_b` → 200. It is neither the IP nor the CDN nor the byte volume. Since `R2_MASTER_MAX` is 4096, `_4k` yields an identical master. CDN requests need a browser User-Agent (otherwise CloudFront answers 502) plus `Referer: https://www.flickr.com/`.
+
+**The migration refuses to start without the watermark assets.** `renderWatermarkedBuffer` does not throw when the logo or the custom font is missing: it silently falls back to a bare monospace font and drops the logo. A local run against a `DATA_DIR` lacking `storage/watermark-asset.png` stamped 564 photos that way and could only be undone by re-migrating. `runMigrate()` now checks both paths up front and exits 1 — fetch them with `fly ssh sftp get /data/storage/watermark-asset.png` and `/data/storage/fonts/<hash>.ttf`.
+
+**Final state (2026-09-03)**: 3887/3887 photos migrated and verified (master + display present, 0 defect, parallel HEAD check). Populations: `export|clean` 564, `cdn:4k|wmOnly` 2965, `flickr:original|wmOnly` 350, `cdn:o|wmOnly` 6, `cdn:5k|wmOnly` 2. `export|wmOnly` is empty by design. Production serves 1608/1608 public photos and 13/13 album covers from R2, with `?v=<r2MigratedAt>` versioning.
+
+**Rollback**: clear `r2Key` on the affected photos and the Flickr path takes over immediately. Nothing is deleted on Flickr and every `flickr*` field is preserved.
+### Watermark-only photos
+
+3323 of 3887 photos have no clean original **on Flickr**: their public copy already carries a baked watermark. `isWatermarkOnlyPhoto()` detects them (`r2WatermarkOnly`, or missing `flickrWatermarkId` on a non-`free` row) and every unwatermarked exit fails closed with `409 WATERMARK_ONLY`, purchase token included. The admin upload form exposes this as a "Filigrane uniquement" checkbox (`watermarkOnly`).
+
+**Two different questions, two functions.** `isWatermarkOnlyPhoto()` answers what the photo may OFFER; `isR2MasterWatermarked()` answers what the stored BYTES contain. They diverge for the same photo depending on the migration source: the Flickr CDN copy is baked, but the official account export returns the CLEAN original. Serving `master` for a watermarked request is only valid in the first case — doing it in the second handed out unstamped files to visitors who explicitly asked for the watermarked version (found visually on an export-migrated master, 2026-09-02). Export-migrated photos therefore build a real `wm` level on first watermarked download, exactly like a photo with a clean original, while `r2WatermarkOnly` keeps blocking every sans-filigrane exit.
 
 ## Database — photo-server/db/ (JSON files on Fly volume)
 
@@ -187,6 +252,9 @@ history is visible without a destructive migration.
 | `accounts.json` | `id`, `email`, `emailNormalized`, `firstName`, `lastName`, `passwordHash` (bcrypt 12), `status`, `createdAt`, `lastLoginAt`, `lastSeenAt`, `marketingOptIn` |
 | `favorites.json` | `accountId`, `photoId`, `createdAt` |
 | `client-events.json` | `accountId`, `type` (login/photo_view/album_view/favorite_add/favorite_remove/download), `photoId`, `albumId`, `ts`. Capped at 20000 entries / 365 days |
+| `track-events.json` | Visitor journal: `id`, `ts`, `vid`, `sid`, `accountId`, `type`, `path`, `page`, `photoId`, `albumId`, `meta`, `ip`, `ua`, `lang`, `ref`, `tz`, `screen`, `device{type,os,browser}`. Capped at 60000 entries / 180 days |
+| `track-sessions.json` | One row per `sid`: `vid`, `accountId`, `startAt`, `lastAt`, `endAt`, `activeMs`, `durationMs`, counters, `pages[]`, `landing`, `exit`, `refHost`, `ip`, `device` |
+| `visitors.json` | One row per `vid`: `accountId`, `firstSeenAt`, `lastSeenAt`, `lastIp`, `ips[≤5]`, `device`, `lang`, `tz`, `screen`, `sessions`, `totalDurationMs`, `lastSessionDurationMs`, counters, `lastPath` |
 | `promo-codes.json` | `code`, `discountType` (fixed/percent), `discountValue`, `maxUses`, `uses`, `active` |
 | `persons.json` | `id`, `name` — named faces |
 | `appearances.json` | `personId`, `photoId`, `bbox{}` — face detection results |

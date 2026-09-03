@@ -20,7 +20,9 @@
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/i18n.js" defer></script>
   <script src="assets/js/account.js" defer></script>
-  <script src="assets/js/faces.js" defer></script>
+  <script src="assets/js/track.js" defer></script>
+  <!-- Visages retiré du site public (02/09/2026) : faces.js n'est plus chargé,
+       aucun onglet ni overlay côté visiteur. L'admin garde ses outils. -->
   <script src="assets/js/album-access.js"></script>
   <style>
 /* ===== GALLERY PAGE ===== */
@@ -33,9 +35,14 @@
 .offline-banner { display:none; background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; text-align:center; padding:12px 20px; font-size:13px; position:sticky; top:var(--chrome-h,70px); z-index:61; transition:top .62s cubic-bezier(.16,1,.3,1); }
 .offline-banner.show { display:block; }
 
-.gal-hero { padding:72px 0 40px; text-align:center; }
-.gal-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); margin-bottom:10px; }
-.gal-hero p { color:var(--muted); font-size:15px; max-width:54ch; margin:0 auto; }
+/* Le hero reprend EXACTEMENT le gabarit .page-header des autres pages
+   (services, portfolio, contact) : meme distance sous la topbar, memes
+   corps, meme halo dore derriere le titre. Avant, 72px de padding sans
+   compter la topbar fixe : le titre se retrouvait colle au bandeau. */
+.gal-hero { padding:calc(var(--nav-h) + 60px) 0 40px; text-align:center; position:relative; }
+.gal-hero::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:600px; max-width:100vw; height:300px; background:radial-gradient(ellipse, var(--gold-glow), transparent 70%); filter:blur(80px); pointer-events:none; }
+.gal-hero h1 { font-family:var(--font-display,'Playfair Display',serif); font-size:clamp(32px,4vw,52px); font-weight:700; margin-bottom:12px; position:relative; text-wrap:balance; }
+.gal-hero p { color:var(--muted); font-size:16px; line-height:1.7; max-width:56ch; margin:0 auto; position:relative; }
 
 /* toolbar — le gabarit (largeurs, hauteurs, verre, adaptatif) vit dans
    assets/css/gallery-bar.css. On ne garde ici que l'apparence de base des
@@ -49,7 +56,28 @@
 .btn-private-album { display:flex; align-items:center; border:1px solid var(--border); background:#141414; color:var(--muted); font-size:13px; cursor:pointer; transition:all .15s; font-family:inherit; }
 .btn-private-album:hover { border-color:var(--gold); color:#f0f0f0; }
 .btn-private-album svg { width:15px; height:15px; }
-.gal-content-box { background:rgba(255,255,255,.015); border:1px solid var(--border); border-radius:18px; padding:28px 24px; }
+.gal-content-box { background:rgba(255,255,255,.015); border:1px solid var(--border); border-radius:18px; padding:28px 24px; position:relative; z-index:1; }
+
+/* ===== MES FAVORIS (onglet) =====
+   Etat deconnecte : creer un compte est l'action principale, la connexion
+   le lien discret dessous (porte de la maquette photographie-v2). */
+.mine-empty { max-width:430px; margin:0 auto; padding:56px 20px 64px; text-align:center; }
+.mine-empty-icon { width:64px; height:64px; margin:0 auto 20px; border-radius:50%; background:rgba(198,155,0,.10); border:1px solid rgba(198,155,0,.25); display:flex; align-items:center; justify-content:center; }
+.mine-empty-icon svg { width:26px; height:26px; color:var(--gold-2); }
+.mine-empty h3 { font-family:'Poppins',sans-serif; font-size:19px; font-weight:600; margin-bottom:10px; }
+.mine-empty p { color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:8px; }
+.mine-value { display:flex; justify-content:center; gap:18px; margin:18px 0 26px; flex-wrap:wrap; }
+.mine-value span { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:rgba(255,255,255,.72); }
+.mine-value svg { width:14px; height:14px; color:var(--gold-2); flex-shrink:0; }
+.btn-mine-create { display:inline-flex; align-items:center; gap:8px; background:var(--gold); color:#0a0a0a; border:none; border-radius:10px; padding:12px 24px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; transition:background .15s; }
+.btn-mine-create:hover { background:var(--gold-2); }
+.mine-login-link { display:block; margin:14px auto 0; font-size:12.5px; color:var(--muted); background:none; border:none; cursor:pointer; font-family:inherit; }
+.mine-login-link u { text-underline-offset:2px; }
+.mine-login-link:hover { color:#f0f0f0; }
+.mine-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:8px 4px 18px; border-bottom:1px dashed var(--border); margin-bottom:18px; }
+.mine-header h2 { margin:0 0 6px; color:var(--gold-2); }
+.mine-header a { color:var(--muted); font-size:13px; text-decoration:none; border-bottom:1px solid rgba(255,255,255,.2); align-self:center; }
+.mine-header a:hover { color:#f0f0f0; border-color:var(--gold); }
 
 /* albums */
 .albums-grid { display:flex; flex-wrap:wrap; gap:6px; font-size:0; }
@@ -494,9 +522,9 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2.5h9A1.5 1.5 0 0 1 21 10v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18Z"/></svg>
               <span data-i18n="photos.tab.albums">Albums</span>
             </button>
-            <button class="gal-tab" data-view="faces">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
-              <span data-i18n="photos.tab.faces">Visages</span>
+            <button class="gal-tab" data-view="favorites" id="tab-favorites">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span data-i18n="photos.tab.favorites">Mes favoris</span> <span id="tab-favorites-count" class="gal-tab-badge" style="display:none"></span>
             </button>
             <button class="gal-tab" data-view="purchased" id="tab-purchased" style="display:none">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -582,8 +610,38 @@
         </div>
       </div>
 
-      <!-- VISAGES (NEW) -->
-      <div id="view-faces" class="hidden"></div>
+      <!-- MES FAVORIS — photos the signed-in client has hearted. Signed-out
+           visitors see the account door instead (create / sign in). -->
+      <div id="view-favorites" class="hidden">
+        <div id="fav-logged-out" class="mine-empty hidden">
+          <div class="mine-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h3>Vos photos vous attendent</h3>
+          <p>Créez votre espace pour retrouver ici tout ce qui vous appartient, sur tous vos appareils&nbsp;:</p>
+          <div class="mine-value">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Vos favoris</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Vos achats</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Vos téléchargements</span>
+          </div>
+          <button class="btn-mine-create" id="fav-create-btn" type="button">Créer mon espace</button>
+          <button class="mine-login-link" id="fav-login-btn" type="button">Déjà un compte&nbsp;? <u>Se connecter</u></button>
+        </div>
+        <div id="fav-logged-in" class="hidden">
+          <div class="mine-header">
+            <div>
+              <h2>Mes favoris</h2>
+              <p class="purchased-sub">Les photos que vous avez marquées d'un cœur. Cliquez pour les rouvrir, les télécharger ou les commander.</p>
+            </div>
+            <a href="compte.html#favoris">Gérer dans mon espace</a>
+          </div>
+          <div class="photos-masonry" id="favorites-grid"></div>
+          <div class="gal-empty hidden" id="favorites-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <p>Aucun favori pour l'instant. Ouvrez une photo dans la galerie et touchez le cœur : elle sera conservée ici.</p>
+          </div>
+        </div>
+      </div>
 
       <!-- MES ACHATS (NEW) — listing of photos the visitor has purchased,
            keyed by the per-photo download tokens stored in localStorage. -->
@@ -621,10 +679,6 @@
     <div class="lb-top">
       <span class="lb-top-title" id="lb-counter"></span>
       <div class="lb-top-actions">
-        <button class="lb-icon-btn" id="lb-faces-toggle" title="Afficher / masquer les visages détectés"
-                aria-pressed="true" style="display:none">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
         <button class="lb-close" id="lb-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     </div>
@@ -772,7 +826,7 @@ function resolveUrl(u) {
   return /^https?:\/\//.test(u) ? u : API + u;
 }
 let allAlbums = [], allPhotos = [], pubSettings = {};
-let lbPhotos = [], lbIndex = 0;
+let lbPhotos = [], lbIndex = 0, _lbSource = 'grid';
 let targetAlbumId = null;
 let cart = JSON.parse(localStorage.getItem('mscomm_cart') || '[]');
 let promoDiscount = 0, appliedPromo = null;
@@ -913,13 +967,6 @@ async function init() {
   allAlbums = albums; allPhotos = photos; pubSettings = settings;
   /* Show "Mes achats" if the visitor owns at least one photo (token in localStorage). */
   refreshPurchasedTab();
-  /* Hide the Visages tab if the admin disabled it (per /settings/public). */
-  if (pubSettings && pubSettings.showFacesPage === false) {
-    const facesTabBtn = document.querySelector('.gal-tab[data-view="faces"]');
-    if (facesTabBtn) facesTabBtn.style.display = 'none';
-    const facesView = document.getElementById('view-faces');
-    if (facesView) facesView.style.display = 'none';
-  }
   /* Populate the album filter dropdown (sorted alphabetically) */
   const filter = document.getElementById('gal-album-filter');
   if (filter) {
@@ -937,7 +984,12 @@ async function init() {
   const albumParam = params.get('album');
   const privateParam = params.get('private');
 
-  if (privateParam !== null) {
+  refreshFavoritesTab();
+  if (params.get('view') === 'favorites') {
+    /* Deep link from « Mon espace » → the tab opens directly. */
+    document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'favorites'));
+    renderView('favorites');
+  } else if (privateParam !== null) {
     document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));
     document.getElementById('view-albums').classList.remove('hidden');
     document.getElementById('view-timeline').classList.add('hidden');
@@ -984,19 +1036,29 @@ document.querySelectorAll('.gal-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.gal-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    if (window.MSTrack) window.MSTrack.event('view_change', { view: btn.dataset.view });
     renderView(btn.dataset.view);
   });
 });
+/* « Mes favoris » does not depend on the photo server: open it at once when
+   deep-linked, so the account door shows even while the server wakes up. */
+if (new URLSearchParams(window.location.search).get('view') === 'favorites') {
+  document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'favorites'));
+  renderView('favorites');
+}
 
 let searchTimer;
 document.getElementById('gal-search').addEventListener('input', function() {
   clearTimeout(searchTimer); searchTimer = setTimeout(() => {
     const v = document.querySelector('.gal-tab.active').dataset.view;
     renderView(v);
+    const q = getSearch();
+    if (q && window.MSTrack) window.MSTrack.event('search', { q, view: v, results: document.querySelectorAll('.masonry-item, .album-card').length });
   }, 250);
 });
 document.getElementById('gal-album-filter').addEventListener('change', () => {
   const v = document.querySelector('.gal-tab.active').dataset.view;
+  if (window.MSTrack) window.MSTrack.event('filter', { name: 'album', value: document.getElementById('gal-album-filter').value || 'all', view: v });
   renderView(v);
 });
 function filterByAlbumId(id) {
@@ -1010,6 +1072,7 @@ function filterByAlbumId(id) {
 function shareAlbumPublic(id) {
   const base = window.location.origin + window.location.pathname;
   const url = `${base}?album=${encodeURIComponent(id)}`;
+  if (window.MSTrack) window.MSTrack.event('share', { albumId: id, kind: 'album' });
   navigator.clipboard.writeText(url).then(() => alert('Lien copié : ' + url)).catch(() => prompt('Copiez ce lien :', url));
 }
 
@@ -1018,16 +1081,79 @@ function getSearch() { return document.getElementById('gal-search').value.toLowe
 function renderView(view) {
   document.getElementById('view-albums').classList.toggle('hidden', view !== 'albums');
   document.getElementById('view-timeline').classList.toggle('hidden', view !== 'timeline');
-  const facesEl = document.getElementById('view-faces');
-  if (facesEl) facesEl.classList.toggle('hidden', view !== 'faces');
+  const favEl = document.getElementById('view-favorites');
+  if (favEl) favEl.classList.toggle('hidden', view !== 'favorites');
   const purchasedEl = document.getElementById('view-purchased');
   if (purchasedEl) purchasedEl.classList.toggle('hidden', view !== 'purchased');
   document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'albums') renderAlbums();
   else if (view === 'timeline') renderTimeline();
-  else if (view === 'faces') renderFacesView();
+  else if (view === 'favorites') renderFavoritesView();
   else if (view === 'purchased') renderPurchased();
 }
+
+/* ===== MES FAVORIS (onglet) =====
+ * Signed-out: the account door (create first, sign in as the quiet link).
+ * Signed-in: the hearted photos, rendered through the same masonry/lightbox
+ * pipeline as the timeline. The ID set lives in MSAccount.favorites, so no
+ * extra request is needed; photos come from the already loaded catalog. */
+function renderFavoritesView() {
+  const outEl = document.getElementById('fav-logged-out');
+  const inEl  = document.getElementById('fav-logged-in');
+  const grid  = document.getElementById('favorites-grid');
+  const empty = document.getElementById('favorites-empty');
+  if (!outEl || !inEl || !grid) return;
+  const signed = !!(window.MSAccount && window.MSAccount.isSignedIn());
+  outEl.classList.toggle('hidden', signed);
+  inEl.classList.toggle('hidden', !signed);
+  if (!signed) { grid.innerHTML = ''; return; }
+
+  const q = getSearch();
+  const favs = window.MSAccount.favorites;
+  const photos = allPhotos
+    .filter(p => favs.has(p.id))
+    .filter(p => !q || (p.title || '').toLowerCase().includes(q));
+  empty.classList.toggle('hidden', photos.length > 0);
+  grid.innerHTML = photos.map(p => {
+    const imgSrc = resolveUrl(p.downloadType === 'free' ? p.previewUrl : (p.watermarkedUrl || p.previewUrl));
+    return `<div class="masonry-item" style="${justifiedFlexStyle(p)}" onclick="openLightboxGlobal('${p.id}')">
+      ${ownedBadgeHTML(p)}
+      <img data-src="${imgSrc}" alt="${p.title || ''}" loading="lazy" />
+      <div class="masonry-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    </div>`;
+  }).join('');
+  lbPhotos = photos;
+  observeLazyImages(grid);
+}
+
+/* Badge on the tab + live refresh of the view when the heart set changes
+ * (lightbox toggle, sign-in, sign-out). */
+function refreshFavoritesTab() {
+  const badge = document.getElementById('tab-favorites-count');
+  if (!badge) return;
+  const n = (window.MSAccount && window.MSAccount.isSignedIn()) ? window.MSAccount.favorites.size : 0;
+  badge.textContent = n > 0 ? String(n) : '';
+  badge.style.display = n > 0 ? '' : 'none';
+  const act = document.querySelector('.gal-tab.active');
+  if (act && act.dataset.view === 'favorites') renderFavoritesView();
+}
+if (window.MSAccount) window.MSAccount.onChange(refreshFavoritesTab);
+document.getElementById('fav-create-btn')?.addEventListener('click', () => {
+  window.MSAccount?.requireAccount({
+    eyebrow: 'Mes favoris',
+    title: 'Créez votre espace',
+    message: 'Quelques secondes suffisent : vos favoris, vos téléchargements et vos commandes y sont conservés.',
+    mode: 'register'
+  }).then(ok => { if (ok) renderFavoritesView(); });
+});
+document.getElementById('fav-login-btn')?.addEventListener('click', () => {
+  window.MSAccount?.requireAccount({
+    eyebrow: 'Mes favoris',
+    title: 'Connexion',
+    message: 'Retrouvez vos favoris sur tous vos appareils.',
+    mode: 'login'
+  }).then(ok => { if (ok) renderFavoritesView(); });
+});
 
 /* Render the "Mes achats" view: every photo whose ID has a download token
  * stored in localStorage by the Stripe checkout flow. We reuse the same
@@ -1116,27 +1242,6 @@ function refreshPurchasedTab() {
   if (badge) badge.textContent = count > 0 ? String(count) : '';
 }
 window.refreshPurchasedTab = refreshPurchasedTab;
-
-/* Faces tab — lazy-init the persons grid the first time it's opened. */
-let _facesViewInited = false;
-function renderFacesView() {
-  if (!window.MSFaces) return;
-  if (_facesViewInited) return;
-  _facesViewInited = true;
-  MSFaces.init({ apiBase: API, resolveUrl });
-  MSFaces.renderPersonsView(document.getElementById('view-faces'), {
-    onPhotoClick: (photoId) => {
-      /* Switch back to timeline view, scroll to photo and open the lightbox.
-       * Falls back to a global lookup if the photo isn't in the timeline yet. */
-      renderView('timeline');
-      const photo = allPhotos.find(p => p.id === photoId);
-      if (!photo) return;
-      lbPhotos = [...allPhotos];
-      const idx = lbPhotos.findIndex(p => p.id === photoId);
-      if (idx >= 0) setTimeout(() => openLightbox(idx), 80);
-    }
-  });
-}
 
 /* ===== ALBUMS ===== */
 let currentAlbumId = null;
@@ -1348,6 +1453,7 @@ async function openAlbum(id) {
   /* Journalise l'ouverture d'album pour la fiche client admin. Best effort :
      ignoré si le visiteur n'est pas connecté. */
   if (window.MSAccount) window.MSAccount.logEvent('album_view', { albumId: id });
+  if (window.MSTrack) window.MSTrack.event('album_view', { albumId: id, count: photos.length });
 
   if (!photos.length) {
     grid.innerHTML = '<p style="color:var(--muted);grid-column:1/-1">Aucune photo dans cet album.</p>';
@@ -1630,6 +1736,7 @@ function openLightboxGlobal(photoId) {
 /* ===== LIGHTBOX ===== */
 function openLightbox(idx) {
   lbIndex = idx;
+  _lbSource = 'grid';
   renderLightbox();
   document.getElementById('lb-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1678,56 +1785,9 @@ function renderLightbox() {
   /* Attribute the view to the signed-in client so the admin client sheet can
      show "Événements consultés". No-op when signed out. */
   if (window.MSAccount) window.MSAccount.logEvent('photo_view', { photoId: p.id, albumId: p.albumId });
-
-  /* Lazy face overlay — degrades silently if no faces or API offline.
-   * Skipped entirely when the admin disabled the Visages feature. */
-  const facesToggle = document.getElementById('lb-faces-toggle');
-  if (window.MSFaces && pubSettings.showFacesPage !== false) {
-    MSFaces.init({ apiBase: API, resolveUrl });
-    MSFaces.attachOverlay(document.getElementById('lb-img'), p.id, {
-      onPersonClick: (personId) => {
-        closeLightbox();
-        renderView('faces');
-        /* Wait for the faces view to render then trigger the person detail. */
-        setTimeout(() => {
-          if (window.MSFaces && typeof MSFaces.loadPersonDetail === 'function') {
-            const card = document.querySelector(`.ms-person-card[data-person-id="${personId}"]`);
-            if (card) card.click();
-          }
-        }, 150);
-      }
-    });
-    /* Show + sync the eye toggle. Preference is persisted across photos in
-     * the same lightbox session via localStorage. */
-    if (facesToggle) {
-      facesToggle.style.display = '';
-      const visible = localStorage.getItem('mscomm_show_faces') !== '0';
-      applyFacesVisibility(visible);
-    }
-  } else if (facesToggle) {
-    facesToggle.style.display = 'none';
-  }
+  if (window.MSTrack) window.MSTrack.event('photo_view', { photoId: p.id, albumId: p.albumId, source: _lbSource || 'grid', index: lbIndex });
+  _lbSource = 'nav';
 }
-
-/* Toggle the visibility of every face-overlay SVG inside the open
- * lightbox. We work on .ms-face-overlay (the class set by faces.js) so
- * we don't depend on its internal DOM. */
-function applyFacesVisibility(visible) {
-  const wrap = document.getElementById('lb-img-wrap') || document.querySelector('.lb-img-wrap');
-  if (!wrap) return;
-  wrap.querySelectorAll('.ms-face-overlay').forEach(el => {
-    el.style.display = visible ? '' : 'none';
-  });
-  const btn = document.getElementById('lb-faces-toggle');
-  if (btn) btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
-}
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('#lb-faces-toggle');
-  if (!btn) return;
-  const next = btn.getAttribute('aria-pressed') !== 'true';  /* invert */
-  localStorage.setItem('mscomm_show_faces', next ? '1' : '0');
-  applyFacesVisibility(next);
-});
 
 /* Watermarked Flickr copies are capped server-side at this size on the
    longest edge (see imageProcessor.FLICKR_WM_MAX). The original (private)
@@ -1899,8 +1959,9 @@ function openDlModal() {
   if (window.MSAccount && !window.MSAccount.isSignedIn()) {
     window.MSAccount.requireAccount({
       eyebrow: 'Téléchargement',
-      title: 'Connexion requise pour télécharger',
-      message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
+      title: 'Créez votre espace pour télécharger',
+      message: 'Quelques secondes suffisent : vos téléchargements, vos favoris et vos commandes y sont conservés.',
+      mode: 'register'
     }).then(ok => { if (ok) openDlModal(); });
     return;
   }
@@ -1944,8 +2005,9 @@ async function withDownloadTicket(url, replay) {
   if (signed) return signed;
   const ok = await window.MSAccount.requireAccount({
     eyebrow: 'Téléchargement',
-    title: 'Connexion requise pour télécharger',
-    message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
+    title: 'Créez votre espace pour télécharger',
+    message: 'Quelques secondes suffisent : vos téléchargements, vos favoris et vos commandes y sont conservés.',
+    mode: 'register'
   });
   if (ok && typeof replay === 'function') replay();
   return null;
@@ -1958,6 +2020,7 @@ function triggerDownload(url, filename) {
 
 async function downloadPrivateAlbumPhoto(id, title, code, wm) {
   if (wm !== 1 && !currentAlbumAllowsOriginal()) return;
+  if (window.MSTrack) window.MSTrack.event('download_click', { photoId: id, albumId: currentAlbumId, mode: wm === 1 ? 'watermark' : 'original', resolution: 'original', via: 'private' });
   const url = `${API}/api/public/photos/${id}/download?resolution=original&albumCode=${code}&wm=${wm}`;
   const signed = await withDownloadTicket(url, () => downloadPrivateAlbumPhoto(id, title, code, wm));
   if (!signed) return;
@@ -1968,6 +2031,7 @@ async function downloadPrivateAlbumPhoto(id, title, code, wm) {
 async function downloadPhoto(id, ext, title, resolution) {
   const tokens = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
   const token  = tokens[id] ? `&token=${tokens[id]}` : '';
+  if (window.MSTrack) window.MSTrack.event('download_click', { photoId: id, mode: token ? 'purchased' : 'watermark', resolution: String(resolution) });
   const url    = `${API}/api/public/photos/${id}/download?resolution=${resolution}${token}`;
   /* A purchase token is an authorisation of its own: the buyer paid and may
      have no account, so that path must never be gated. */
@@ -2070,6 +2134,7 @@ function openPrintModal(p) {
 function addToCart(p) {
   if (!cart.find(c => c.id === p.id)) {
     cart.push({ id: p.id, title: p.title, price: p.price, previewUrl: p.previewUrl, watermarkedUrl: p.watermarkedUrl });
+    if (window.MSTrack) window.MSTrack.event('cart_add', { photoId: p.id, albumId: p.albumId, price: p.price, cartSize: cart.length });
     saveCart();
     renderCartPanel();
     openCart();
@@ -2124,6 +2189,7 @@ function renderCartPanel() {
 }
 
 function removeFromCart(id) {
+  if (window.MSTrack) window.MSTrack.event('cart_remove', { photoId: id, cartSize: Math.max(0, cart.length - 1) });
   cart = cart.filter(c => c.id !== id);
   promoDiscount = 0; appliedPromo = null;
   saveCart(); renderCartPanel();
@@ -2188,6 +2254,7 @@ function goCheckout() {
     cart, total, promoDiscount, tierDiscount, discPct,
     promoCode: appliedPromo
   }));
+  if (window.MSTrack) { window.MSTrack.event('checkout_start', { total, count: cart.length, promo: appliedPromo || '' }); window.MSTrack.flush(); }
   window.location.href = `checkout.html?${params}`;
 }
 
@@ -2216,6 +2283,7 @@ async function submitCode() {
       body: JSON.stringify({ code })
     });
     if (!res.ok) {
+      if (window.MSTrack) window.MSTrack.event('private_unlock', { ok: false });
       document.getElementById('code-input').classList.add('err');
       document.getElementById('code-err').textContent = 'Code incorrect.';
       setTimeout(() => document.getElementById('code-input').classList.remove('err'), 500);
@@ -2244,6 +2312,10 @@ async function submitCode() {
     currentAlbumDownloadMode = 'watermark';
     resetAlbumSelection();
     if (window.MSAccount && found.album?.id) window.MSAccount.logEvent('album_view', { albumId: found.album.id });
+    if (window.MSTrack) {
+      window.MSTrack.event('private_unlock', { albumId: found.album?.id, ok: true, type: found.album?.type || 'private' });
+      window.MSTrack.event('album_view', { albumId: found.album?.id, count: privatePhotos.length, private: true });
+    }
     document.getElementById('album-section-title').textContent = (found.album?.name || '') + ' (privé)';
     document.getElementById('albums-grid').style.display = 'none';
     document.getElementById('album-photos-section').classList.remove('hidden');
@@ -2661,14 +2733,14 @@ async function fetchAlbumPhotoBytes({
       if (rateLimited) {
         rateLimitPauses++;
         if (rateLimitPauses > maxRateLimitPauses) {
-          throw new Error(`Flickr limite votre connexion (HTTP 429) à l’image ${index + 1}/${list.length}, après ${maxRateLimitPauses} pauses d’attente. Réessayez dans une dizaine de minutes : votre connexion doit d’abord être débloquée par Flickr.`);
+          throw new Error(`Le serveur d’images limite votre connexion (HTTP 429) à l’image ${index + 1}/${list.length}, après ${maxRateLimitPauses} pauses d’attente. Réessayez dans une dizaine de minutes : votre connexion doit d’abord être débloquée.`);
         }
         const waitMs = retryAfterMs ?? (rateLimitBackoffMs[rateLimitPauses - 1] || rateLimitBackoffMs[rateLimitBackoffMs.length - 1]);
         /* Slowing down permanently is what clears the limit: a connection
            already throttled would be throttled again at the same cadence. */
         photoDelayMs = Math.min(Math.max(photoDelayMs * 2, 1000), maxDelayMs);
         log('[ZIP album] HTTP 429', { photo: index + 1, of: list.length, pauseMs: waitMs, cadenceMs: photoDelayMs, pauses: rateLimitPauses });
-        onProgress(index, `Flickr limite le débit — reprise automatique de l’image ${index + 1}/${list.length}`, true, waitMs);
+        onProgress(index, `Débit limité — reprise automatique de l’image ${index + 1}/${list.length}`, true, waitMs);
         await sleep(waitMs);
         pausedMs += waitMs;
         onProgress(index, `Reprise à l’image ${index + 1}/${list.length} — ${file.filename}`, false, 0);
@@ -2696,8 +2768,9 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   if (window.MSAccount && !window.MSAccount.isSignedIn()) {
     const ok = await window.MSAccount.requireAccount({
       eyebrow: 'Téléchargement',
-      title: 'Connexion requise pour télécharger',
-      message: 'Créez votre espace en quelques secondes : vos téléchargements, vos favoris et vos commandes y sont conservés.'
+      title: 'Créez votre espace pour télécharger',
+      message: 'Quelques secondes suffisent : vos téléchargements, vos favoris et vos commandes y sont conservés.',
+      mode: 'register'
     });
     if (!ok) return;
   }
@@ -2712,6 +2785,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   try {
     if (btnEl) { btnEl.disabled = true; btnEl.classList.add('zip-loading'); }
     if (lblEl) lblEl.textContent = 'Téléchargement…';
+    if (window.MSTrack) window.MSTrack.event('zip_start', { albumId: currentAlbumId, mode, selectedOnly, count: selectedOnly ? ids.length : (_albumPhotosAll ? _albumPhotosAll.length : 0) });
     /* Free any archive still cached from a previous run before building a new one. */
     if (zipKeepAliveTimer) { clearTimeout(zipKeepAliveTimer); zipKeepAliveTimer = null; }
     zipProgress.start(0);
@@ -2746,6 +2820,12 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     const files = {};
     await fetchAlbumPhotoBytes({
       list,
+      /* Cadence selon la source. Les 500 ms entre deux photos n'ont jamais
+         servi qu'à ménager le CDN Flickr, qui limite le débit. R2 ne limite
+         pas : garder la temporisation coûterait ici 2,5 min pour un album de
+         300 photos, sans rien protéger. Un album encore mixte garde la
+         cadence prudente tant qu'une seule photo vient de Flickr. */
+      initialDelayMs: manifest.source === 'r2' ? 0 : 500,
       onPhoto: (filename, bytes) => { files[filename] = [bytes, { level: 0 }]; },
       onProgress: (index, current, waiting, etaMs) => {
         zipProgress.set('download', index, list.length, current, waiting, etaMs);
@@ -2797,6 +2877,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
       onAgain: () => { saveZip(); showSuccess(); }
     });
     showSuccess();
+    if (window.MSTrack) window.MSTrack.event('zip_done', { albumId: currentAlbumId, mode, selectedOnly, count: list.length, bytes: zipped.length });
     zipKeepAliveTimer = setTimeout(() => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       objectUrl = null;
@@ -2804,6 +2885,7 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     }, keepAliveMs);
   } catch (err) {
     console.error('[ZIP album]', err);
+    if (window.MSTrack) window.MSTrack.event('zip_fail', { albumId: currentAlbumId, mode, selectedOnly, error: String(err && err.message || err).slice(0, 120) });
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     alert(err.message || err);
   } finally {

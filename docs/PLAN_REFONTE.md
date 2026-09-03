@@ -308,6 +308,7 @@ est une composition CSS/canvas côté navigateur.
 | **2** | `accounts.json`, `/api/account/*`, `requireAccount`, en-tête « Mon espace », favoris | phase 1 | moyen — authentification |
 | **3** | Enrichissement Clients (comptes, favoris, dernière connexion, timeline), journal `client-events.json` | phase 2 | faible |
 | **4** | Atelier MS Comm', `creations.json`, rendu serveur à la commande | phases 2–3 | moyen — CPU Fly |
+| **5** | Tracking visiteurs anonymes + comptes (`track.js`, `services/tracking.js`), statistiques admin par photo / album / visiteur (`services/stats.js`, `/api/admin/stats`), page « Statistiques », segment Visiteurs dans Clients, Overview rescalable (`from/to/granularity`) — contrat : [tracking.md](tracking.md) | phases 2–3 | faible — lecture seule côté admin, écriture best effort côté ingest |
 
 La phase 1 ne touche à aucune donnée existante : elle n'ajoute que des routes en lecture et remplace le rendu du
 dashboard. C'est ce qui la rend déployable seule.
@@ -320,4 +321,3 @@ dashboard. C'est ce qui la rend déployable seule.
   rattachement des commandes par email).
 - Phase 3 : test du plafonnement et de la rétention de `client-events.json`.
 - Phase 4 : test du rendu serveur sur une création, mesure CPU sur le VM Fly avant activation.
-

@@ -972,8 +972,9 @@
      overflowed the bar. Keeping it in the flex row removes that failure
      mode entirely — one position, all widths.
 
-     Order in the row: quote CTA, then FR/EN, then the account. Language is
-     a setting, so it reads before the personal space rather than after it. */
+     Order in the row: quote CTA, then FR/EN, then the account (account.js
+     mounts the control right after the CTA). Language is a setting, so it
+     reads before the personal space rather than after it. */
   function positionSwitcher() {
     if (!switchTarget) return;
     const inner = document.querySelector('.topbar-inner');
@@ -1066,8 +1067,10 @@
    *  Public entry point
    * --------------------------------------------------------------------- */
   function setLang(lang) {
+    const previousLang = currentLang;
     currentLang = (lang === 'en') ? 'en' : 'fr';
     try { localStorage.setItem(STORAGE_KEY, currentLang); } catch (_) {}
+    if (previousLang && previousLang !== currentLang && window.MSTrack) window.MSTrack.event('lang_change', { lang: currentLang, from: previousLang });
     /* Suspend the MutationObserver while we translate the DOM: otherwise
        each nodeValue assignment below would trigger a characterData record
        that we'd re-process on the next microtask, producing a visible

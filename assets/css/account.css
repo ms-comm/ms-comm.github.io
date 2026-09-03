@@ -220,6 +220,28 @@ body.acct-locked { overflow: hidden; }
 .acct-field input:focus { outline: none; border-color: var(--gold); background: #101010; }
 
 .acct-hint { font-size: 12px; color: rgba(255,255,255,.5); }
+
+/* Consent row. Deliberately quieter than a field label and never pre-ticked:
+   the visitor opts in, he is not opted in by default. */
+.acct-optin {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.62);
+  cursor: pointer;
+  margin-top: 2px;
+}
+.acct-optin input {
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  flex: 0 0 auto;
+  accent-color: var(--gold, #d4af37);
+  cursor: pointer;
+}
+.acct-optin:hover { color: rgba(255,255,255,.82); }
 .acct-error { min-height: 17px; font-size: 12.5px; color: #fca5a5; }
 .acct-error:empty { min-height: 0; }
 
@@ -319,4 +341,3 @@ body.acct-locked { overflow: hidden; }
   .acct-toast { transition: opacity .15s; transform: translate(-50%, 0); }
   .fav-btn.is-fav svg { animation: none; }
 }
-

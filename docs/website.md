@@ -31,8 +31,9 @@
 | `assets/js/main.js` | Drawer nav, scroll reveals, lightbox, carousel, sparkles |
 | `assets/js/i18n.js` | Language switcher + full translation engine |
 | `assets/js/services-catalog.js` | Renders editable services/prices on `services.html` from `translations.json._servicesCatalog` |
-| `assets/js/faces.js` | Face detection UI in photo gallery |
+| `assets/js/faces.js` | Face detection UI — **no longer loaded by `photos.html`** (Visages removed from the public site on 2026-09-02; admin tooling untouched) |
 | `assets/js/account.js` | Client accounts: header control, sign-in sheet, favorites, download tickets. Exposes `window.MSAccount`. Loaded on every public page |
+| `assets/js/track.js` | Visitor tracking: `vid` (localStorage `ms_vid`) + `sid` (sessionStorage `ms_sid`, 30-min gap), batched `POST /api/public/track` with sendBeacon on pagehide, 20 s heartbeat while visible. Exposes `window.MSTrack.event/identify/flush`. Loaded after `account.js` on every public page. Contract: [tracking.md](tracking.md) |
 
 `assets/css/account.css` holds the account surfaces (header control, sheet, toast,
 favorite affordance) and reuses the existing `style.css` tokens.
@@ -95,10 +96,12 @@ have an account.
 - `.gal-tabs-thumb` is a single sliding pill: its `transform` and `width` are written in JS by `syncTabs()`, itself driven by a `MutationObserver` on the tab classes — the active tab is changed from ~10 call sites (`switchView`, `openAlbum`, album return, private code unlock).
 - Search field and album filter live in one frame (`.gal-search-row`, `flex-wrap: nowrap`, `#gal-search { width: 0 }`). `.gal-controls.filter-off` collapses the album filter with an animation on non-timeline views.
 - The bar becomes glass (`backdrop-filter`) only once `.is-stuck` is set; the topbar hides on scroll down (`.topbar.is-hidden`) and returns on scroll up, with asymmetric thresholds (14px hide / 4px show). `--chrome-h` is tracked frame by frame from the topbar transform matrix so the sticky offset follows the animation.
-- `.fx-halo` is a fixed golden veil at `z-index: 0`; the bar sits at 60, so the halo stays visible behind the gallery while scrolling.
+- `.fx-halo` is a fixed golden veil at `z-index: 0`; the bar sits at 60, so the halo stays visible behind the gallery while scrolling. It only lights up (`.is-lit`) once the visitor has scrolled past 55 % of the viewport; at the top of the page the glow comes from `.gal-hero::before`.
+- `.gal-hero` copies the `.page-header` recipe of the other sub-pages exactly: `padding: calc(var(--nav-h) + 60px) 0 40px`, h1 `clamp(32px, 4vw, 52px)`, 16px sub-line, and the same blurred golden `::before` glow behind the title. The topbar is fixed, so a padding that ignores `--nav-h` glues the title to the bar — that was the bug.
+- Tabs: `Galerie`, `Albums`, `Mes favoris` (always visible, badge = heart count when signed in), `Mes achats` (only when the browser holds purchase tokens). `Mes favoris` signed-out shows the account door (`#fav-logged-out`: create first, sign-in as the quiet link, both through `MSAccount.requireAccount`); signed-in it renders the hearted photos from the loaded catalog through the same masonry/lightbox pipeline (`renderFavoritesView()`), refreshed on every `MSAccount.onChange`. Deep link: `photos.html?view=favorites` (used by the account menu).
 
 ### Topbar order
-- The FR/EN switcher is inserted **inside** `.topbar-inner`, right before `#acct-control` (`positionSwitcher()` in `i18n.js`, re-called by `account.js` `mount()` because i18n runs first and the anchor does not exist yet). Never restore the old absolutely-positioned rule: below 961px it fell back into normal flow and dropped to a second line.
+- Right side of the row, at every width: `Demander un devis` → `FR · EN` → `Mon espace` (far right). `account.js` `mount()` inserts `#acct-control` right after `.nav-cta`; the FR/EN switcher is then inserted **inside** `.topbar-inner`, right before `#acct-control` (`positionSwitcher()` in `i18n.js`, re-called by `mount()` because i18n runs first and the anchor does not exist yet). Never restore the old absolutely-positioned rule: below 961px it fell back into normal flow and dropped to a second line.
 - `html`/`body` use `overflow-x: clip`, never `hidden`: `hidden` turns the element into a scroll container and silently disables every `position: sticky` on the site.
 - `.nav-cta` and `.acct-trigger` are `white-space: nowrap; flex-shrink: 0` globally — their fixed 40px height turns any line break into clipped text.
 - Below 560px the brand baseline (`.brand-text span`) is hidden; it wrapped onto three lines and doubled the topbar height.
