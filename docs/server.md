@@ -63,6 +63,27 @@ Individual download uses `streamFlickrSized` which does **server-side streaming*
 - For `private-watermark`, ZIP, precheck, URL-list, and individual downloads use only `flickrWatermarkId` or `storage/watermarked/:id.jpg`. Missing safe copies return `409`; an original is never used as fallback.
 - `GET /api/public/albums/:id/download-urls?mode=watermark|original&code=xxx&ids=id1,id2` returns the manifest used for browser-side ZIP creation. `directUrl` is a presigned R2 URL (1 h) as soon as the photo carries `r2Key`: `master` for an unwatermarked request or a watermark-only photo, `wm` otherwise. A `wm` level not yet built leaves `directUrl` null so the browser falls back to the server URL, which builds and persists it. Photos without `r2Key` keep the Flickr CDN URL. The response carries `source: 'r2' | 'mixte' | 'flickr'`; on `'r2'` the client drops its inter-photo delay to 0 (2,5 min saved on a 300-photo album) and keeps 500 ms as soon as one photo still comes from Flickr.
   `r2Count` must be incremented where the presigned URL is produced. It used to live in an `else if (directUrl)` branch that the R2 presign itself made unreachable, so `source` stayed `'flickr'` on fully migrated albums and the browser kept waiting 500 ms per photo for a CDN it no longer called (fixed 2026-09-03, verified in production: `source=r2`, 187/187 `directUrl` presigned).
+  The per-photo resolution runs in a bounded parallel pool (`MANIFEST_CONCURRENCY = 16`) writing `files[idx]` by index. In series it cost one `r2.exists()` round-trip per photo before the response even started: 11,6 s of dead time on 187 photos, more than the ~20 s the bytes themselves take. Measured after the fix: 121 ph 640 ms, 187 ph 943 ms, 296 ph 1620 ms.
+
+### Album download performance (measured 2026-09-03, production)
+
+| Album | Photos | Manifest | Bytes | Total |
+|---|---|---|---|---|
+| Student Championships (paid) | 121 | 681 ms | 24,7 s / 169 Mo (6,9 Mo/s) | **25,4 s** |
+| Stage National | 296 | 1620 ms | 24,9 s / 378 Mo (15,2 Mo/s) | **26,6 s** |
+
+Zero failure, zero 429. The browser loop stays sequential on purpose: at 7–15 Mo/s the link is already saturated, and a parallel loop would multiply the peak memory of a ZIP that is assembled in RAM — the exact cause of the mobile out-of-memory errors. The gains came from removing dead time (serial manifest, useless 500 ms delay), not from adding concurrency.
+
+### tools/prebuild-wm.js
+
+Builds the R2 `wm` level ahead of demand for every photo whose master is clean (`flickrWatermarkId` set). Reads the master from R2, bakes the watermark, writes `wm/` — **no Flickr call**. Run it after any upload of such photos.
+
+```powershell
+node tools/prebuild-wm.js --dry-run
+node tools/prebuild-wm.js --concurrency 6
+```
+
+Without it the level stays lazy, `download-urls` cannot presign, and the manifest silently falls back to the Flickr CDN: 120 of the 121 photos of the paid album still came from Flickr after a complete migration. First run: 564 photos, +0,71 Go, ~3 min, and the album went from `source=mixte` (2463 ms) to `source=r2` (811 ms). Like the migration, it refuses to start without the watermark assets.
 
 ### adminPhotos.js - Trash
 - Default admin delete is soft-delete: sets `deletedAt`, stores `previousDownloadType`/`previousAlbumId`, changes `downloadType` to `private`, and flips the Flickr watermark copy private best-effort.
