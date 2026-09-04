@@ -23,7 +23,7 @@
       "meta": "Méta-descriptions",
       "misc": "Divers"
     },
-    "updatedAt": "2026-09-01T14:33:48.628Z"
+    "updatedAt": "2026-09-04T16:12:01.699Z"
   },
   "navigation": {
     "Prestataire de services de communication": "Communication services provider",
@@ -377,17 +377,6 @@
     "Photo": "Photo",
     "Photographies sportives, portraits et moments d'exception.": "Sports photography, portraits and exceptional moments.",
     "Album privé": "Private album",
-    "Mes favoris": "My favourites",
-    "Vos photos vous attendent": "Your photos are waiting for you",
-    "Créez votre espace pour retrouver ici tout ce qui vous appartient, sur tous vos appareils :": "Create your space to find everything that belongs to you here, on all your devices:",
-    "Vos favoris": "Your favourites",
-    "Vos achats": "Your purchases",
-    "Vos téléchargements": "Your downloads",
-    "Créer mon espace": "Create my space",
-    "Se connecter": "Sign in",
-    "Gérer dans mon espace": "Manage in my space",
-    "Les photos que vous avez marquées d'un cœur. Cliquez pour les rouvrir, les télécharger ou les commander.": "The photos you marked with a heart. Click to reopen, download or order them.",
-    "Aucun favori pour l'instant. Ouvrez une photo dans la galerie et touchez le cœur : elle sera conservée ici.": "No favourite yet. Open a photo in the gallery and tap the heart: it will be kept here.",
     "Rechercher une photo ou un album...": "Search for a photo or an album...",
     "Tous les albums": "All albums",
     "Sans album": "No album",
@@ -478,7 +467,9 @@
     "MS": "MS"
   },
   "_fr_overrides": {
-    "Je suis . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "Je suis Melody . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience."
+    "Je suis . Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.": "Je m'appelle Melody. Depuis 5 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.",
+    "4 ans de projets dans le sport, les médias, et l'événementiel.": "5 ans de projets dans le sport, les médias, et l'événementiel.",
+    "4 ans de projets marquants dans le sport, les médias et l'événementiel.": "5 ans de projets marquants dans le sport, les médias et l'événementiel."
   },
   "_servicesCatalog": {
     "updatedAt": "2026-09-01T14:33:50.203Z",
