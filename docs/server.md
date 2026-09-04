@@ -247,9 +247,11 @@ Photos live in R2; Flickr is a read-only fallback for rows not yet migrated.
 
 | Level | Bucket | Size | Built |
 |-------|--------|------|-------|
-| `master/` | `ms-comm-master` (private) | 4096 px q90, ~1,2 Mo | at migration/upload |
-| `wm/` | `ms-comm-master` (private) | full-res watermarked | lazily, on first watermarked download, then kept |
-| `display/` | `ms-comm-display` (public) | 1600 px q82 | at migration/upload |
+| `master/` | `ms-comm-master` (private) | raw source bytes, no resize, no re-encode, EXIF kept (~11,8 Mo) | at migration/upload |
+| `wm/` | `ms-comm-master` (private) | watermarked, ≤ 4096 px, JPEG q100 chroma 4:4:4 (~8–12 Mo) | at migration (lossless) / lazily for later uploads |
+| `display/` | `ms-comm-display` (public) | watermarked, 2048 px, JPEG q95 (~0,8 Mo) | at migration/upload |
+
+**Lossless policy (2026-09-04)**: the first migration re-encoded the master (4096 px q90) from the CDN `_4k` render and produced visibly degraded photos. Everything was re-migrated with `node tools/migrate-to-r2.js --lossless` (wrapper `tools/run-lossless.ps1`, log `_mscomm-r2-local\lossless.log`): the export is mandatory for every photo, master = raw bytes, `wm` built up front, a NEW UUID key per photo (immutable 1-year cache) and the old key removed after write, row flagged `r2Lossless: true` (resume key). Quality knobs: `R2_WM_QUALITY = 100`, `R2_DISPLAY_QUALITY = 95`, `R2_DISPLAY_MAX = 2048` in `imageProcessor.js`; `R2_MASTER_QUALITY` no longer exists. `resizeBufferAndDownload` returns the stored bytes untouched unless a resize or watermark is requested (then q100). Storage ≈ 40 Go, above the free tier (~0,5 $/month). Follow-up tools: `--verify`, `tools/purge-r2-orphans.js [--delete]` (drops objects whose UUID is not referenced by `photos.json`, trash included), `push-r2-keys.js --replace` (required: keys changed).
 
 Secrets on Fly: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_PRIVATE`, `R2_BUCKET_PUBLIC`, `R2_PUBLIC_DOMAIN`.
 
@@ -284,7 +286,7 @@ The official account export is read **only for photos that carry `flickrWatermar
 
 **The migration refuses to start without the watermark assets.** `renderWatermarkedBuffer` does not throw when the logo or the custom font is missing: it silently falls back to a bare monospace font and drops the logo. A local run against a `DATA_DIR` lacking `storage/watermark-asset.png` stamped 564 photos that way and could only be undone by re-migrating. `runMigrate()` now checks both paths up front and exits 1 — fetch them with `fly ssh sftp get /data/storage/watermark-asset.png` and `/data/storage/fonts/<hash>.ttf`.
 
-**Final state (2026-09-03)**: 3887/3887 photos migrated and verified (master + display present, 0 defect, parallel HEAD check). Populations: `export|clean` 564, `cdn:4k|wmOnly` 2965, `flickr:original|wmOnly` 350, `cdn:o|wmOnly` 6, `cdn:5k|wmOnly` 2. `export|wmOnly` is empty by design. Production serves 1608/1608 public photos and 13/13 album covers from R2, with `?v=<r2MigratedAt>` versioning.
+**First migration (2026-09-03, superseded)**: 3887/3887 photos migrated from `export|clean` 564, `cdn:4k|wmOnly` 2965, `flickr:original|wmOnly` 350, `cdn:o|wmOnly` 6, `cdn:5k|wmOnly` 2. Replaced by the lossless run of 2026-09-04 (export for all rows; the export equals CDN `_o` byte for byte, verified by sha on both populations). Caveat kept: a wmOnly export that is already stamped gets a second logo on `wm`/`display` only — control a visual sample of the 2026-04 albums. 124 wmOnly exports carry EXIF orientation 6/8, so `.rotate()` stays on the `wm`/`display` branches while the raw master keeps its EXIF.
 
 **Rollback**: clear `r2Key` on the affected photos and the Flickr path takes over immediately. Nothing is deleted on Flickr and every `flickr*` field is preserved.
 ### Watermark-only photos
