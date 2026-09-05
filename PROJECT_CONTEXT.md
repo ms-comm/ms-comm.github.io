@@ -179,7 +179,7 @@ Toutes les pages ont la même barre de navigation :
 
 ### `index.html` — Accueil
 - **Hero** : photo Melody (`Melody_detour_rmbg_image_2.png`), titre "Votre image, notre mission.", CTA services + contact
-- **Stats** : 4+ ans expérience · 6 projets marquants · 24h/48h réactivité · 100% créativité
+- **Stats** : 5+ ans expérience · 6 projets marquants · 24h/48h réactivité · 100% créativité
 - **À propos** : présentation Melody, skills tags
 - **Aperçu expériences** : 3 cartes (MS Comm', Paris 13 TT, Alexis Lebrun)
 - **Aperçu portfolio** : 3 preview cards (Paris 13 TT, Alexis Lebrun, MS Comm')

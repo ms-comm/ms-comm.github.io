@@ -721,6 +721,62 @@ main {
   font-size: 12px;
 }
 
+/* ===== NEEDS / PROJECT IDEAS ===== */
+.needs-section {
+  background: var(--bg-2);
+}
+
+.needs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.need-item {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--bg-card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+
+.need-item:hover,
+.need-item:focus-visible {
+  border-color: rgba(198,155,0,0.55);
+  background: var(--panel-hover);
+  transform: translateY(-3px);
+}
+
+.need-item:focus-visible {
+  outline: 2px solid var(--gold-2);
+  outline-offset: 3px;
+}
+
+.need-item h3 {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.need-item p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.needs-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
 /* ===== PORTFOLIO GALLERY ===== */
 .portfolio-grid {
   display: grid;
@@ -1984,6 +2040,10 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .needs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .card3d {
     width: 300px;
   }
@@ -2124,6 +2184,10 @@ textarea:focus {
   .testimonial-card {
     width: 82vw;
     padding: 18px 16px;
+  }
+
+  .needs-grid {
+    grid-template-columns: 1fr;
   }
 
   .testimonials-controls {

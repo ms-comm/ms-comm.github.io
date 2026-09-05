@@ -167,7 +167,12 @@
       '    <label class="acct-field"><span>Adresse e-mail</span>',
       '      <input name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr" /></label>',
       '    <label class="acct-field"><span>Mot de passe</span>',
-      '      <input name="password" type="password" autocomplete="current-password" required placeholder="••••••••••" /></label>',
+      '      <span class="acct-password-wrap"><input name="password" type="password" autocomplete="current-password" required placeholder="••••••••••" />',
+      '      <button class="acct-password-toggle" type="button" data-password-toggle aria-label="Afficher le mot de passe" aria-pressed="false">',
+      '        <svg class="password-eye password-eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>',
+      '        <svg class="password-eye password-eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.3A11.6 11.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.1 3.9M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/></svg>',
+      '      </button></span></label>',
+      '    <label class="acct-remember"><input type="checkbox" name="remember" /> <span>Rester connecté pendant 30 jours</span></label>',
       '    <p class="acct-hint" id="acct-hint">10 caractères minimum.</p>',
       '    <label class="acct-optin" id="acct-optin"><input type="checkbox" name="marketingOptIn" />',
       '      <span>J\'accepte de recevoir les actualités et offres de MS Comm\' par e-mail.</span></label>',
@@ -178,6 +183,15 @@
       '</div>'
     ].join('');
     document.body.appendChild(dialog);
+
+    dialog.querySelector('[data-password-toggle]').addEventListener('click', e => {
+      const button = e.currentTarget;
+      const input = dialog.querySelector('[name=password]');
+      const visible = input.type === 'text';
+      input.type = visible ? 'password' : 'text';
+      button.setAttribute('aria-pressed', visible ? 'false' : 'true');
+      button.setAttribute('aria-label', visible ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+    });
 
     dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
     dialog.querySelector('.acct-close').addEventListener('click', closeDialog);
@@ -262,7 +276,8 @@
     const err  = form.querySelector('#acct-error');
     const data = {
       email:    form.email.value.trim(),
-      password: form.password.value
+      password: form.password.value,
+      remember: !!form.remember.checked
     };
     if (mode === 'register') {
       data.firstName = form.firstName.value.trim();
@@ -427,9 +442,27 @@
     ));
   }
 
+  /* Password visibility is an explicit, labelled control rather than a
+     browser-dependent affordance. Static account forms use the same helper. */
+  function bindPasswordToggles(root) {
+    (root || document).querySelectorAll('[data-password-toggle]').forEach(button => {
+      if (button.dataset.bound === 'true') return;
+      const input = button.closest('.acct-password-wrap')?.querySelector('input');
+      if (!input) return;
+      button.dataset.bound = 'true';
+      button.addEventListener('click', () => {
+        const visible = input.type === 'text';
+        input.type = visible ? 'password' : 'text';
+        button.setAttribute('aria-pressed', visible ? 'false' : 'true');
+        button.setAttribute('aria-label', visible ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+      });
+    });
+  }
+
   /* ── Boot ────────────────────────────────────────────────────────────── */
 
   function boot() {
+    bindPasswordToggles(document);
     mount();
     refresh().catch(() => { state.ready = true; });
   }

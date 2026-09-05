@@ -2710,15 +2710,15 @@ function setupAlbumZipButtons() {
 }
 
 async function resumeStoredAlbumZipJob() {
-  /* Album ZIPs are now built entirely in the browser, so there is no server job
-     to resume. Drop any state left by the previous server-side implementation so
-     an old jobId can never reopen a stale progress bar. */
-  localStorage.removeItem('mscomm_album_zip_job');
-  return;
-  // eslint-disable-next-line no-unreachable
+  /* Resume a server ZIP after a reload. Keep the job token local only; the
+     account session/download ticket still gates every status and download call. */
   let saved;
   try { saved = JSON.parse(localStorage.getItem('mscomm_album_zip_job') || 'null'); } catch { saved = null; }
   if (!saved || saved.albumId !== currentAlbumId || !saved.jobId || !saved.token) return;
+  const ticket = window.MSAccount && window.MSAccount.isSignedIn()
+    ? await window.MSAccount.downloadTicket()
+    : null;
+  if (!ticket && window.MSAccount && !window.MSAccount.isSignedIn()) return;
   const btn = document.getElementById('album-download-all-menu-btn') || document.getElementById('album-download-watermark');
   const label = btn?.querySelector('span');
   const progress = document.getElementById('album-download-progress');
@@ -2730,7 +2730,7 @@ async function resumeStoredAlbumZipJob() {
   try {
     let status;
     do {
-      const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(saved.jobId)}?token=${encodeURIComponent(saved.token)}`);
+      const response = await fetch(`${API}/api/public/zip-jobs/${encodeURIComponent(saved.jobId)}?token=${encodeURIComponent(saved.token)}${ticket ? `&dlTicket=${encodeURIComponent(ticket)}` : ''}`);
       status = await response.json().catch(() => null);
       if (!response.ok || !status || typeof status.status !== 'string' || !Number.isFinite(status.completed) || !Number.isFinite(status.total)) {
         localStorage.removeItem('mscomm_album_zip_job');
@@ -2747,7 +2747,7 @@ async function resumeStoredAlbumZipJob() {
     } while (status.status !== 'ready' && status.status !== 'failed');
     if (status.status === 'ready' && status.downloadUrl) {
       localStorage.removeItem('mscomm_album_zip_job');
-      window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(saved.token)}`;
+      window.location.href = `${API}${status.downloadUrl}?token=${encodeURIComponent(saved.token)}${ticket ? `&dlTicket=${encodeURIComponent(ticket)}` : ''}`;
     } else {
       /* Terminal backend failure: surface the server reason immediately, drop
          the saved job, and leave the button usable for a manual retry. */
@@ -3038,6 +3038,93 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
     if (!ok) return;
   }
 
+  /* Server-side archive path: Cloudflare R2/Flickr bytes are assembled by the
+     backend worker, so mobile never holds every image or a Uint8Array in RAM.
+     The old browser ZIP implementation remains below as a compatibility
+     reference, but this branch is the only runtime path. */
+  {
+    const origLabel = lblEl ? lblEl.textContent : '';
+    let serverDownloadUrl = null;
+    let serverDownloadExpiry = '';
+    const ticket = window.MSAccount ? await window.MSAccount.downloadTicket() : null;
+    try {
+      if (btnEl) { btnEl.disabled = true; btnEl.classList.add('zip-loading'); }
+      if (lblEl) lblEl.textContent = 'Préparation…';
+      if (window.MSTrack) window.MSTrack.event('zip_start', { albumId: currentAlbumId, mode, selectedOnly, count: selectedOnly ? ids.length : (_albumPhotosAll ? _albumPhotosAll.length : 0), via: 'server' });
+      zipProgress.start(0);
+      zipProgress.set('prepare', 1, 3, 'Vérification de vos accès à l’album…');
+
+      const body = new URLSearchParams({ mode });
+      if (currentAlbumCode) body.set('code', currentAlbumCode);
+      if (ids.length) body.set('ids', ids.join(','));
+      if (ticket) body.set('dlTicket', ticket);
+      const createdRes = await fetch(`${API}/api/public/albums/${encodeURIComponent(currentAlbumId)}/zip-jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: body.toString()
+      });
+      const created = await createdRes.json().catch(() => ({}));
+      if (!createdRes.ok) throw new Error(created.error || 'Préparation du ZIP impossible');
+      const jobToken = created.token;
+      const total = Number(created.total) || (_albumPhotosAll.length || 0);
+      if (!created.jobId || !jobToken) throw new Error('Le serveur n’a pas fourni de tâche ZIP.');
+      zipProgress.set('download', 0, total, `Le serveur prépare ${total || 'vos'} photos…`);
+      localStorage.setItem('mscomm_album_zip_job', JSON.stringify({ albumId: currentAlbumId, jobId: created.jobId, token: jobToken, mode }));
+
+      let status = null;
+      for (;;) {
+        const statusUrl = `${API}/api/public/zip-jobs/${encodeURIComponent(created.jobId)}?token=${encodeURIComponent(jobToken)}${ticket ? `&dlTicket=${encodeURIComponent(ticket)}` : ''}`;
+        const statusRes = await fetch(statusUrl, { cache: 'no-store' });
+        status = await statusRes.json().catch(() => ({}));
+        if (!statusRes.ok) throw new Error(status.error || 'Suivi du ZIP impossible');
+        const completed = Number(status.completed) || 0;
+        const jobTotal = Number(status.total) || total;
+        if (status.status === 'paused' && status.resumeAt) {
+          const resumeAt = Date.parse(status.resumeAt);
+          zipProgress.set('download', completed, jobTotal, `Débit limité — reprise prévue vers ${new Date(resumeAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, true, Math.max(1000, resumeAt - Date.now()));
+          await new Promise(resolve => setTimeout(resolve, Math.max(1500, resumeAt - Date.now())));
+          continue;
+        }
+        if (status.status === 'failed') throw new Error(status.error || 'Le serveur n’a pas pu créer le ZIP.');
+        if (status.status === 'ready' && status.downloadUrl) {
+          serverDownloadUrl = `${API}${status.downloadUrl}?token=${encodeURIComponent(jobToken)}${ticket ? `&dlTicket=${encodeURIComponent(ticket)}` : ''}`;
+          serverDownloadExpiry = status.expiresAt ? `Lien disponible jusqu’au ${new Date(status.expiresAt).toLocaleString('fr-FR')}.` : 'Le lien reste disponible temporairement.';
+          break;
+        }
+        zipProgress.set('download', completed, jobTotal, `ZIP serveur en préparation — ${completed}/${jobTotal}`, false);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      zipProgress.set('zip', 1, 1, 'Archive Cloudflare/R2 prête');
+      const saveZip = () => {
+        const link = document.createElement('a');
+        link.href = serverDownloadUrl;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      };
+      saveZip();
+      localStorage.removeItem('mscomm_album_zip_job');
+      zipProgress.succeed({
+        subtitle: `${status.total || total} photo${(status.total || total) > 1 ? 's' : ''} · ZIP fabriqué côté serveur`,
+        expiryLabel: serverDownloadExpiry,
+        onAgain: saveZip
+      });
+      if (window.MSTrack) window.MSTrack.event('zip_done', { albumId: currentAlbumId, mode, selectedOnly, count: status.total || total, via: 'server' });
+    } catch (err) {
+      console.error('[ZIP server]', err);
+      localStorage.removeItem('mscomm_album_zip_job');
+      if (window.MSTrack) window.MSTrack.event('zip_fail', { albumId: currentAlbumId, mode, selectedOnly, error: String(err && err.message || err).slice(0, 120), via: 'server' });
+      zipProgress.stop();
+      alert(err.message || err);
+    } finally {
+      if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('zip-loading'); }
+      if (lblEl && origLabel) lblEl.textContent = origLabel;
+    }
+    return;
+  }
+
   /* The browser downloads straight from the Flickr CDN for every device. Measured
      on the 302-photo wedding album: the browser pulls 10/10 photos in 0.4s from the
      home connection while the same URLs answer 429 from the Fly datacenter IP, so
@@ -3214,6 +3301,29 @@ async function downloadAlbumZip(mode, btnEl, lblEl, selectedOnly = false) {
   }
 }
 async function downloadOrderZip(orderId, token, btnEl, lblEl) {
+  /* Orders use the same server-side streaming ZIP path. This avoids the
+     mobile ArrayBuffer/Blob allocation that made large orders fail. */
+  {
+    const origLabel = lblEl ? lblEl.textContent : '';
+    try {
+      if (btnEl) btnEl.disabled = true;
+      if (lblEl) lblEl.textContent = 'Préparation…';
+      const link = document.createElement('a');
+      link.href = `${API}/api/orders/${encodeURIComponent(orderId)}/download-all?token=${encodeURIComponent(token)}`;
+      link.download = '';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      if (lblEl) lblEl.textContent = 'Téléchargement lancé';
+    } catch (err) {
+      console.error('[ZIP order server]', err);
+      alert('Erreur ZIP : ' + (err?.message || err));
+    } finally {
+      if (btnEl) btnEl.disabled = false;
+      if (lblEl && origLabel) setTimeout(() => { lblEl.textContent = origLabel; }, 1500);
+    }
+    return;
+  }
   if (typeof fflate === 'undefined') { alert('Bibliothèque ZIP non chargée — rechargez la page.'); return; }
   if (btnEl) btnEl.disabled = true;
   const origLabel = lblEl ? lblEl.textContent : '';

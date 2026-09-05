@@ -202,7 +202,7 @@
     "Parlons de votre projet": "Let's talk about your project",
 
     /* Stats */
-    "4+": "4+",
+    "5+": "5+",
     "Années d'expérience": "Years of experience",
     "6": "6",
     "Projets marquants": "Notable projects",
@@ -213,8 +213,8 @@
 
     /* About */
     "Bienvenue chez": "Welcome to",
-    "Je suis Melody. Depuis 4 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.":
-      "I'm Melody. For 4 years, I've been helping brands, sports clubs, athletes and entrepreneurs develop communication that reflects who they are and attracts their audience.",
+    "Je m'appelle Melody. Depuis 5 ans, j'accompagne marques, clubs de sport, athlètes et entrepreneurs\n              à développer une communication qui leur ressemble et qui attire leur audience.":
+      "I'm Melody. For 5 years, I've been helping brands, sports clubs, athletes and entrepreneurs develop communication that reflects who they are and attracts their audience.",
     "Passionnée de création, je mets mon expertise au service de votre image pour vous aider\n              à vous démarquer et à faire grandir vos projets.":
       "Passionate about creation, I put my expertise at the service of your image to help you stand out and grow your projects.",
     "Mon objectif ? Vous faire briller, quel que soit votre univers : sport, musique, restauration, beauté…":
@@ -230,10 +230,10 @@
     "Événementiel": "Events",
 
     /* Section headers */
-    "4 ans de projets dans le sport, les médias, et l'événementiel.":
-      "4 years of projects in sport, media and events.",
-    "4 ans de projets marquants dans le sport, les médias et l'événementiel.":
-      "4 years of notable projects in sport, media and events.",
+    "5 ans de projets dans le sport, les médias, et l'événementiel.":
+      "5 years of projects in sport, media and events.",
+    "5 ans de projets marquants dans le sport, les médias et l'événementiel.":
+      "5 years of notable projects in sport, media and events.",
     "Affiches, posts, articles, journaux, vidéos — un aperçu de mon travail.":
       "Posters, posts, articles, journals, videos — a glimpse of my work.",
     "Affiches, posts, articles, journaux, vidéos — une sélection de mes réalisations.":
@@ -324,6 +324,7 @@
     "Pack Beauté / Bien-être": "Beauty / Wellness Pack",
     "Pack Restaurant": "Restaurant Pack",
     "Pack Événement": "Event Pack",
+    "Photographie événementielle": "Event photography",
 
     /* Index CTA final */
     "Prêt·e à": "Ready to",
@@ -677,8 +678,8 @@
       "MS Comm' Paris services: sports social media templates, club brand guidelines, sports photography, event video, sports communication support. Competitive pricing for clubs and athletes.",
     "Portfolio MS Comm' Paris : affiches sportives, posts réseaux sociaux sportifs, articles médias sportifs, photographie événementielle, vidéo sportive. Créations pour clubs, athlètes et événements sportifs.":
       "MS Comm' Paris portfolio: sports posters, sports social media posts, sports media articles, event photography, sports video. Creations for clubs, athletes and sports events.",
-    "Parcours professionnel de Melody — 4 ans d'expériences en communication sport, média et événementiel à Paris. Alexis Lebrun, Paris 13 TT, Pongistic, Ping Pang Effect.":
-      "Melody's professional journey — 4 years of experience in sports, media and events communication in Paris. Alexis Lebrun, Paris 13 TT, Pongistic, Ping Pang Effect.",
+    "Parcours professionnel de Melody — 5 ans d'expériences en communication sport, média et événementiel à Paris. Alexis Lebrun, Paris 13 TT, Pongistic, Ping Pang Effect.":
+      "Melody's professional journey — 5 years of experience in sports, media and events communication in Paris. Alexis Lebrun, Paris 13 TT, Pongistic, Ping Pang Effect.",
     "Contactez MS Comm' Paris pour vos projets de communication sportive, média et événementiel. Services pour clubs sportifs, athlètes, événements sportifs. Devis personnalisé.":
       "Contact MS Comm' Paris for your sports, media and event communication projects. Services for sports clubs, athletes, sporting events. Tailored quote.",
     "Découvrez la galerie photo de MS Comm' : photographies sportives, portraits, événements. Téléchargement disponible. Accès galerie privée pour les clients.":

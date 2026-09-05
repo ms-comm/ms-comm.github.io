@@ -101,6 +101,7 @@
       <ul class="tarif-list">
         ${card.items.map(item => `<li><span>${escHtml(item.label)}</span><strong>${escHtml(item.price || '')}</strong></li>`).join('')}
       </ul>
+      ${card.cta ? `<a class="btn btn-outline-gold pack-cta" href="${escHtml(buildPackHref(card))}">${escHtml(card.cta)}</a>` : ''}
     </div>`;
   }
 
