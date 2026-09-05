@@ -31,7 +31,7 @@ Dual-stack photography portfolio with integrated photo gallery:
 
 | Rule | Detail |
 |------|--------|
-| **Never commit `photo-server/`** | Backend deploys via `fly deploy` only — no GitHub exposure |
+| **Backend isolation** | Never commit `photo-server/` into the public frontend repo. Backend source lives in private `Fuzois21/ms-comm-server`; deploy via `fly deploy`. |
 | **Deploy directly unless told otherwise** | User now wants deploy after each change: push frontend to GitHub Pages and run Fly deploy when backend changed, unless explicitly paused |
 | **Frontend → GitHub** | Push root HTML/CSS/JS/assets to deploy to GitHub Pages |
 | **Update docs on change** | After any code change, update AGENTS.md + the relevant `docs/*.md` |

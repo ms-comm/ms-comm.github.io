@@ -1,6 +1,7 @@
 # Backend Server — photo-server/
 
-> Deploy: `fly deploy` from `photo-server/`. Never commit `photo-server/` to GitHub.
+> Deploy: `fly deploy` from the private repository `Fuzois21/ms-comm-server`.
+> Never commit `photo-server/` into the public frontend repository.
 
 ## Entry Point
 

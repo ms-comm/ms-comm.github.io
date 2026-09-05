@@ -1,7 +1,8 @@
 # Frontend Website — GitHub Pages
 
 > Deploy: `git push origin main` from root. Auto-publishes to `https://ms-comm.github.io/`.
-> Never include `photo-server/` in git commits.
+> Never include `photo-server/` in the public frontend repository. The backend
+> is maintained separately in the private repository `Fuzois21/ms-comm-server`.
 
 ## Pages
 
