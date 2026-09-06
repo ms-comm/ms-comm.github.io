@@ -493,38 +493,18 @@ async function triggerCheckoutZip(btnEl) {
   const orderId = btnEl.dataset.orderId;
   const token   = btnEl.dataset.token;
   if (!orderId || !token) { alert('Données de commande manquantes — rechargez la page.'); return; }
-  if (typeof fflate === 'undefined') { alert('Bibliothèque ZIP non chargée — rechargez la page.'); return; }
 
   const lblEl = document.getElementById('success-download-label');
   const origLabel = lblEl ? lblEl.textContent : '';
   btnEl.disabled = true;
-  let objectUrl = null;
   try {
-    if (lblEl) lblEl.textContent = 'Chargement…';
-    const r = await fetch(`${API}/api/orders/${orderId}/download-urls?token=${token}`);
-    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || `Erreur ${r.status}`); }
-    const data = await r.json();
-    if (!data.files?.length) throw new Error('Aucune photo trouvée');
-
-    const zipFiles = {};
-    for (let i = 0; i < data.files.length; i++) {
-      const f = data.files[i];
-      if (lblEl) lblEl.textContent = `${i + 1} / ${data.files.length}…`;
-      const fr = await fetch(`${API}/api/public/photos/${f.photoId}/download?resolution=original&token=${encodeURIComponent(f.token)}`);
-      if (!fr.ok) throw new Error(`Échec ${f.filename} (${fr.status})`);
-      zipFiles[f.filename] = [new Uint8Array(await fr.arrayBuffer()), { level: 0 }];
-    }
-    if (lblEl) lblEl.textContent = 'Création ZIP…';
-    const zipped = fflate.zipSync(zipFiles);
-    objectUrl = URL.createObjectURL(new Blob([zipped], { type: 'application/zip' }));
+    if (lblEl) lblEl.textContent = 'Téléchargement…';
     const a = document.createElement('a');
-    a.href = objectUrl;
-    a.download = data.zipName || `mscomm-${orderId.slice(0, 8)}.zip`;
+    a.href = `${API}/api/orders/${encodeURIComponent(orderId)}/download-all?token=${encodeURIComponent(token)}`;
+    a.download = '';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => { if (objectUrl) URL.revokeObjectURL(objectUrl); }, 30000);
   } catch (err) {
-    console.error('[ZIP checkout]', err);
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    console.error('[ZIP checkout stream]', err);
     alert('Erreur ZIP : ' + err.message);
   } finally {
     btnEl.disabled = false;
@@ -532,7 +512,6 @@ async function triggerCheckoutZip(btnEl) {
   }
 }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
   <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 </body>
 </html>
