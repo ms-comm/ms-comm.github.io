@@ -12,7 +12,7 @@
 | `services.html` | Services detail page |
 | `portfolio.html` | Portfolio grid |
 | `experiences.html` | Client experiences / testimonials |
-| `contact.html` | Contact form |
+| `contact.html` | Contact form with multi-service selection |
 | `photos.html` | Public photo gallery + checkout + "Mes achats" |
 | `checkout.html` | Stripe payment + order confirmation |
 | `compte.html` | Client space: favorites, orders, profile, password. `noindex`. Tabs are deep-linkable (`#favoris`, `#commandes`, `#profil`) |
@@ -87,6 +87,13 @@ have an account.
 - `_servicesCatalog.categories[]` contains section fields: `title`, `accent`, `subtitle`, `layout` (`cards` or `tarifs`), `columns`, `background`, `visible`, `footnote`, and `cards[]`.
 - Each card supports `name`, `oldPrice`, `price`, `priceNote`, `note`, `cta`, `ctaHref`, `featured`, `visible`, and `items[]` (`label`, optional `price`).
 - If `ctaHref` is empty, the renderer builds `contact.html?pack=<name> — <price>` automatically.
+- The Photographies card includes `Photo d'événement — Prix à discuter`; the former standalone event-photography card is intentionally folded into the gallery pricing card.
+
+### contact.html — Service selection
+
+- Pack links preselect one or more `pack` query values and display them as removable chips.
+- Visitors can add multiple packs or à-la-carte services, including `Photo d'événement — Prix à discuter`, or toggle `Projet personnalisé`.
+- The subject is generated from the selected chips until the visitor edits it; the mailto body always includes the selected services.
 
 ## photos.html — Gallery
 

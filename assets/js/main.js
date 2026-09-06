@@ -272,19 +272,95 @@
     });
   });
 
-  /* ---------- Pack pre-fill from URL ---------- */
+  /* ---------- Contact service selection ---------- */
   const params = new URLSearchParams(window.location.search);
-  const packParam = params.get('pack');
-  if (packParam) {
-    const subjectInput = document.querySelector('input[name="subject"]');
-    if (subjectInput) {
-      subjectInput.value = decodeURIComponent(packParam);
-    }
-    const packBanner = document.getElementById('packBanner');
+  const subjectInput = document.querySelector('input[name="subject"]');
+  const packBanner = document.getElementById('packBanner');
+  const selectedServicesEl = document.getElementById('selectedServices');
+  const selectionEmpty = document.getElementById('selectionEmpty');
+  const servicePicker = document.getElementById('servicePicker');
+  const addServiceBtn = document.getElementById('addServiceBtn');
+  const customServiceToggle = document.getElementById('customServiceToggle');
+  const selectedServices = [];
+
+  function renderServiceSelection() {
+    if (!selectedServicesEl) return;
+    selectedServicesEl.replaceChildren();
+    selectedServices.forEach((service, index) => {
+      const chip = document.createElement('span');
+      chip.className = 'selection-chip';
+      const label = document.createElement('span');
+      label.className = 'selection-chip-label';
+      label.textContent = service;
+      const remove = document.createElement('button');
+      remove.className = 'selection-chip-remove';
+      remove.type = 'button';
+      remove.textContent = '×';
+      remove.setAttribute('aria-label', 'Retirer ' + service);
+      remove.addEventListener('click', () => {
+        selectedServices.splice(index, 1);
+        if (service === 'Projet personnalisé' && customServiceToggle) {
+          customServiceToggle.checked = false;
+        }
+        renderServiceSelection();
+      });
+      chip.append(label, remove);
+      selectedServicesEl.appendChild(chip);
+    });
+
+    if (selectionEmpty) selectionEmpty.classList.toggle('is-hidden', selectedServices.length > 0);
     if (packBanner) {
-      packBanner.textContent = decodeURIComponent(packParam);
-      packBanner.style.display = 'block';
+      packBanner.textContent = selectedServices.length
+        ? 'Sélection : ' + selectedServices.join(' · ')
+        : '';
+      packBanner.style.display = selectedServices.length ? 'block' : 'none';
     }
+
+    if (subjectInput && subjectInput.dataset.autoSubject === 'true') {
+      subjectInput.value = selectedServices.length
+        ? 'Demande de devis — ' + selectedServices.join(' + ')
+        : '';
+    }
+  }
+
+  function addService(value) {
+    const service = String(value || '').trim();
+    if (!service || selectedServices.includes(service)) return;
+    selectedServices.push(service);
+    if (service === 'Projet personnalisé' && customServiceToggle) customServiceToggle.checked = true;
+    if (servicePicker) servicePicker.value = '';
+    renderServiceSelection();
+  }
+
+  if (selectedServicesEl) {
+    /* URLSearchParams already decodes the value. getAll() supports future
+       links carrying more than one preselected pack. */
+    params.getAll('pack').forEach(addService);
+    if (subjectInput) {
+      subjectInput.dataset.autoSubject = selectedServices.length ? 'true' : 'false';
+      subjectInput.addEventListener('input', () => {
+        subjectInput.dataset.autoSubject = 'false';
+      });
+    }
+    if (addServiceBtn && servicePicker) {
+      addServiceBtn.addEventListener('click', () => addService(servicePicker.value));
+      servicePicker.addEventListener('change', () => {
+        if (servicePicker.value === 'Projet personnalisé' && !customServiceToggle?.checked) {
+          customServiceToggle.checked = true;
+        }
+      });
+    }
+    if (customServiceToggle) {
+      customServiceToggle.addEventListener('change', () => {
+        if (customServiceToggle.checked) addService('Projet personnalisé');
+        else {
+          const index = selectedServices.indexOf('Projet personnalisé');
+          if (index >= 0) selectedServices.splice(index, 1);
+          renderServiceSelection();
+        }
+      });
+    }
+    renderServiceSelection();
   }
 
   /* ---------- Contact form (mailto) ---------- */
@@ -299,12 +375,16 @@
       const email = String(fd.get('email') || '').trim();
       const subject = String(fd.get('subject') || '').trim();
       const message = String(fd.get('message') || '').trim();
+      const selected = selectedServices.slice();
+      const selectedBlock = selected.length
+        ? '\n\nPrestations souhaitées :\n' + selected.map((service) => '• ' + service).join('\n')
+        : '';
 
       const mailSubject = encodeURIComponent(
         subject || 'Demande de contact \u2014 ' + (name || 'Nouveau client')
       );
       const mailBody = encodeURIComponent(
-        'Nom : ' + name + '\nEmail : ' + email + '\n\n' + message +
+        'Nom : ' + name + '\nEmail : ' + email + '\n\n' + message + selectedBlock +
         '\n\n\u2014 Envoy\u00e9 depuis le site MS Comm\u2019'
       );
 

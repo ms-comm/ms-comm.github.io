@@ -184,6 +184,41 @@
                 <span data-i18n="contact.form.subject.label">Sujet</span>
                 <input name="subject" placeholder="Ex : Demande de devis Pack Sportif" data-i18n-placeholder="contact.form.subject.ph" />
               </label>
+              <fieldset class="contact-selection" id="contactSelection">
+                <legend data-i18n="contact.form.services.legend">Prestations souhaitées</legend>
+                <p class="contact-selection-help" data-i18n="contact.form.services.help">Ajoutez une ou plusieurs prestations pour préparer votre demande.</p>
+                <div class="selection-chips" id="selectedServices" aria-live="polite"></div>
+                <p class="selection-empty" id="selectionEmpty" data-i18n="contact.form.services.empty">Aucune prestation sélectionnée pour le moment.</p>
+                <div class="selection-picker">
+                  <label for="servicePicker" class="selection-picker-label" data-i18n="contact.form.services.addLabel">Ajouter une prestation</label>
+                  <div class="selection-picker-controls">
+                    <select id="servicePicker">
+                      <option value="" data-i18n="contact.form.services.choose">Choisir une prestation…</option>
+                      <optgroup label="Packs" data-i18n-label="contact.form.services.packsGroup">
+                        <option value="Pack Réseaux Sociaux Starter — 80€">Pack Réseaux Sociaux Starter — 80€</option>
+                        <option value="Pack Réseaux Sociaux Boost — 190€">Pack Réseaux Sociaux Boost — 190€</option>
+                        <option value="Pack Identité Visuelle — 320€">Pack Identité Visuelle — 320€</option>
+                        <option value="Pack Sportif — 150€">Pack Sportif — 150€</option>
+                        <option value="Pack Beauté & Bien-être — 140€">Pack Beauté & Bien-être — 140€</option>
+                        <option value="Pack Restauration — 100€">Pack Restauration — 100€</option>
+                        <option value="Pack Événement — 70€">Pack Événement — 70€</option>
+                      </optgroup>
+                      <optgroup label="À la carte" data-i18n-label="contact.form.services.cardGroup">
+                        <option value="1 photo — 20€">1 photo — 20€</option>
+                        <option value="10 photos — 150€">10 photos — 150€</option>
+                        <option value="20 photos ou plus — 10€ / unité">20 photos ou plus — 10€ / unité</option>
+                        <option value="Photo d'événement — Prix à discuter">Photo d'événement — Prix à discuter</option>
+                      </optgroup>
+                      <option value="Projet personnalisé" data-i18n="contact.form.services.custom">Projet personnalisé</option>
+                    </select>
+                    <button class="btn btn-outline-gold selection-add" id="addServiceBtn" type="button" data-i18n="contact.form.services.add">Ajouter</button>
+                  </div>
+                </div>
+                <label class="custom-service-toggle">
+                  <input type="checkbox" id="customServiceToggle" />
+                  <span data-i18n="contact.form.services.customToggle">Je préfère un projet personnalisé</span>
+                </label>
+              </fieldset>
               <label>
                 <span data-i18n="contact.form.message.label">Message</span>
                 <textarea name="message" placeholder="Décrivez votre projet, vos objectifs, délais et budget estimé..." data-i18n-placeholder="contact.form.message.ph" required></textarea>

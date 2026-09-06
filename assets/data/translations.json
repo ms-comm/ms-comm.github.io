@@ -226,6 +226,8 @@
     "10 photos": "10 photos",
     "20 photos ou plus": "20 photos or more",
     "10€ / unité": "€10 / unit",
+    "Photo d'événement": "Event photography",
+    "Prix à discuter": "Price to discuss",
     "*Personnalisation par MS Comm' en supplément.": "*Additional customisation by MS Comm' at extra cost.",
     "Tarifs indiqués hors frais d'impression et de déplacement — voir CGV.": "Prices exclude printing and travel fees — see T&Cs.",
     "Personnalisation de packs possible : remplacez un élément du pack par un autre service équivalent.": "Packs can be customised: swap any pack item for another equivalent service.",
@@ -355,6 +357,15 @@
     "MS Comm' — Facebook": "MS Comm' — Facebook",
     "MS Comm' — LinkedIn": "MS Comm' — LinkedIn",
     "Envoyer un message": "Send a message",
+    "Prestations souhaitées": "Requested services",
+    "Ajoutez une ou plusieurs prestations pour préparer votre demande.": "Add one or more services to prepare your request.",
+    "Aucune prestation sélectionnée pour le moment.": "No service selected yet.",
+    "Ajouter une prestation": "Add a service",
+    "Choisir une prestation…": "Choose a service…",
+    "Packs": "Packs",
+    "Ajouter": "Add",
+    "Projet personnalisé": "Custom project",
+    "Je préfère un projet personnalisé": "I prefer a custom project",
     "Nom": "Name",
     "Email": "Email",
     "Sujet": "Subject",
@@ -561,31 +572,10 @@
               {
                 "label": "20 photos ou plus",
                 "price": "10€ / unité"
-              }
-            ]
-          },
-          {
-            "id": "event-photography",
-            "name": "Photographie événementielle",
-            "note": "Des images prêtes à partager et à conserver",
-            "cta": "Voir ou en discuter",
-            "visible": true,
-            "items": [
-              {
-                "label": "Couverture photo de votre événement",
-                "price": "Sur devis"
               },
               {
-                "label": "Sélection et retouche des images",
-                "price": "Inclus"
-              },
-              {
-                "label": "Galerie privée à partager",
-                "price": "Inclus"
-              },
-              {
-                "label": "Création d’un album photo",
-                "price": "Sur devis"
+                "label": "Photo d'événement",
+                "price": "Prix à discuter"
               }
             ]
           }
