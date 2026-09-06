@@ -70,7 +70,7 @@ have an account.
 
 ## i18n System
 
-- Detection: `navigator.language` → `fr` if starts with `fr`, else `en`
+- Detection: saved `localStorage['mscomm_lang']` wins; otherwise the browser's primary locale (`navigator.languages[0]`) → `fr` for any `fr-*` locale, else `en`
 - Storage: `localStorage['mscomm_lang']`
 - Dictionary source: `assets/data/translations.json` (loaded by server at `/api/public/translations`)
 - Engine: `walkAndTranslate` scans all DOM text nodes + attributes (`placeholder`, `alt`, `aria-label`, `title`)
@@ -116,6 +116,8 @@ have an account.
   - **Mes achats** — `loadMineOrders()` → `GET /api/account/orders`. Purchases follow the ACCOUNT, not the browser: `purchasedTokens()`/`purchasedPhotoIds()` read the server orders and `localStorage` (`mscomm_tokens`, `mscomm_orders`) is only a migration fallback for pre-account buyers. `hasPurchasedPhoto`, the download modal and `downloadPhoto` all go through `purchasedTokens()`.
 - Facet state (`mineFacet`, `mineAlbums`, `mineAlbumsLoaded`, `mineOrders`, `mineOrdersLoaded`) is declared at the top of the module next to `allAlbums`/`allPhotos`: the deep-link IIFE runs before the render block, and declaring it later throws a TDZ error.
 - Deep links: `photos.html?view=mine | favorites | purchased | albums_partages` — each opens the right facet. The account menu points at them.
+- Deep-link handling returns after selecting `Mon espace`, preventing the final timeline render from overwriting the requested facet. The profile page no longer renders the aggregate `Total dépensé` stat.
+- Lightbox responsive behavior: desktop keeps the `Ajouter aux favoris` label; mobile reduces favorite/share controls to icons and hides resolution/paid-status metadata to preserve vertical space. Adding a favorite gets a short rose heart pop (disabled for reduced-motion users).
 
 ### Topbar order
 - Right side of the row, at every width: `Demander un devis` → `FR · EN` → `Mon espace` (far right). `account.js` `mount()` inserts `#acct-control` right after `.nav-cta`; the FR/EN switcher is then inserted **inside** `.topbar-inner`, right before `#acct-control` (`positionSwitcher()` in `i18n.js`, re-called by `mount()` because i18n runs first and the anchor does not exist yet). Never restore the old absolutely-positioned rule: below 961px it fell back into normal flow and dropped to a second line.

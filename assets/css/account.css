@@ -333,8 +333,11 @@ body.acct-locked { overflow: hidden; }
 /* ── Favorite affordance (gallery + lightbox) ──────────────────────────── */
 .fav-btn { position: relative; }
 .fav-btn svg { transition: transform .2s cubic-bezier(.22,1,.36,1), fill .2s, color .2s; }
-.fav-btn.is-fav svg { fill: var(--gold-2); color: var(--gold-2); }
-.fav-btn.is-fav:not(.no-anim) svg { animation: fav-pop .32s cubic-bezier(.22,1,.36,1); }
+.fav-btn { color: #fb7185; border: 1px solid rgba(251,113,133,.28); background: rgba(251,113,133,.09); }
+.fav-btn:hover { color: #fecdd3; border-color: rgba(251,113,133,.58); background: rgba(251,113,133,.16); }
+.fav-btn.is-fav { color: #fb7185; border-color: rgba(251,113,133,.62); background: rgba(251,113,133,.16); }
+.fav-btn.is-fav svg { fill: currentColor; color: currentColor; }
+.fav-btn.is-bumping svg { animation: fav-pop .32s cubic-bezier(.22,1,.36,1); }
 @keyframes fav-pop { 0% { transform: scale(1); } 45% { transform: scale(1.22); } 100% { transform: scale(1); } }
 
 .card-fav {
@@ -373,5 +376,5 @@ body.acct-locked { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .acct-sheet { animation: none; }
   .acct-toast { transition: opacity .15s; transform: translate(-50%, 0); }
-  .fav-btn.is-fav svg { animation: none; }
+  .fav-btn.is-bumping svg { animation: none; }
 }

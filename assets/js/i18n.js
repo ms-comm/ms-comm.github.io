@@ -771,8 +771,13 @@
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === 'fr' || stored === 'en') return stored;
     } catch (_) { /* localStorage may be blocked */ }
-    const nav = (navigator.language || navigator.userLanguage || 'fr').toLowerCase();
-    return nav.startsWith('fr') ? 'fr' : 'en';
+    /* GitHub Pages cannot reliably geolocate an IP without a third-party
+       request. Browser locale is the privacy-safe country/language signal:
+       any French locale (FR, BE, CA, CH, ...) stays French; all others use
+       English by default. A manual FR/EN choice above always wins. */
+    const nav = (Array.isArray(navigator.languages) && navigator.languages[0])
+      || navigator.language || navigator.userLanguage || 'en';
+    return /^fr(?:[-_]|$)/i.test(String(nav)) ? 'fr' : 'en';
   }
 
   /* -----------------------------------------------------------------------

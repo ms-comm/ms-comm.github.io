@@ -306,7 +306,7 @@
 .zip-done{display:none;flex-direction:column;align-items:center;text-align:center;padding:6px 0 2px}
 .zip-modal.is-done .zip-done{display:flex}
 .zip-modal.is-done .zip-steps,.zip-modal.is-done .zip-modal__hint,.zip-modal.is-done .zip-modal__current{display:none}
-.zip-done__mark{width:56px;height:56px;border-radius:50%;background:rgba(224,178,73,.14);border:1px solid rgba(224,178,73,.45);display:flex;align-items:center;justify-content:center;animation:zipDonePop .42s cubic-bezier(.2,.9,.3,1.3) both}
+.zip-done__mark{width:56px;height:56px;border-radius:50%;background:rgba(224,178,73,.14);border:1px solid rgba(224,178,73,.45);display:flex;align-items:center;justify-content:center;animation:zipDonePop .42s cubic-bezier(.16,1,.3,1) both}
 .zip-done__mark svg{width:28px;height:28px;stroke:#e0b249;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .zip-done__mark path{stroke-dasharray:32;stroke-dashoffset:32;animation:zipDoneDraw .38s .18s ease-out forwards}
 .zip-done__title{margin:14px 0 0;font-size:15.5px;font-weight:600;animation:zipDoneRise .34s .12s ease-out both}
@@ -365,6 +365,17 @@
 .lb-btn-print:hover { background:rgba(255,255,255,.14); color:#f0f0f0; }
 .lb-btn-share { background:rgba(255,255,255,.06); color:var(--muted); border:1px solid rgba(255,255,255,.08); }
 .lb-btn-share:hover { color:#f0f0f0; }
+/* Keep the lightbox compact on phones: the image stays primary, while
+   metadata and actions collapse to the essentials. */
+@media (max-width:600px) {
+  .lb-photo-meta .lb-resolution,
+  .lb-photo-meta .lb-paid-note { display:none; }
+  .lb-actions { gap:6px; }
+  .lb-actions .lb-btn { width:40px; height:40px; padding:0; justify-content:center; border-radius:50%; }
+  .lb-actions .lb-btn > span { display:none; }
+  .lb-actions .lb-btn-share .lb-share-label,
+  .lb-actions .fav-btn #lb-fav-label { display:none; }
+}
 /* download dropdown — now displayed as a centered modal popup */
 .dl-dropdown-wrap { position:relative; }
 .dl-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:9000; align-items:center; justify-content:center; padding:24px; backdrop-filter:blur(4px); }
@@ -753,7 +764,7 @@
         </button>
         <button class="lb-btn lb-btn-share" id="lb-share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Partager
+          <span class="lb-share-label">Partager</span>
         </button>
         <div class="dl-dropdown-wrap" id="lb-dl-wrap">
           <button class="lb-btn lb-btn-dl" id="lb-dl-btn">
@@ -1056,6 +1067,8 @@ async function init() {
     mineFacet = MINE_VIEWS[viewParam];
     document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'mine'));
     renderView('mine');
+    /* Keep account-menu deep links inside Mon espace. */
+    return;
   } else if (privateParam !== null) {
     document.querySelectorAll('.gal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'albums'));
     document.getElementById('view-albums').classList.remove('hidden');
@@ -2027,7 +2040,7 @@ function renderLightbox() {
   document.getElementById('lb-img').src = resolveUrl(withWm ? p.watermarkedUrl : p.previewUrl);
   /* Paid label explicitly mentions watermark state in the meta line */
   const paidNote = p.downloadType === 'paid'
-    ? '<span style="color:var(--gold-2)">Payant · téléchargement sans filigrane</span>'
+    ? '<span class="lb-paid-note" style="color:var(--gold-2)">Payant · téléchargement sans filigrane</span>'
     : '';
   document.getElementById('lb-img').alt = p.title;
   document.getElementById('lb-counter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
@@ -2036,7 +2049,7 @@ function renderLightbox() {
   if (lbCopyright) lbCopyright.style.display = '';
 
   const meta = [];
-  if (p.width && p.height) meta.push(`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${p.width}×${p.height}</span>`);
+  if (p.width && p.height) meta.push(`<span class="lb-resolution"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${p.width}×${p.height}</span>`);
   const dateStr = p.takenAt || p.createdAt;
   if (dateStr) meta.push(`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${p.takenAt ? 'Prise le ' : 'Ajoutée le '}${new Date(dateStr).toLocaleDateString('fr-FR')}</span>`);
   if (paidNote) meta.push(paidNote);
@@ -2342,8 +2355,9 @@ document.getElementById('copyright-modal-close').addEventListener('click', () =>
 document.getElementById('lb-share').addEventListener('click', () => {
   const url = window.location.href.split('?')[0] + '?photo=' + lbPhotos[lbIndex]?.id;
   navigator.clipboard.writeText(url).then(() => {
-    document.getElementById('lb-share').textContent = 'Lien copié !';
-    setTimeout(() => { document.getElementById('lb-share').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Partager`; }, 2000);
+    const btn = document.getElementById('lb-share');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lb-share-label">Lien copié !</span>`;
+    setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lb-share-label">Partager</span>`; }, 2000);
   });
 });
 
@@ -2359,14 +2373,22 @@ function updateLbFavorite() {
   const on = !!(window.MSAccount && window.MSAccount.isFavorite(p.id));
   btn.classList.toggle('is-fav', on);
   btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-label', on ? 'Retirer des favoris' : 'Ajouter aux favoris');
   if (label) label.textContent = on ? 'Dans vos favoris' : 'Ajouter aux favoris';
 }
 
 document.getElementById('lb-fav').addEventListener('click', async () => {
   const p = lbPhotos[lbIndex];
   if (!p || !window.MSAccount) return;
-  await window.MSAccount.toggleFavorite(p.id);
+  const added = await window.MSAccount.toggleFavorite(p.id);
   updateLbFavorite();
+  if (added) {
+    const btn = document.getElementById('lb-fav');
+    btn.classList.remove('is-bumping');
+    void btn.offsetWidth;
+    btn.classList.add('is-bumping');
+    setTimeout(() => btn.classList.remove('is-bumping'), 360);
+  }
 });
 
 if (window.MSAccount) window.MSAccount.onChange(() => updateLbFavorite());

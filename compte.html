@@ -308,8 +308,7 @@
       $('space-stats').innerHTML = [
         ['Favoris', window.MSAccount.favorites.size || c.favorites || 0],
         ['Commandes', c.orders || 0],
-        ['Photos achetées', c.photosBought || 0],
-        ['Total dépensé', euro(c.totalSpent || 0)]
+        ['Photos achetées', c.photosBought || 0]
       ].map(([label, value]) =>
         '<div class="space-stat"><b>' + esc(String(value)) + '</b><span>' + label + '</span></div>'
       ).join('');

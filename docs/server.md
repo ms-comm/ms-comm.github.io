@@ -218,6 +218,11 @@ tokens and watermark policy are still enforced downstream unchanged.
 The session cookie is `SameSite=None; Secure` in production for the same
 cross-site reason (`Lax` in dev, where http origins reject `None`).
 
+Visitor and admin login routes now select the long 30-day cookie by default;
+clients can opt out explicitly with `remember: false`. This exceeds the
+seven-day persistence target while keeping the existing short-session option
+for shared devices.
+
 **Perimeter isolation.** A client session sets `req.session.accountId` only and
 never `req.session.authenticated`, so it can never reach `/api/admin/*`.
 `requireAuth` and `requireAccount` each test their own field.
