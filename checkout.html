@@ -80,6 +80,14 @@
 .checkout-consent input { width:16px; height:16px; display:block; margin:2px 0 0; padding:0; accent-color:var(--gold); flex:0 0 16px; }
 .checkout-consent span { flex:1 1 auto; min-width:0; }
 .checkout-consent a { color:var(--gold-2); }
+.checkout-buyer { display:flex; align-items:center; gap:10px; padding:11px 12px; margin:-3px 0 16px; border:1px solid rgba(198,155,0,.28); border-radius:10px; background:rgba(198,155,0,.06); }
+.checkout-buyer[hidden] { display:none; }
+.checkout-buyer-avatar { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--gold); color:#0a0a0a; font-size:12px; font-weight:700; flex:0 0 30px; }
+.checkout-buyer-copy { min-width:0; flex:1; }
+.checkout-buyer-copy strong,.checkout-buyer-copy span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.checkout-buyer-copy strong { color:#f4d879; font-size:12px; }
+.checkout-buyer-copy span { color:var(--muted); font-size:11px; margin-top:2px; }
+.checkout-buyer-counts { color:var(--muted); font-size:10px; white-space:nowrap; }
 
 @media(max-width:900px) { .checkout-grid { grid-template-columns:1fr; gap:20px; } .checkout-grid > div:last-child .co-block { position:static !important; } }
 @media(max-width:600px) { .footer-inner > * { max-width:100%; } .footer-inner > p { width:100%; text-align:center; } .footer-links { width:100%; max-width:100%; flex-wrap:wrap; justify-content:center; gap:8px 14px; } }
@@ -159,11 +167,11 @@
               <div class="co-block">
                 <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-i18n="checkout.form.details">Vos coordonnées</span></h3>
                 <div class="form-row-2">
-                  <div class="form-field"><label data-i18n="checkout.form.firstname">Prénom</label><input type="text" id="f-first" placeholder="Marie" /></div>
-                  <div class="form-field"><label data-i18n="checkout.form.lastname">Nom</label><input type="text" id="f-last" placeholder="Dupont" /></div>
+                  <div class="form-field"><label data-i18n="checkout.form.firstname">Prénom</label><input type="text" id="f-first" autocomplete="given-name" placeholder="Marie" /></div>
+                  <div class="form-field"><label data-i18n="checkout.form.lastname">Nom</label><input type="text" id="f-last" autocomplete="family-name" placeholder="Dupont" /></div>
                 </div>
-                <div class="form-field"><label data-i18n="checkout.form.email">Email *</label><input type="email" id="f-email" placeholder="marie.dupont@email.com" /></div>
-                <div class="form-field"><label data-i18n="checkout.form.phone">Téléphone</label><input type="tel" id="f-phone" placeholder="+33 6 12 34 56 78" /></div>
+                <div class="form-field"><label data-i18n="checkout.form.email">Email *</label><input type="email" id="f-email" autocomplete="email" placeholder="marie.dupont@email.com" /></div>
+                <div class="form-field"><label data-i18n="checkout.form.phone">Téléphone</label><input type="tel" id="f-phone" autocomplete="tel" placeholder="+33 6 12 34 56 78" /></div>
               </div>
 
               <div class="co-block">
@@ -181,6 +189,12 @@
                     <div id="stripe-payment-element"><!-- Stripe injects here --></div>
                   </div>
                   <div id="stripe-error" class="stripe-error"></div>
+                </div>
+
+                <div class="checkout-buyer" id="checkout-buyer" hidden>
+                  <div class="checkout-buyer-avatar" id="checkout-buyer-avatar" aria-hidden="true"></div>
+                  <div class="checkout-buyer-copy"><strong id="checkout-buyer-name"></strong><span id="checkout-buyer-email"></span></div>
+                  <span class="checkout-buyer-counts" id="checkout-buyer-counts"></span>
                 </div>
 
                 <div id="pay-error" style="color:#fca5a5;font-size:12.5px;margin-top:4px"></div>
@@ -253,6 +267,52 @@ data = data && Array.isArray(data.cart) ? data : { cart: [], total: 0, promoDisc
 
 const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
 const safeUrl = value => { if (!value) return ''; try { const u = new URL(String(value), window.location.href); return ['http:', 'https:'].includes(u.protocol) ? u.href : ''; } catch { return ''; } };
+const checkoutContactFields = ['f-first', 'f-last', 'f-email', 'f-phone'];
+let checkoutContactTouched = false;
+let checkoutAccountBindAttempts = 0;
+
+function checkoutContact() {
+  return {
+    firstName: document.getElementById('f-first').value.trim(),
+    lastName: document.getElementById('f-last').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    phone: document.getElementById('f-phone').value.trim()
+  };
+}
+
+function renderCheckoutBuyer(account, counts) {
+  const buyer = document.getElementById('checkout-buyer');
+  if (!buyer || !account) { if (buyer) buyer.hidden = true; return; }
+  const name = account.displayName || [account.firstName, account.lastName].filter(Boolean).join(' ') || account.email;
+  document.getElementById('checkout-buyer-avatar').textContent = String(name || account.email || '?').trim().charAt(0).toUpperCase();
+  document.getElementById('checkout-buyer-name').textContent = `Compte MS Comm' · ${name}`;
+  document.getElementById('checkout-buyer-email').textContent = account.email || '';
+  const orderCount = Number(counts?.orders || 0);
+  const photoCount = Number(counts?.photosBought || 0);
+  document.getElementById('checkout-buyer-counts').textContent = orderCount || photoCount ? `${orderCount} commande${orderCount > 1 ? 's' : ''} · ${photoCount} photo${photoCount > 1 ? 's' : ''}` : 'Compte connecté';
+  buyer.hidden = false;
+}
+
+function syncCheckoutAccount(account, counts) {
+  if (!account) { renderCheckoutBuyer(null); return; }
+  if (!checkoutContactTouched) {
+    document.getElementById('f-first').value = account.firstName || '';
+    document.getElementById('f-last').value = account.lastName || '';
+    document.getElementById('f-email').value = account.email || '';
+  }
+  renderCheckoutBuyer(account, counts);
+}
+
+function bindCheckoutAccount() {
+  if (window.MSAccount) {
+    syncCheckoutAccount(window.MSAccount.account, window.MSAccount.counts);
+    window.MSAccount.onChange(state => syncCheckoutAccount(state.account, state.counts));
+    return;
+  }
+  if (++checkoutAccountBindAttempts < 100) window.setTimeout(bindCheckoutAccount, 50);
+}
+checkoutContactFields.forEach(id => document.getElementById(id).addEventListener('input', () => { checkoutContactTouched = true; }));
+bindCheckoutAccount();
 
 document.getElementById('year').textContent = new Date().getFullYear();
 document.getElementById('pay-total-label').textContent = parseFloat(data.total || 0).toFixed(2) + '€';
@@ -367,10 +427,11 @@ async function mountStripePayment(email) {
   if (paymentIntentPromise) return paymentIntentPromise;
 
   paymentIntentPromise = (async () => {
+    const contact = checkoutContact();
     const resp = await fetch(`${API}/api/orders/create-payment-intent`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        customer: { email: normalizedEmail },
+        customer: contact,
         cart:          data.cart,
         promoCode:     data.promoCode     || null,
         promoDiscount: data.promoDiscount || 0,
@@ -386,6 +447,7 @@ async function mountStripePayment(email) {
     /* Mount Stripe Elements (Payment Element — unified card/IBAN/etc.) */
     stripeElements = stripe.elements({
       clientSecret: body.clientSecret,
+      defaultValues: { billingDetails: { name: [contact.firstName, contact.lastName].filter(Boolean).join(' '), email: normalizedEmail, ...(contact.phone ? { phone: contact.phone } : {}) } },
       appearance: {
         theme: 'night',
         variables: {
