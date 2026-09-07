@@ -663,6 +663,8 @@
     "Paiement sécurisé — Stripe, chiffrement SSL 256 bits": "Secure payment — Stripe, 256-bit SSL encryption",
     "Votre sélection": "Your selection",
     "Aucun article.": "No item.",
+    "Ajoutez des photos à votre sélection pour continuer.": "Add photos to your selection to continue.",
+    "Voir les photos": "View photos",
 
     /* Offline banner (photos.html) */
     "Le serveur photo n'est pas disponible — démarrez": "The photo server is not available — start",

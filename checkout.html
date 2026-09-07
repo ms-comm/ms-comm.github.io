@@ -57,6 +57,11 @@
 .payment-logos { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
 .pay-logo { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); border-radius:7px; padding:6px 14px; font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.5px; }
 .success-screen { display:none; text-align:center; padding:60px 20px; }
+.empty-cart-screen { display:none; text-align:center; padding:54px 24px; background:#141414; border:1px solid var(--border); border-radius:14px; }
+.empty-cart-screen h2 { font-family:'Poppins',sans-serif; font-size:22px; margin:16px 0 8px; }
+.empty-cart-screen p { color:var(--muted); font-size:14px; margin:0 auto 22px; }
+.empty-cart-icon { width:58px; height:58px; display:flex; align-items:center; justify-content:center; margin:auto; border-radius:50%; color:var(--gold-2); background:rgba(198,155,0,.1); border:1px solid rgba(198,155,0,.35); }
+.empty-cart-icon svg { width:27px; height:27px; }
 .success-icon { width:72px; height:72px; background:rgba(34,197,94,.1); border:2px solid rgba(34,197,94,.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
 .success-icon svg { width:36px; height:36px; color:var(--green); }
 .success-screen h2 { font-family:'Poppins',sans-serif; font-size:24px; margin-bottom:10px; }
@@ -72,10 +77,12 @@
 .stripe-error { color:#fca5a5; font-size:12.5px; margin-top:8px; min-height:16px; }
 .pay-btn:disabled { opacity:.5; cursor:not-allowed; }
 .checkout-consent { display:flex; align-items:flex-start; gap:8px; margin-top:16px; color:var(--muted); font-size:12px; line-height:1.45; }
-.checkout-consent input { margin-top:2px; accent-color:var(--gold); flex-shrink:0; }
+.checkout-consent input { width:16px; height:16px; display:block; margin:2px 0 0; padding:0; accent-color:var(--gold); flex:0 0 16px; }
+.checkout-consent span { flex:1 1 auto; min-width:0; }
 .checkout-consent a { color:var(--gold-2); }
 
-@media(max-width:900px) { .checkout-grid { grid-template-columns:1fr; } }
+@media(max-width:900px) { .checkout-grid { grid-template-columns:1fr; gap:20px; } .checkout-grid > div:last-child .co-block { position:static !important; } }
+@media(max-width:600px) { .footer-inner > * { max-width:100%; } .footer-inner > p { width:100%; text-align:center; } .footer-links { width:100%; max-width:100%; flex-wrap:wrap; justify-content:center; gap:8px 14px; } }
   </style>
 </head>
 <body>
@@ -89,17 +96,28 @@
         </a>
         <nav class="nav">
           <a href="index.html" data-i18n="nav.home">Accueil</a>
+          <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+          <a href="services.html" data-i18n="nav.services">Services</a>
+          <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
           <a href="photos.html" data-i18n="nav.photography">Photographie</a>
           <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </nav>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a class="nav-cta" href="contact.html" data-i18n="nav.cta">Demander un devis</a>
         <button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
+        </div>
       </div>
     </div>
   </header>
   <div class="drawer" id="drawer">
-    <a href="index.html" data-i18n="nav.home">Accueil</a><a href="photos.html" data-i18n="nav.photography">Photographie</a><a href="contact.html" data-i18n="nav.contact">Contact</a>
+    <a href="index.html" data-i18n="nav.home">Accueil</a>
+    <a href="experiences.html" data-i18n="nav.experiences">Expériences</a>
+    <a href="services.html" data-i18n="nav.services">Services</a>
+    <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
+    <a href="photos.html" data-i18n="nav.photography">Photographie</a>
+    <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
   <main>
@@ -111,6 +129,13 @@
             <span data-i18n="checkout.back">Retour à la galerie</span>
           </a>
           <h1 style="font-family:'Poppins',sans-serif;font-size:clamp(1.5rem,3vw,2rem);margin-top:12px">Récapitulatif & <span class="gold">Paiement</span></h1>
+        </div>
+
+        <div class="empty-cart-screen" id="empty-cart-screen">
+          <div class="empty-cart-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+          <h2 data-i18n="checkout.empty.title">Votre panier est vide</h2>
+          <p data-i18n="checkout.empty.text">Ajoutez des photos à votre sélection pour continuer.</p>
+          <a class="btn btn-gold" href="photos.html" data-i18n="checkout.empty.cta">Voir les photos</a>
         </div>
 
         <!-- SUCCESS -->
@@ -200,7 +225,7 @@
 
   <footer class="footer"><div class="container"><div class="footer-inner">
     <p>© <span id="year"></span> MS Comm' — Tous droits réservés</p>
-    <div class="footer-links"><a href="index.html">Accueil</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a></div>
+    <div class="footer-links"><a href="index.html">Accueil</a><a href="experiences.html">Expériences</a><a href="services.html">Services</a><a href="portfolio.html">Portfolio</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a></div>
   </div></div></footer>
 
   <script>
@@ -218,7 +243,16 @@ function resolveUrl(u) {
   return /^https?:\/\//.test(u) ? u : API + u;
 }
 
-const data = JSON.parse(localStorage.getItem('mscomm_checkout') || '{"cart":[],"total":0,"promoDiscount":0,"tierDiscount":0,"discPct":0}');
+let data;
+try {
+  data = JSON.parse(localStorage.getItem('mscomm_checkout') || '{"cart":[],"total":0,"promoDiscount":0,"tierDiscount":0,"discPct":0}');
+} catch {
+  data = { cart: [], total: 0, promoDiscount: 0, tierDiscount: 0, discPct: 0 };
+}
+data = data && Array.isArray(data.cart) ? data : { cart: [], total: 0, promoDiscount: 0, tierDiscount: 0, discPct: 0 };
+
+const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+const safeUrl = value => { if (!value) return ''; try { const u = new URL(String(value), window.location.href); return ['http:', 'https:'].includes(u.protocol) ? u.href : ''; } catch { return ''; } };
 
 document.getElementById('year').textContent = new Date().getFullYear();
 document.getElementById('pay-total-label').textContent = parseFloat(data.total || 0).toFixed(2) + '€';
@@ -229,12 +263,17 @@ const totalsEl = document.getElementById('co-totals');
 if (data.cart && data.cart.length) {
   itemsEl.innerHTML = data.cart.map(item => `
     <div class="co-item">
-      <img class="co-item-thumb" src="${resolveUrl(item.watermarkedUrl)}" alt="${item.title}" onerror="this.src='${resolveUrl(item.previewUrl)}'" />
+      <img class="co-item-thumb" src="${escapeHtml(safeUrl(resolveUrl(item.watermarkedUrl)))}" data-fallback="${escapeHtml(safeUrl(resolveUrl(item.previewUrl)))}" alt="${escapeHtml(item.title || 'Photo')}" />
       <div class="co-item-info">
-        <div class="co-item-title">${item.title}</div>
-        <div class="co-item-price">${item.price}€</div>
+        <div class="co-item-title">${escapeHtml(item.title || 'Photo')}</div>
+        <div class="co-item-price">${Number(item.price || 0).toFixed(2)}€</div>
       </div>
     </div>`).join('');
+
+  itemsEl.querySelectorAll('img[data-fallback]').forEach(img => img.addEventListener('error', () => {
+    const fallback = img.dataset.fallback;
+    if (fallback && img.src !== fallback) { img.src = fallback; img.dataset.fallback = ''; }
+  }, { once: true }));
 
   const subtotal = data.cart.reduce((s, c) => s + c.price, 0);
   totalsEl.innerHTML = `
@@ -244,6 +283,8 @@ if (data.cart && data.cart.length) {
     <div class="co-total-row final"><span>Total</span><span>${parseFloat(data.total).toFixed(2)}€</span></div>`;
 } else {
   itemsEl.innerHTML = '<p style="color:var(--muted);font-size:13px">Aucun article.</p>';
+  document.getElementById('checkout-content').style.display = 'none';
+  document.getElementById('empty-cart-screen').style.display = 'block';
 }
 
 /* ============================================================================
@@ -301,6 +342,11 @@ async function initPayment() {
     return;
   }
 
+  /* Reprise automatique après une authentification 3-D Secure. */
+  resumePendingPayment().catch(err => {
+    document.getElementById('pay-error').textContent = 'Reprise du paiement échouée : ' + err.message;
+  });
+
 }
 
 async function mountStripePayment(email) {
@@ -335,6 +381,7 @@ async function mountStripePayment(email) {
     const body = await resp.json();
     if (!resp.ok) throw new Error(body.error || 'Erreur serveur');
     currentOrderId = body.orderId;
+    sessionStorage.setItem('mscomm_pending_payment', JSON.stringify({ orderId: currentOrderId, clientSecret: body.clientSecret, email: normalizedEmail }));
 
     /* Mount Stripe Elements (Payment Element — unified card/IBAN/etc.) */
     stripeElements = stripe.elements({
@@ -446,6 +493,39 @@ async function submitStripePayment(email) {
   finalizeSuccess(result);
 }
 
+/* Stripe may return from an authentication redirect with the PaymentIntent
+   client secret in the URL. Confirm the already-paid order server-side so the
+   buyer does not need to enter their card twice. */
+async function resumePendingPayment() {
+  const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret');
+  if (!clientSecret || !stripe) return;
+  let pending;
+  try { pending = JSON.parse(sessionStorage.getItem('mscomm_pending_payment') || 'null'); } catch { pending = null; }
+  if (!pending || pending.clientSecret !== clientSecret || !pending.orderId) return;
+
+  const btn = document.getElementById('pay-btn');
+  const errEl = document.getElementById('pay-error');
+  btn.disabled = true;
+  errEl.textContent = 'Vérification de votre paiement…';
+  const { paymentIntent, error } = await stripe.retrievePaymentIntent(clientSecret);
+  if (error) throw new Error(error.message || 'PaymentIntent introuvable');
+  if (!paymentIntent || paymentIntent.status !== 'succeeded') {
+    btn.disabled = false;
+    errEl.textContent = 'Paiement non confirmé. Vous pouvez réessayer.';
+    sessionStorage.removeItem('mscomm_pending_payment');
+    return;
+  }
+
+  const resp = await fetch(`${API}/api/orders/confirm`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId: pending.orderId })
+  });
+  const result = await resp.json();
+  if (!resp.ok) throw new Error(result.error || 'Finalisation échouée');
+  finalizeSuccess(result);
+  window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || ''));
+}
+
 function buildCustomerPayload(email) {
   return {
     customer: {
@@ -468,8 +548,10 @@ function buildCustomerPayload(email) {
  * whether SMTP was actually used (result.emailSent).
  */
 function finalizeSuccess(result) {
+  sessionStorage.removeItem('mscomm_pending_payment');
   const downloadTokens = result.downloadTokens || {};
-  const existing = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}');
+  let existing = {};
+  try { existing = JSON.parse(localStorage.getItem('mscomm_tokens') || '{}') || {}; } catch { existing = {}; }
   localStorage.setItem('mscomm_tokens', JSON.stringify({ ...existing, ...downloadTokens }));
   localStorage.removeItem('mscomm_cart');
   localStorage.removeItem('mscomm_checkout');
