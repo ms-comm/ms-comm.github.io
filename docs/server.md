@@ -12,7 +12,7 @@
 | File | Mount | Responsibility |
 |------|-------|----------------|
 | `auth.js` | `/api/auth` | Login/logout, password change, bcrypt migration |
-| `account.js` | `/api/account` | Visitor accounts: register/login/logout/me, profile, favorites, orders, browsing events |
+| `account.js` | `/api/account` | Visitor accounts: register/login/logout/me, profile, favorites, orders, browsing events, password recovery |
 | `adminPhotos.js` | `/api/admin/photos` | CRUD photos, Flickr/local upload, sharp resize, download |
 | `adminAlbums.js` | `/api/admin/albums` | CRUD albums, email codes for private albums, Flickr photoset sync |
 | `adminOrders.js` | `/api/admin/orders` | Order list, token generation, download |
@@ -29,6 +29,12 @@
 | `workerApi.js` | `/api/admin/worker` | gallery-app worker: claim/complete scan jobs |
 
 ## Key Route Details
+
+### Account password recovery
+- `POST /api/account/forgot-password` accepts an email and always returns the same response shape, whether the account exists or not.
+- A random one-use token is hashed before storage in `db/password-resets.json`, expires after one hour, and is invalidated on use.
+- `POST /api/account/reset-password` consumes the token and stores a bcrypt password hash. Email delivery uses the configured SMTP settings and the MS Comm' branded template.
+- Configure SMTP in Admin → Réglages → Email SMTP (`smtpEnabled`, host, user, app password) before testing recovery.
 
 ### orders.js — Download Endpoints
 - `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP. Source order: local file → R2 `master` → Flickr. A migrated order no longer touches Flickr and cannot 429 the Fly IP; only rows still on Flickr remain exposed to it.

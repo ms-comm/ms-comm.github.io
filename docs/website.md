@@ -33,7 +33,7 @@
 | `assets/js/i18n.js` | Language switcher + full translation engine |
 | `assets/js/services-catalog.js` | Renders editable services/prices on `services.html` from `translations.json._servicesCatalog` |
 | `assets/js/faces.js` | Face detection UI — **no longer loaded by `photos.html`** (Visages removed from the public site on 2026-09-02; admin tooling untouched) |
-| `assets/js/account.js` | Client accounts: header control, sign-in sheet, favorites, download tickets. Exposes `window.MSAccount`. Loaded on every public page |
+| `assets/js/account.js` | Client accounts: header control, sign-in/recovery sheet, favorites, download tickets. Exposes `window.MSAccount`. Loaded on every public page |
 | `assets/js/track.js` | Visitor tracking: `vid` (localStorage `ms_vid`) + `sid` (sessionStorage `ms_sid`, 30-min gap), batched `POST /api/public/track` with sendBeacon on pagehide, 20 s heartbeat while visible. Exposes `window.MSTrack.event/identify/flush`. Loaded after `account.js` on every public page. Contract: [tracking.md](tracking.md) |
 
 `assets/css/account.css` holds the account surfaces (header control, sheet, toast,
@@ -67,6 +67,14 @@ from `mscomm_tokens` is present: the buyer paid and may have no account.
 
 The heart stays visible when signed out — hiding it would hide the reason to
 have an account.
+
+### Password recovery
+
+The sign-in sheet's `Mot de passe oublié ?` action posts to
+`/api/account/forgot-password`. The server stores only a SHA-256 token digest,
+expires it after one hour, consumes it once, and sends a styled MS Comm' email
+when SMTP is enabled. The reset link opens `compte.html?reset=...`; responses
+are intentionally generic so the endpoint cannot enumerate registered emails.
 
 ## i18n System
 

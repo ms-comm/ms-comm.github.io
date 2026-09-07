@@ -252,6 +252,7 @@ body.acct-locked { overflow: hidden; }
 }
 .acct-remember input { width: 16px; height: 16px; accent-color: var(--gold); }
 .acct-remember:hover { color: rgba(255,255,255,.86); }
+.acct-forgot-link { justify-self: end; margin-top: -7px; font-size: 12px; }
 
 .acct-hint { font-size: 12px; color: rgba(255,255,255,.5); }
 
@@ -278,6 +279,7 @@ body.acct-locked { overflow: hidden; }
 .acct-optin:hover { color: rgba(255,255,255,.82); }
 .acct-error { min-height: 17px; font-size: 12.5px; color: #fca5a5; }
 .acct-error:empty { min-height: 0; }
+.acct-error.is-ok { color: #86efac; }
 
 .acct-submit {
   height: 46px;

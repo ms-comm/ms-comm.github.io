@@ -25,7 +25,8 @@
     ticketAt: 0,
     favorites: new Set(),
     ready: false,
-    pending: null           /* action to replay after a successful sign-in */
+    pending: null,          /* action to replay after a successful sign-in */
+    resetToken: ''
   };
 
   const listeners = new Set();
@@ -173,6 +174,7 @@
       '        <svg class="password-eye password-eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.3A11.6 11.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.1 3.9M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/></svg>',
       '      </button></span></label>',
       '    <label class="acct-remember"><input type="checkbox" name="remember" checked /> <span>Rester connecté pendant 30 jours</span></label>',
+      '    <button type="button" class="acct-link acct-forgot-link" id="acct-forgot-link">Mot de passe oublié ?</button>',
       '    <p class="acct-hint" id="acct-hint">10 caractères minimum.</p>',
       '    <label class="acct-optin" id="acct-optin"><input type="checkbox" name="marketingOptIn" />',
       '      <span>J\'accepte de recevoir les actualités et offres de MS Comm\' par e-mail.</span></label>',
@@ -201,28 +203,53 @@
     dialog.querySelector('#acct-switch-btn').addEventListener('click', () => {
       setMode(mode === 'login' ? 'register' : 'login');
     });
+    dialog.querySelector('#acct-forgot-link').addEventListener('click', () => setMode('forgot'));
     dialog.querySelector('.acct-form').addEventListener('submit', onSubmit);
     return dialog;
   }
 
   function setMode(next) {
-    mode = next === 'register' ? 'register' : 'login';
+    mode = ['register', 'forgot', 'reset'].includes(next) ? next : 'login';
     const d = buildDialog();
+    const recovery = mode === 'forgot' || mode === 'reset';
+    const reset = mode === 'reset';
     d.querySelectorAll('.acct-tab').forEach(b => {
       const on = b.dataset.mode === mode;
       b.classList.toggle('is-on', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
+    d.querySelector('.acct-tabs').style.display = recovery ? 'none' : '';
     d.querySelector('.acct-names').style.display = mode === 'register' ? '' : 'none';
-    d.querySelector('#acct-hint').style.display  = mode === 'register' ? '' : 'none';
+    d.querySelector('[name=password]').closest('.acct-field').style.display = (mode === 'login' || mode === 'register' || reset) ? '' : 'none';
+    d.querySelector('.acct-remember').style.display = mode === 'login' ? '' : 'none';
+    d.querySelector('#acct-forgot-link').style.display = mode === 'login' ? '' : 'none';
+    d.querySelector('#acct-hint').style.display  = (mode === 'register' || reset) ? '' : 'none';
     /* Consent is only ever asked at sign-up. Showing it on sign-in would ask
        an existing account to re-consent on every login. */
     d.querySelector('#acct-optin').style.display = mode === 'register' ? '' : 'none';
-    d.querySelector('.acct-submit span').textContent = mode === 'register' ? 'Créer mon espace' : 'Se connecter';
-    d.querySelector('[name=password]').setAttribute('autocomplete', mode === 'register' ? 'new-password' : 'current-password');
-    d.querySelector('#acct-switch-text').textContent = mode === 'register' ? 'Vous avez déjà un compte ?' : 'Pas encore de compte ?';
-    d.querySelector('#acct-switch-btn').textContent  = mode === 'register' ? 'Se connecter' : 'Créer un compte';
+    d.querySelector('.acct-submit span').textContent = mode === 'register'
+      ? 'Créer mon espace'
+      : mode === 'forgot' ? 'Recevoir le lien'
+      : mode === 'reset' ? 'Enregistrer le nouveau mot de passe'
+      : 'Se connecter';
+    d.querySelector('[name=password]').setAttribute('autocomplete', mode === 'login' ? 'current-password' : 'new-password');
+    d.querySelector('#acct-hint').textContent = reset
+      ? '10 caractères minimum. Choisissez un mot de passe inédit.'
+      : '10 caractères minimum.';
+    d.querySelector('#acct-switch-text').textContent = mode === 'register'
+      ? 'Vous avez déjà un compte ?'
+      : (mode === 'forgot' || mode === 'reset') ? 'Vous préférez vous connecter ?'
+      : 'Pas encore de compte ?';
+    d.querySelector('#acct-switch-btn').textContent = mode === 'register' || recovery ? 'Se connecter' : 'Créer un compte';
+    if (mode === 'forgot' || mode === 'reset') {
+      d.querySelector('#acct-title').textContent = mode === 'forgot'
+        ? 'Recevoir un lien sécurisé' : 'Choisir un nouveau mot de passe';
+      d.querySelector('#acct-sub').textContent = mode === 'forgot'
+        ? 'Saisissez votre e-mail. Si un compte existe, nous vous enverrons un lien de réinitialisation.'
+        : 'Ce lien est valable une heure et ne peut être utilisé qu’une seule fois.';
+    }
     d.querySelector('#acct-error').textContent = '';
+    d.querySelector('#acct-error').classList.remove('is-ok');
   }
 
   let lastFocus = null;
@@ -245,7 +272,10 @@
     setMode(o.mode || 'login');
     d.classList.add('is-open');
     document.body.classList.add('acct-locked');
-    setTimeout(() => { const f = d.querySelector('[name=email]'); if (f) f.focus(); }, 60);
+    setTimeout(() => {
+      const f = mode === 'reset' ? d.querySelector('[name=password]') : d.querySelector('[name=email]');
+      if (f) f.focus();
+    }, 60);
     document.addEventListener('keydown', onKeydown);
   }
 
@@ -274,25 +304,54 @@
     const form = e.currentTarget;
     const btn  = form.querySelector('.acct-submit');
     const err  = form.querySelector('#acct-error');
+    const submitMode = mode;
     const data = {
-      email:    form.email.value.trim(),
-      password: form.password.value,
-      remember: !!form.remember.checked
+      email: form.email.value.trim()
     };
-    if (mode === 'register') {
+    if (submitMode === 'login' || submitMode === 'register') {
+      data.password = form.password.value;
+      data.remember = !!form.remember.checked;
+    }
+    if (submitMode === 'register') {
       data.firstName = form.firstName.value.trim();
       data.lastName  = form.lastName.value.trim();
       /* Opt-in: unticked by default, sent explicitly so the stored value is a
          real choice and not an absence of data. */
       data.marketingOptIn = !!form.marketingOptIn.checked;
     }
+    if (submitMode === 'reset') {
+      data.token = state.resetToken;
+      data.newPassword = form.password.value;
+    }
     err.textContent = '';
     btn.disabled = true;
     btn.classList.add('is-busy');
     try {
-      const r = await api('/api/account/' + mode, { method: 'POST', body: data });
+      const endpoint = submitMode === 'forgot' ? '/api/account/forgot-password'
+        : submitMode === 'reset' ? '/api/account/reset-password'
+        : '/api/account/' + submitMode;
+      const r = await api(endpoint, { method: 'POST', body: data });
       if (!r.ok) {
         err.textContent = r.data.error || 'Une erreur est survenue. Réessayez.';
+        return;
+      }
+      if (submitMode === 'forgot') {
+        dialog.querySelector('#acct-sub').textContent = r.data.message || 'Si un compte correspond à cette adresse, consultez votre boîte mail.';
+        err.classList.add('is-ok');
+        err.textContent = 'Vérifiez aussi vos courriers indésirables.';
+        return;
+      }
+      if (submitMode === 'reset') {
+        state.resetToken = '';
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('reset');
+          window.history.replaceState({}, '', url.href);
+        } catch (_) {}
+        setMode('login');
+        dialog.querySelector('#acct-error').classList.add('is-ok');
+        dialog.querySelector('#acct-error').textContent = r.data.message || 'Mot de passe mis à jour. Vous pouvez vous connecter.';
+        form.password.value = '';
         return;
       }
       applySession(r.data);
@@ -303,13 +362,14 @@
       document.body.classList.remove('acct-locked');
       document.removeEventListener('keydown', onKeydown);
       form.reset();
-      toast(mode === 'register' ? 'Espace créé. Bienvenue !' : 'Vous êtes connecté.');
+      toast(submitMode === 'register' ? 'Espace créé. Bienvenue !' : 'Vous êtes connecté.');
       if (pending && pending.resolve) pending.resolve(true);
     } catch (_) {
       err.textContent = 'Serveur injoignable. Réessayez dans un instant.';
     } finally {
       btn.disabled = false;
       btn.classList.remove('is-busy');
+      if (submitMode !== 'forgot' && submitMode !== 'reset') err.classList.remove('is-ok');
     }
   }
 
@@ -465,6 +525,13 @@
     bindPasswordToggles(document);
     mount();
     refresh().catch(() => { state.ready = true; });
+    try {
+      const token = new URL(window.location.href).searchParams.get('reset');
+      if (token) {
+        state.resetToken = token;
+        openDialog({ mode: 'reset', eyebrow: 'Sécurité du compte' });
+      }
+    } catch (_) { /* malformed URL: normal sign-in remains available */ }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

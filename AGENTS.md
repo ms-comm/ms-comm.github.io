@@ -7,6 +7,11 @@ Watermark-only import: the admin upload form carries a "Filigrane uniquement" ch
 Recent ZIP hardening: album ZIP must only abort on an explicit client request abort, never on a normal response close during archive finalization; Flickr CDN requests use the tested browser User-Agent and stop permanently after three distinct source failures.
 Async album ZIP work uses resumable jobs, one Flickr download at a time, one-hour retention, 5 GB target volume, and one shared CPU.
 Admin Overview rework: the dashboard reads one aggregate (`GET /api/admin/overview`) with period comparison and an actionable `attention[]` queue, and a Clients section (`GET /api/admin/clients`) derives clients from orders by normalised email until real accounts exist. Roadmap and API contracts: [docs/PLAN_REFONTE.md](docs/PLAN_REFONTE.md).
+
+Admin Clients detail: returning from a client sheet starts a fresh list request
+and request sequence guards ignore stale responses, so a slow detail/list fetch
+cannot leave the Clients page empty. The shared-album picker stays black in
+light-system themes, including its native options.
 Visitor accounts: browsing stays anonymous, but every download exit point is gated server-side in `publicApi.js` (`downloadGate`, `401 ACCOUNT_REQUIRED`). Purchase tokens are never gated, and an album code does not replace an account. Cross-site downloads carry a signed `dlTicket`; a client session sets `req.session.accountId` only, never `authenticated`.
 
 Account sessions now default to 30 days (at least the requested 7 days); only an explicit unchecked `remember: false` selects the short session. The login sheet checkbox is checked by default.
@@ -16,6 +21,11 @@ Gallery bar: `assets/css/gallery-bar.css` owns the sticky gallery controls throu
 Mon espace: one signed-in tab (`#view-mine`) with three facets — Mes favoris / Mes albums partagés / Mes achats — replacing the old `Mes favoris` + `Mes achats` tabs. Signed out it shows the account door (create first, sign-in as the quiet link). Purchases now come from `GET /api/account/orders`, i.e. they follow the ACCOUNT, not the browser; `localStorage` (`mscomm_tokens`/`mscomm_orders`) is only a migration fallback. Shared albums come from named grants: the admin album modal (private types only) grants access by e-mail into `db/album-grants.json` (`services/albumGrants.js`), keyed by normalised e-mail so a grant can precede signup and is attached on `register()`. Invariant: **a code says WHICH photos, an account says WHO, a grant says TO WHOM** — all three apply, and a grant unlocks a private album WITHOUT the code (`hasAlbumAccess()` in `publicApi.js`, `GET /api/account/albums`). Deep links: `photos.html?view=mine|favorites|purchased|albums_partages`.
 
 Gallery deep links return immediately after selecting `Mon espace`, so account-menu links cannot fall through to the photography timeline. Lightbox mobile hides resolution and paid-status metadata, uses icon-only favorite/share actions, and the favorite button uses a rose heart pop animation; desktop keeps the full `Ajouter aux favoris` label. Initial language uses the browser's primary locale: French locales stay FR, all others default EN; a manual switch remains persistent.
+
+Account recovery: the sign-in sheet exposes `Mot de passe oublié ?`; it calls
+`POST /api/account/forgot-password` and opens the one-use reset link in
+`compte.html?reset=...`. The reset form never reveals whether an email exists,
+and SMTP must be enabled in the private admin settings for delivery.
 
 > **Update this file + the relevant `docs/` file at every code change.**
 

@@ -16,7 +16,7 @@
 | Tab | `navigate()` key | What it does |
 |-----|-----------------|--------------|
 | Dashboard | `dashboard` | Stats overview: photo/album counts, revenue, downloads, visits, histogram, top photos, recent orders |
-| Clients | `clients` | Client list derived from orders (email key), segments, and per-client detail sheet |
+| Clients | `clients` | Client list derived from orders (email key), segments, and per-client detail sheet; returning from a detail refreshes safely even when requests finish out of order |
 | Photos | `photos` | Photo grid/list with search/filter, inline edit, upload queue, Flickr badge |
 | Albums | `albums` | Album CRUD, public/private toggle, email code sender, Flickr photoset sync |
 | Faces | `faces` | Face detection results grid, person tagging, bulk scan launch |
@@ -55,6 +55,7 @@
 - Selected photos with `flickrOriginalId` but no `flickrWatermarkId` expose the `Filigrane` action. It calls `/api/admin/photos/bulk/create-watermark`, creates the missing watermarked Flickr copy, stores `flickrWatermarkId`/`flickrWatermarkUrl`, then re-applies the correct Flickr visibility.
 - The global topbar no longer shows "Importer des photos"; importing remains available from the Upload sidebar tab.
 - Settings and topbar only show worker/job sync details when gallery-app is connected; when offline, queued/failed job text is hidden.
+- The shared-album picker in a client sheet uses a permanent black surface (`color-scheme: dark`), including native `<option>` rows on light OS themes.
 
 ### Upload Flow
 1. File selected / dropped → added to `state.uploadQueue`
