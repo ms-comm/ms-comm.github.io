@@ -36,6 +36,11 @@
 - `POST /api/account/reset-password` consumes the token and stores a bcrypt password hash. Email delivery uses the configured SMTP settings and the MS Comm' branded template.
 - Configure SMTP in Admin → Réglages → Email SMTP (`smtpEnabled`, host, user, app password) before testing recovery.
 
+### Stripe readiness
+- `stripeService.isStripeConfigured()` requires a matching `pk_test_`/`sk_test_` or `pk_live_`/`sk_live_` pair **and** a valid `whsec_...` webhook secret. The public checkout stays disabled until all three are present.
+- Admin settings expose non-secret `stripeStatus` flags (`secretConfigured`, `publishableConfigured`, `webhookConfigured`, `mode`, `ready`) so a malformed/local webhook URL cannot look production-ready.
+- Configure the live webhook at `https://ms-comm-server.fly.dev/api/stripe/webhook` for `payment_intent.succeeded`, `payment_intent.payment_failed`, and `charge.refunded`.
+
 ### orders.js — Download Endpoints
 - `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP. Source order: local file → R2 `master` → Flickr. A migrated order no longer touches Flickr and cannot 429 the Fly IP; only rows still on Flickr remain exposed to it.
 - `GET /api/orders/:id/download-urls?token=xxx` — **Preferred.** Returns `{ photoId, filename, token }` per photo. No Flickr API calls. Client uses these tokens to call `/api/public/photos/:id/download?token=xxx` individually and builds ZIP in browser.
@@ -225,9 +230,10 @@ The session cookie is `SameSite=None; Secure` in production for the same
 cross-site reason (`Lax` in dev, where http origins reject `None`).
 
 Visitor and admin login routes now select the long 30-day cookie by default;
-clients can opt out explicitly with `remember: false`. This exceeds the
-seven-day persistence target while keeping the existing short-session option
-for shared devices.
+clients can opt out explicitly with `remember: false`. The regenerated session
+is explicitly saved before the login response, so a reload cannot race the
+session-file write. This exceeds the seven-day persistence target while
+keeping the existing short-session option for shared devices.
 
 **Perimeter isolation.** A client session sets `req.session.accountId` only and
 never `req.session.authenticated`, so it can never reach `/api/admin/*`.

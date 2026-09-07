@@ -375,6 +375,12 @@
   .lb-actions .lb-btn > span { display:none; }
   .lb-actions .lb-btn-share .lb-share-label,
   .lb-actions .fav-btn #lb-fav-label { display:none; }
+  /* Album/order downloads keep the icon only on narrow screens. The title
+     remains available through aria-label/title for screen readers and touch
+     long-press hints. */
+  .album-download-actions .lb-btn > span { display:none; }
+  .album-download-actions .lb-btn { width:40px; height:40px; padding:0; justify-content:center; }
+  .album-download-actions .lb-btn > svg { margin:0; }
 }
 /* download dropdown — now displayed as a centered modal popup */
 .dl-dropdown-wrap { position:relative; }
@@ -418,7 +424,7 @@
 .cart-btn { position:fixed; top:80px; right:24px; z-index:100; background:var(--gold); color:#0a0a0a; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; display:none; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(0,0,0,.4); transition:transform .2s; }
 .cart-btn.show { display:flex; }
 .cart-btn:hover { transform:scale(1.08); }
-.cart-btn svg { width:20px; height:20px; margin-bottom:2px; }
+.cart-btn svg { width:20px; height:20px; margin:0; display:block; }
 .cart-badge { position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; font-size:10px; font-weight:700; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
 /* Le panneau sort de l'ecran par un deplacement RELATIF a sa propre
    largeur. Avec l'ancien right:-420px fige, le palier <=600px qui passe
@@ -611,15 +617,15 @@
               <button class="lb-btn" id="album-clear-selection" type="button" style="display:none">
                 <span>Annuler</span>
               </button>
-              <button class="lb-btn lb-btn-dl" id="album-download-selected" type="button">
+              <button class="lb-btn lb-btn-dl" id="album-download-selected" type="button" aria-label="Télécharger la sélection" title="Télécharger la sélection">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Télécharger la sélection</span>
               </button>
-              <button class="lb-btn lb-btn-dl" id="album-download-watermark">
+              <button class="lb-btn lb-btn-dl" id="album-download-watermark" aria-label="Tout télécharger avec filigrane" title="Tout télécharger avec filigrane">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Tout télécharger (avec filigrane)</span>
               </button>
-              <button class="lb-btn lb-btn-dl" id="album-download-original">
+              <button class="lb-btn lb-btn-dl" id="album-download-original" aria-label="Tout télécharger sans filigrane" title="Tout télécharger sans filigrane">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Tout télécharger (sans filigrane)</span>
               </button>
@@ -1478,7 +1484,7 @@ function renderPurchased() {
       actions.style.display = '';
       if (relevant.length === 1) {
         const tok = relevant[0]._token || getOrderToken(relevant[0].url);
-        actions.innerHTML = `<button onclick="downloadOrderZip('${relevant[0].id}','${tok}',this,this.querySelector('span'))"
+        actions.innerHTML = `<button aria-label="Tout télécharger (ZIP)" title="Tout télécharger (ZIP)" onclick="downloadOrderZip('${relevant[0].id}','${tok}',this,this.querySelector('span'))"
           class="lb-btn lb-btn-dl" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>Tout télécharger (ZIP)</span>
@@ -1491,7 +1497,7 @@ function renderPurchased() {
           return `<div onclick="downloadOrderZip('${o.id}','${tok}',null,null)" style="display:block;padding:8px 16px;cursor:pointer;color:var(--text);font-size:13px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.07)" onmouseover="this.style.background='rgba(198,155,0,.12)'" onmouseout="this.style.background=''">${label}</div>`;
         }).join('');
         actions.innerHTML = `<div style="position:relative">
-          <button class="lb-btn lb-btn-dl" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="gap:6px">
+          <button class="lb-btn lb-btn-dl" aria-label="Tout télécharger" title="Tout télécharger" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="gap:6px">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Tout télécharger
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
@@ -2648,7 +2654,7 @@ function ensureAlbumDownloadMenus() {
 
   const allWrap = document.createElement('div');
   allWrap.className = 'album-download-menu-wrap';
-  allWrap.innerHTML = `<button class="lb-btn lb-btn-dl" id="album-download-all-menu-btn" type="button">
+  allWrap.innerHTML = `<button class="lb-btn lb-btn-dl" id="album-download-all-menu-btn" type="button" aria-label="Tout télécharger" title="Tout télécharger">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <span>Tout télécharger</span>
   </button>${albumDownloadMenuHTML('album-download-all-menu')}`;

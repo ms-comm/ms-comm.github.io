@@ -71,6 +71,9 @@
 #stripe-payment-element.StripeElement--focus { border-color:var(--gold); }
 .stripe-error { color:#fca5a5; font-size:12.5px; margin-top:8px; min-height:16px; }
 .pay-btn:disabled { opacity:.5; cursor:not-allowed; }
+.checkout-consent { display:flex; align-items:flex-start; gap:8px; margin-top:16px; color:var(--muted); font-size:12px; line-height:1.45; }
+.checkout-consent input { margin-top:2px; accent-color:var(--gold); flex-shrink:0; }
+.checkout-consent a { color:var(--gold-2); }
 
 @media(max-width:900px) { .checkout-grid { grid-template-columns:1fr; } }
   </style>
@@ -157,9 +160,14 @@
 
                 <div id="pay-error" style="color:#fca5a5;font-size:12.5px;margin-top:4px"></div>
 
+                <label class="checkout-consent" for="checkout-consent">
+                  <input type="checkbox" id="checkout-consent" required />
+                  <span>J’accepte les <a href="cgv.html" target="_blank" rel="noopener">conditions de vente</a> et la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a>. Je demande la fourniture immédiate du contenu numérique et reconnais perdre mon droit de rétractation dès le début de l’exécution.</span>
+                </label>
+
                 <button class="pay-btn" id="pay-btn">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span id="pay-btn-label">Payer <span id="pay-total-label">0.00€</span></span>
+                  <span id="pay-btn-label">Commande avec obligation de paiement — <span id="pay-total-label">0.00€</span></span>
                 </button>
 
                 <div class="pay-secure">
@@ -252,6 +260,9 @@ let stripe = null;         /* Stripe JS instance */
 let stripeElements = null; /* Elements instance  */
 let pubSettings = {};
 let currentOrderId = null;
+let paymentIntentEmail = '';
+let paymentIntentPromise = null;
+let paymentElementInstance = null;
 
 async function initPayment() {
   try {
@@ -276,7 +287,7 @@ async function initPayment() {
     return;
   }
 
-  /* Stripe init — create a PaymentIntent to get a client_secret */
+  /* Stripe init — create the PaymentIntent only after a real email exists. */
   if (!data.cart || !data.cart.length) {
     document.getElementById('pay-error').textContent = 'Panier vide';
     document.getElementById('pay-btn').disabled = true;
@@ -290,18 +301,30 @@ async function initPayment() {
     return;
   }
 
-  /* Customer info is required before creating the intent (for email & order row).
-     We lazily create the intent once the user fills the email field. To keep it
-     simple, we create it right now using whatever email is in the field, then
-     update the metadata later if needed. But the intent needs the final amount
-     fixed at creation — OK since the cart is immutable from here. */
-  const emailPlaceholder = document.getElementById('f-email').value.trim() || 'pending@checkout.local';
+}
 
-  try {
+async function mountStripePayment(email) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!stripe) throw new Error('Stripe n\'est pas initialisé. Rechargez la page.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    throw new Error('Email valide requis avant le paiement');
+  }
+  if (stripeElements && paymentIntentEmail === normalizedEmail) return;
+  if (stripeElements && paymentIntentEmail !== normalizedEmail) {
+    /* Email changed before payment: discard the old intent UI and create a
+       fresh order metadata record for the final address. */
+    paymentElementInstance?.unmount();
+    document.getElementById('stripe-payment-element').innerHTML = '';
+    stripeElements = null;
+    currentOrderId = null;
+  }
+  if (paymentIntentPromise) return paymentIntentPromise;
+
+  paymentIntentPromise = (async () => {
     const resp = await fetch(`${API}/api/orders/create-payment-intent`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        customer: { email: emailPlaceholder },
+        customer: { email: normalizedEmail },
         cart:          data.cart,
         promoCode:     data.promoCode     || null,
         promoDiscount: data.promoDiscount || 0,
@@ -328,13 +351,13 @@ async function initPayment() {
         }
       }
     });
-    const paymentElement = stripeElements.create('payment', { layout: 'tabs' });
-    paymentElement.mount('#stripe-payment-element');
+    paymentElementInstance = stripeElements.create('payment', { layout: 'tabs' });
+    paymentElementInstance.mount('#stripe-payment-element');
     document.getElementById('stripe-section').style.display = 'block';
-  } catch (err) {
-    document.getElementById('pay-error').textContent = 'Initialisation du paiement échouée : ' + err.message;
-    document.getElementById('pay-btn').disabled = true;
-  }
+    paymentIntentEmail = normalizedEmail;
+  })();
+  try { await paymentIntentPromise; }
+  finally { paymentIntentPromise = null; }
 }
 
 /* Click handler — routes to debug or Stripe flow */
@@ -347,6 +370,10 @@ document.getElementById('pay-btn').addEventListener('click', async () => {
     errEl.textContent = 'Email valide requis';
     return;
   }
+  if (!document.getElementById('checkout-consent').checked) {
+    errEl.textContent = 'Veuillez accepter les conditions de vente et la politique de confidentialité.';
+    return;
+  }
 
   const btn = document.getElementById('pay-btn');
   btn.disabled = true;
@@ -357,6 +384,14 @@ document.getElementById('pay-btn').addEventListener('click', async () => {
     if (pubSettings.paymentDebugMode) {
       await submitDebugOrder(email);
     } else {
+      if (!stripeElements) {
+        await mountStripePayment(email);
+        errEl.textContent = 'Carte bancaire prête : renseignez vos informations puis cliquez à nouveau.';
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        return;
+      }
+      await mountStripePayment(email);
       await submitStripePayment(email);
     }
   } catch (err) {
@@ -488,6 +523,17 @@ function finalizeSuccess(result) {
 
 /* Boot the payment layer as soon as the DOM is ready. */
 initPayment();
+/* Mount Stripe as soon as the buyer leaves a valid email field, so the
+   Payment Element is visible before the final click (never auto-submit with
+   an empty card form). */
+document.getElementById('f-email').addEventListener('blur', () => {
+  const email = document.getElementById('f-email').value.trim();
+  if (pubSettings.paymentDebugMode || !pubSettings.stripeEnabled) return;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  mountStripePayment(email).catch(err => {
+    document.getElementById('pay-error').textContent = 'Initialisation du paiement échouée : ' + err.message;
+  });
+});
 
 async function triggerCheckoutZip(btnEl) {
   const orderId = btnEl.dataset.orderId;

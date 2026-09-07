@@ -200,6 +200,9 @@ are intentionally generic so the endpoint cannot enumerate registered emails.
 ### Cart & Checkout
 - Cart state in memory + `localStorage['mscomm_cart']`
 - `renderCartPanel()` manages cart sidebar
+- Checkout validates email and legal consent before creating a Stripe PaymentIntent; no placeholder email is sent to Stripe.
+- `cgv.html`, `confidentialite.html` and `mentions-legales.html` are linked from the payment consent. Fill the marked legal identity fields before consumer sales.
+- Album/order downloads show icon + text on desktop and icon-only below 600px; accessible labels remain.
 - On checkout: create Stripe PaymentIntent → confirm → POST `/api/orders/confirm`
 
 ## API Connection
