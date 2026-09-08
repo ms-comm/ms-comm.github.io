@@ -126,6 +126,7 @@ are intentionally generic so the endpoint cannot enumerate registered emails.
 - Deep links: `photos.html?view=mine | favorites | purchased | albums_partages` — each opens the right facet. The account menu points at them.
 - Deep-link handling returns after selecting `Mon espace`, preventing the final timeline render from overwriting the requested facet. The profile page no longer renders the aggregate `Total dépensé` stat.
 - Lightbox responsive behavior: desktop keeps the `Ajouter aux favoris` label; mobile reduces favorite/share controls to icons and hides resolution/paid-status metadata to preserve vertical space. Adding a favorite gets a short rose heart pop (disabled for reduced-motion users).
+- Mobile downloads: the lightbox `Télécharger` action becomes an icon-only circular button below 600px, while album download controls keep icon + text. Album choice menus are positioned from the tapped button with a viewport clamp so they never open partly outside the phone. The centered lightbox download modal also uses a viewport-safe width and truncates long resolution labels without horizontal overflow.
 
 ### Topbar order
 - Right side of the row, at every width: `Demander un devis` → `FR · EN` → `Mon espace` (far right). `account.js` `mount()` inserts `#acct-control` right after `.nav-cta`; the FR/EN switcher is then inserted **inside** `.topbar-inner`, right before `#acct-control` (`positionSwitcher()` in `i18n.js`, re-called by `mount()` because i18n runs first and the anchor does not exist yet). Never restore the old absolutely-positioned rule: below 961px it fell back into normal flow and dropped to a second line.
@@ -202,7 +203,8 @@ are intentionally generic so the endpoint cannot enumerate registered emails.
 - `renderCartPanel()` manages cart sidebar
 - Checkout validates email and legal consent before creating a Stripe PaymentIntent; no placeholder email is sent to Stripe.
 - `cgv.html`, `confidentialite.html` and `mentions-legales.html` are linked from the payment consent. Fill the marked legal identity fields before consumer sales.
-- Album/order downloads show icon + text on desktop and icon-only below 600px; accessible labels remain.
+- Album downloads show icon + text at every width; the single-photo lightbox download action is icon-only below 600px and keeps its accessible label/title.
+- Checkout is width-constrained at mobile breakpoints: grid children and the Stripe iframe can shrink to the available card width, the payment form cannot create horizontal overflow, and very narrow contact forms stack their two name fields.
 - On checkout: create Stripe PaymentIntent → confirm → POST `/api/orders/confirm`
 
 ## API Connection
@@ -230,6 +232,7 @@ Structure:
 ## Responsive Checklist Before Push
 
 - [ ] Test at 960px and 600px breakpoints
+- [ ] Test gallery/lightbox and checkout at 360px without horizontal clipping or off-screen menus
 - [ ] Verify `data-i18n` attributes translate in EN mode
 - [ ] Check meta tags and `<title>` update on lang switch
 - [ ] Verify no broken images (Flickr CDN URLs vs local fallback)

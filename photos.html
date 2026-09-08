@@ -140,9 +140,13 @@
 .album-download-menu-wrap { position:relative; display:inline-flex; }
 .album-download-menu {
   position:absolute; right:0; top:calc(100% + 6px); z-index:20;
-  min-width:220px; padding:6px; border-radius:10px;
+  min-width:220px; max-width:calc(100vw - 24px); padding:6px; border-radius:10px;
   background:#141414; border:1px solid rgba(255,255,255,.14);
   box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+.album-download-menu.is-floating {
+  position:fixed; right:auto; top:auto; z-index:10000;
+  box-sizing:border-box; width:220px; min-width:0;
 }
 .album-download-menu button {
   width:100%; display:flex; align-items:center; gap:8px;
@@ -370,16 +374,19 @@
 @media (max-width:600px) {
   .lb-photo-meta .lb-resolution,
   .lb-photo-meta .lb-paid-note { display:none; }
-  .lb-actions { gap:6px; }
+  .lb-info { min-width:0; padding-inline:12px; }
+  .lb-info-left { min-width:0; flex:1 1 150px; }
+  .lb-actions { flex:0 0 auto; gap:6px; }
   .lb-actions .lb-btn { width:40px; height:40px; padding:0; justify-content:center; border-radius:50%; }
   .lb-actions .lb-btn > span { display:none; }
+  .lb-actions .lb-btn > .lb-download-label { display:none; }
+  .lb-actions .lb-btn > .lb-download-chevron { display:none; }
   .lb-actions .lb-btn-share .lb-share-label,
   .lb-actions .fav-btn #lb-fav-label { display:none; }
-  /* Album/order downloads keep the icon only on narrow screens. The title
-     remains available through aria-label/title for screen readers and touch
-     long-press hints. */
-  .album-download-actions .lb-btn > span { display:none; }
-  .album-download-actions .lb-btn { width:40px; height:40px; padding:0; justify-content:center; }
+  /* Album downloads keep their text: only the lightbox action is icon-only. */
+  .album-download-actions { width:100%; }
+  .album-download-actions .lb-btn > span { display:inline; }
+  .album-download-actions .lb-btn { width:auto; min-width:0; height:36px; padding:8px 12px; justify-content:flex-start; }
   .album-download-actions .lb-btn > svg { margin:0; }
 }
 /* download dropdown — now displayed as a centered modal popup */
@@ -390,16 +397,17 @@
 .dl-modal-title { color:#f0f0f0; font-family:'Poppins',sans-serif; font-size:15px; font-weight:600; padding:14px 18px 8px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-bottom:1px solid rgba(255,255,255,.06); }
 .dl-modal-close { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:0 6px; line-height:1; transition:color .15s; }
 .dl-modal-close:hover { color:#f0f0f0; }
-.dl-dropdown { background:#141414; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:6px; min-width:320px; max-width:420px; box-shadow:0 24px 64px rgba(0,0,0,.7); animation:dlMin .18s ease; }
+.dl-dropdown { background:#141414; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:6px; width:min(420px,calc(100vw - 32px)); min-width:0; max-width:100%; box-shadow:0 24px 64px rgba(0,0,0,.7); animation:dlMin .18s ease; box-sizing:border-box; }
 @keyframes dlMin { from{opacity:0; transform:scale(.95)} to{opacity:1; transform:scale(1)} }
 .dl-sep { height:1px; background:rgba(255,255,255,.07); margin:4px 0; }
 .dl-opt-print .dl-opt-label svg { color:#a78bfa; }
 .dl-opt-cart .dl-opt-label svg { color:#86efac; }
-.dl-opt { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; border-radius:7px; cursor:pointer; font-size:13px; transition:background .15s; }
+.dl-opt { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; padding:9px 12px; border-radius:7px; cursor:pointer; font-size:13px; transition:background .15s; }
 .dl-opt:hover { background:rgba(255,255,255,.05); }
-.dl-opt-label { display:flex; align-items:center; gap:7px; color:rgba(255,255,255,.8); }
+.dl-opt-label { display:flex; align-items:center; gap:7px; min-width:0; flex:1 1 auto; color:rgba(255,255,255,.8); }
 .dl-opt-label svg { width:14px; height:14px; color:var(--gold-2); }
-.dl-opt-res { font-size:11px; color:var(--muted); }
+.dl-opt-label > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dl-opt-res { flex:0 0 auto; font-size:11px; color:var(--muted); white-space:nowrap; }
 /* "Débloque toutes les résolutions…" hint sitting between the buy CTA and
    the locked resolution list for paid-not-yet-purchased photos. */
 .dl-hint { font-size:10.5px; color:var(--muted); padding:8px 12px 4px; text-transform:uppercase; letter-spacing:.6px; }
@@ -775,8 +783,8 @@
         <div class="dl-dropdown-wrap" id="lb-dl-wrap">
           <button class="lb-btn lb-btn-dl" id="lb-dl-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Télécharger
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+            <span class="lb-download-label">Télécharger</span>
+            <svg class="lb-download-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
         </div>
       </div>
@@ -2671,7 +2679,32 @@ function ensureAlbumDownloadMenus() {
 }
 
 function closeAlbumDownloadMenus() {
-  document.querySelectorAll('.album-download-menu').forEach(m => m.classList.add('hidden'));
+  document.querySelectorAll('.album-download-menu').forEach(m => {
+    m.classList.add('hidden');
+    m.classList.remove('is-floating');
+    m.style.position = '';
+    m.style.left = '';
+    m.style.top = '';
+    m.style.width = '';
+  });
+}
+
+function positionAlbumDownloadMenu(menu, anchor) {
+  if (!menu || !anchor || !window.matchMedia('(max-width: 600px)').matches) return;
+  const rect = anchor.getBoundingClientRect();
+  const width = Math.min(220, Math.max(0, window.innerWidth - 24));
+  menu.classList.add('is-floating');
+  menu.style.width = `${width}px`;
+  menu.style.left = '12px';
+  menu.style.top = '12px';
+  const height = menu.getBoundingClientRect().height;
+  const left = Math.min(Math.max(12, rect.left), Math.max(12, window.innerWidth - width - 12));
+  const below = rect.bottom + 6;
+  const top = below + height <= window.innerHeight - 12
+    ? below
+    : Math.max(12, rect.top - height - 6);
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
 }
 
 function openAlbumDownloadMenu(menuId, selectedOnly, progressBtn) {
@@ -2695,6 +2728,7 @@ function openAlbumDownloadMenu(menuId, selectedOnly, progressBtn) {
     };
   });
   menu.classList.remove('hidden');
+  positionAlbumDownloadMenu(menu, progressBtn);
 }
 
 function setupAlbumZipButtons() {

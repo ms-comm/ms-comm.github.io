@@ -31,15 +31,17 @@
 :root { --gold:#c69b00; --gold-2:#ffd25a; --bg:#0a0a0a; --bg-card:#141414; --border:rgba(255,255,255,0.08); --muted:rgba(255,255,255,0.5); --green:#22c55e; --red:#ef4444; }
 
 .checkout-page { padding:80px 0 80px; }
-.checkout-grid { display:grid; grid-template-columns:1fr 380px; gap:32px; align-items:flex-start; }
+.checkout-page, .checkout-page * { box-sizing:border-box; }
+.checkout-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,380px); gap:32px; align-items:flex-start; min-width:0; }
+.checkout-grid > div, .co-block, #stripe-section, #stripe-payment-element { min-width:0; max-width:100%; }
 .co-block { background:#141414; border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
 .co-block h3 { font-family:'Poppins',sans-serif; font-size:15px; font-weight:600; color:var(--gold-2); border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
 .co-block h3 svg { width:16px; height:16px; }
-.form-field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.form-field { display:flex; flex-direction:column; gap:6px; min-width:0; margin-bottom:14px; }
 .form-field label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
 .form-field input, .form-field select, .form-field textarea { background:#111; border:1px solid var(--border); border-radius:9px; color:#f0f0f0; padding:11px 14px; font-size:14px; outline:none; transition:border-color .2s; font-family:inherit; }
 .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color:var(--gold); }
-.form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; min-width:0; }
 .co-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
 .co-item:last-child { border-bottom:none; }
 .co-item-thumb { width:52px; height:52px; border-radius:7px; object-fit:cover; background:#111; flex-shrink:0; }
@@ -72,7 +74,8 @@
 .debug-banner strong { color:#fff; }
 
 /* Stripe Elements container — Stripe injects its own iframe here */
-#stripe-payment-element { background:#111; border:1px solid var(--border); border-radius:9px; padding:14px; min-height:48px; transition:border-color .2s; }
+#stripe-payment-element { width:100%; overflow:hidden; background:#111; border:1px solid var(--border); border-radius:9px; padding:14px; min-height:48px; transition:border-color .2s; }
+#stripe-payment-element iframe { display:block; width:100% !important; max-width:100% !important; }
 #stripe-payment-element.StripeElement--focus { border-color:var(--gold); }
 .stripe-error { color:#fca5a5; font-size:12.5px; margin-top:8px; min-height:16px; }
 .pay-btn:disabled { opacity:.5; cursor:not-allowed; }
@@ -90,7 +93,26 @@
 .checkout-buyer-counts { color:var(--muted); font-size:10px; white-space:nowrap; }
 
 @media(max-width:900px) { .checkout-grid { grid-template-columns:1fr; gap:20px; } .checkout-grid > div:last-child .co-block { position:static !important; } }
-@media(max-width:600px) { .footer-inner > * { max-width:100%; } .footer-inner > p { width:100%; text-align:center; } .footer-links { width:100%; max-width:100%; flex-wrap:wrap; justify-content:center; gap:8px 14px; } }
+@media(max-width:600px) {
+  .checkout-page { padding:72px 0 32px; overflow-x:clip; }
+  .checkout-page .container { width:calc(100% - 24px); max-width:100%; }
+  .checkout-grid { gap:12px; }
+  .co-block { padding:16px 14px; border-radius:12px; }
+  #stripe-payment-element { padding:10px; }
+  .checkout-buyer { min-width:0; align-items:flex-start; flex-wrap:wrap; }
+  .checkout-buyer-counts { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+  .checkout-consent { font-size:11.5px; }
+  .pay-btn { padding:14px 12px; font-size:14px; }
+  .pay-secure { align-items:flex-start; text-align:center; }
+  .payment-logos { gap:6px; }
+  .pay-logo { padding:6px 8px; }
+  .footer-inner > * { max-width:100%; }
+  .footer-inner > p { width:100%; text-align:center; }
+  .footer-links { width:100%; max-width:100%; flex-wrap:wrap; justify-content:center; gap:8px 14px; }
+}
+@media(max-width:380px) {
+  .form-row-2 { grid-template-columns:1fr; gap:0; }
+}
   </style>
 </head>
 <body>
