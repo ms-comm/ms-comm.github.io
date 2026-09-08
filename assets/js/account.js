@@ -22,6 +22,7 @@
     account: null,
     counts: null,
     dlTicket: null,
+    accountToken: null,
     ticketAt: 0,
     favorites: new Set(),
     ready: false,
@@ -39,6 +40,12 @@
 
   async function api(pathname, options) {
     const opts = Object.assign({ credentials: 'include' }, options || {});
+    const storedToken = state.accountToken || (function () {
+      try { return localStorage.getItem('mscomm_account_token') || ''; } catch (_) { return ''; }
+    })();
+    if (storedToken) {
+      opts.headers = Object.assign({ Authorization: 'Bearer ' + storedToken }, opts.headers || {});
+    }
     /* Visitor id: lets the server tie this account to the anonymous journey
        recorded before sign-in (docs/tracking.md). */
     const vid = (window.MSTrack && window.MSTrack.vid) || (function () { try { return localStorage.getItem('ms_vid'); } catch (_) { return null; } })();
@@ -59,6 +66,13 @@
     state.account  = (data && data.account) || null;
     state.counts   = (data && data.counts) || null;
     state.dlTicket = (data && data.dlTicket) || null;
+    if (data && data.accountToken) {
+      state.accountToken = data.accountToken;
+      try { localStorage.setItem('mscomm_account_token', data.accountToken); } catch (_) {}
+    } else if (!state.account) {
+      state.accountToken = null;
+      try { localStorage.removeItem('mscomm_account_token'); } catch (_) {}
+    }
     state.ticketAt = state.dlTicket ? Date.now() : 0;
     if (!state.account) state.favorites = new Set();
     if (state.account && window.MSTrack) window.MSTrack.identify(state.account.id);
@@ -68,7 +82,10 @@
 
   async function refresh() {
     const r = await api('/api/account/me');
-    applySession(r.ok ? r.data : null);
+    /* Only a confirmed 401/empty account logs the visitor out. A transient
+       5xx or network failure must not erase the 30-day bearer fallback. */
+    if (r.ok) applySession(r.data);
+    else if (r.status === 401) applySession(null);
     state.ready = true;
     if (state.account) loadFavorites();
     return state.account;

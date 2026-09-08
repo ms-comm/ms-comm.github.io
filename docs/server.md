@@ -36,6 +36,10 @@
 - `POST /api/account/reset-password` consumes the token and stores a bcrypt password hash. Email delivery uses the configured SMTP settings and the MS Comm' branded template.
 - Configure SMTP in Admin → Réglages → Email SMTP (`smtpEnabled`, host, user, app password) before testing recovery.
 
+### Account sessions across GitHub Pages and Fly
+- The normal `connect.sid` cookie remains `SameSite=None; Secure` in production and lasts 30 days by default.
+- Mobile browsers can still block third-party cookies because the site is on `ms-comm.github.io` and the API on `ms-comm-server.fly.dev`. Account login/registration and `/api/account/me` therefore also issue a signed 30-day `accountToken`; the frontend stores it locally and sends it only as `Authorization: Bearer` to the account API. Downloads continue to use the separate 10-minute `dlTicket`.
+
 ### Stripe readiness
 - `stripeService.isStripeConfigured()` requires a matching `pk_test_`/`sk_test_` or `pk_live_`/`sk_live_` pair **and** a valid `whsec_...` webhook secret. The public checkout stays disabled until all three are present.
 - Admin settings expose non-secret `stripeStatus` flags (`secretConfigured`, `publishableConfigured`, `webhookConfigured`, `mode`, `ready`) so a malformed/local webhook URL cannot look production-ready.
@@ -43,8 +47,7 @@
 - `GET /api/admin/orders/payment-audit` reconciles every non-completed Stripe order with its PaymentIntent and classifies it as failed, pending, paid-but-not-finalized, or missing/unavailable. The Admin → Commandes button “Vérifier Stripe” displays the result without changing order state.
 
 ### orders.js — Download Endpoints
-- `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP. Source order: local file → R2 `master` → Flickr. A migrated order no longer touches Flickr and cannot 429 the Fly IP; only rows still on Flickr remain exposed to it.
-- The order ZIP keeps deterministic unique filenames with the stored extension and falls back to legacy Flickr originals for rows without `r2Key`; incomplete archives are never cached in R2. Any source still unavailable is listed in `erreur.txt`.
+- `GET /api/orders/:id/download-all?token=xxx` — Server-side ZIP. Source order: local file → R2 `master`, never Flickr. Legacy rows without a server source return `409 ZIP_SOURCE_NOT_READY` and must be migrated to R2 first; incomplete archives are never cached in R2.
 - `GET /api/orders/:id/download-urls?token=xxx` — **Preferred.** Returns `{ photoId, filename, token }` per photo. No Flickr API calls. Client uses these tokens to call `/api/public/photos/:id/download?token=xxx` individually and builds ZIP in browser.
 - `GET /api/orders/:id` — Retrieve order + tokens (completed orders only).
 
