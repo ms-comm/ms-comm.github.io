@@ -1,5 +1,11 @@
 # Frontend Website — GitHub Pages
 
+## 2026-09-13 topbar and language parity
+
+The shared navigation is a grid (`brand / nav / nav-actions`). The right rail keeps the quote CTA, language switcher and account profile aligned to the same 40px height. Links and account controls use a soft radial gold halo on hover/focus; they do not fill with a solid hover box. Keep `.nav-actions` on every full header wrapper.
+
+The translation source is `assets/data/translations.json`. The `site_2026_09` section covers the newly added Atelier, account, legal, gallery feedback, needs-grid and testimonial copy. `assets/js/i18n.js` merges static bundle keys with the API response so new GitHub text remains bilingual while persistent Fly data catches up. Legal pages (`cgv.html`, `confidentialite.html`, `mentions-legales.html`) include the same i18n runtime.
+
 > Deploy: `git push origin main` from root. Auto-publishes to `https://ms-comm.github.io/`.
 > Never include `photo-server/` in the public frontend repository. The backend
 > is maintained separately in the private repository `Fuzois21/ms-comm-server`.

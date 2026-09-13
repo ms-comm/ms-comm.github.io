@@ -175,9 +175,10 @@ main {
 }
 
 .topbar-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
+  gap: clamp(16px, 2.5vw, 40px);
   height: var(--nav-h);
 }
 
@@ -218,10 +219,13 @@ main {
 .nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  min-width: 0;
 }
 
 .nav a {
+  isolation: isolate;
   font-size: 13px;
   font-weight: 500;
   color: var(--muted);
@@ -231,10 +235,34 @@ main {
   position: relative;
 }
 
+.nav a::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 50% auto auto 50%;
+  width: 118%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.55);
+  background: radial-gradient(circle, rgba(255,210,90,.28) 0%, rgba(198,155,0,.13) 38%, transparent 72%);
+  filter: blur(13px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .24s ease, transform .24s cubic-bezier(.22,1,.36,1);
+}
+
 .nav a:hover,
+.nav a:focus-visible,
 .nav a.active {
   color: var(--text);
-  background: rgba(255,255,255,0.06);
+  background: transparent;
+}
+
+.nav a:hover::before,
+.nav a:focus-visible::before,
+.nav a.active::before {
+  opacity: .9;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .nav a.active::after {
@@ -295,6 +323,18 @@ main {
   align-items: center;
   justify-content: center;
 }
+
+/* Right-side controls share one rhythm: same 40px rail, even gap, no
+   baseline drift between quote CTA, language switch and profile. */
+.nav-actions {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nav-actions > * { flex: 0 0 auto; }
 
 /* ===== BUTTONS ===== */
 .btn {
@@ -2476,13 +2516,16 @@ textarea:focus {
   }
 }
 .lang-switch {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(198, 155, 0, 0.25);
+  height: 40px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 999px;
-  padding: 3px 6px;
+  padding: 3px 5px;
   font-family: var(--font-heading);
   font-size: 12px;
   font-weight: 600;
@@ -2490,10 +2533,27 @@ textarea:focus {
   line-height: 1;
   transition: border-color .2s, background .2s;
 }
-.lang-switch:hover {
-  border-color: var(--gold);
-  background: rgba(198, 155, 0, 0.08);
+.lang-switch::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 50% auto auto 50%;
+  width: 46px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.55);
+  background: radial-gradient(circle, rgba(255,210,90,.28), rgba(198,155,0,.1) 42%, transparent 72%);
+  filter: blur(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s cubic-bezier(.22,1,.36,1);
 }
+.lang-switch:hover {
+  border-color: transparent;
+  background: transparent;
+}
+.lang-switch:hover::before,
+.lang-switch:focus-within::before { opacity: .9; transform: translate(-50%, -50%) scale(1); }
 .lang-switch .lang-opt {
   display: inline-flex;
   align-items: center;
@@ -2513,7 +2573,7 @@ textarea:focus {
 }
 .lang-switch .lang-opt.active {
   color: var(--gold-2);
-  background: rgba(198, 155, 0, 0.18);
+  background: transparent;
   cursor: default;
 }
 .lang-switch .lang-opt:focus-visible {

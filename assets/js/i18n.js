@@ -52,6 +52,23 @@
         clearTimeout(timer);
         if (r.ok) {
           const data = await r.json();
+          /* The API can lag behind the static bundle after a GitHub Pages
+             release. Merge the bundle's newer sections/keys without
+             overriding admin-edited API values, so every page remains
+             bilingual during that propagation window. */
+          try {
+            const sr = await fetch('/assets/data/translations.json' + stamp, { cache: 'no-store' });
+            if (sr.ok) {
+              const staticData = await sr.json();
+              Object.entries(staticData).forEach(([section, entries]) => {
+                if (!data[section]) { data[section] = entries; return; }
+                if (entries && typeof entries === 'object' && data[section] && typeof data[section] === 'object'
+                    && !Array.isArray(entries) && !Array.isArray(data[section])) {
+                  data[section] = { ...entries, ...data[section] };
+                }
+              });
+            }
+          } catch (_) { /* API data remains a valid source on its own. */ }
           console.info('[i18n] loaded from backend (' + Object.keys(data).length + ' sections)');
           return data;
         }
@@ -741,6 +758,115 @@
     "Couverture": "Coverage",
     "Le serveur photo n'est pas disponible — démarrez node server.js dans photo-server/.":
       "The photo server is not available — start node server.js in photo-server/.",
+    "MS Comm' — Créations": "MS Comm' — Creations",
+    "Vous avez un": "You have a",
+    "besoin précis ?": "specific need?",
+    "Une idée, un objectif, un projet à lancer : parlons-en.": "An idea, a goal, a project to launch: let's talk.",
+    "Développer mes réseaux sociaux": "Grow my social media",
+    "Gestion, création de contenu, templates, Reels…": "Management, content creation, templates, Reels…",
+    "Créer mon identité": "Build my identity",
+    "Logo, charte graphique, couleurs, typographies…": "Logo, brand guidelines, colours, typefaces…",
+    "Créer mes supports de communication": "Create my communication materials",
+    "Flyers, affiches, cartes de visite, cartes de fidélité, menus…": "Flyers, posters, business cards, loyalty cards, menus…",
+    "Mettre mon activité en valeur": "Showcase my business",
+    "Photographie, événements, portraits, produits…": "Photography, events, portraits, products…",
+    "Créer du contenu vidéo": "Create video content",
+    "Reels, montage, vidéos événementielles…": "Reels, editing, event videos…",
+    "Je lance mon entreprise": "I'm launching my business",
+    "Pack de lancement complet.": "Complete launch pack.",
+    "Services à la carte": "À la carte services",
+    "Des créations rapides et, en toute cohérence visuelle.": "Quick creations with complete visual consistency.",
+    "Réseaux Sociaux": "Social Media",
+    "Identité Visuelle": "Visual Identity",
+    "Une idée à préciser ensemble": "An idea to shape together",
+    "Une proposition claire et adaptée": "A clear, tailored proposal",
+    "Vous ne trouvez pas le service recherché ?": "Can't find the service you need?",
+    "Une proposition claire, adaptée à votre projet": "A clear proposal tailored to your project",
+    "Voir ou en discuter": "View or discuss it",
+    "Pack Réseaux Sociaux Starter — 80€": "Social Media Starter Pack — €80",
+    "Pack Réseaux Sociaux Boost — 190€": "Social Media Boost Pack — €190",
+    "Pack Identité Visuelle — 320€": "Visual Identity Pack — €320",
+    "Pack Beauté & Bien-être — 140€": "Beauty & Wellness Pack — €140",
+    "Pack Événement — 70€": "Event Pack — €70",
+    "20 photos ou plus — 10€ / unité": "20 photos or more — €10 / unit",
+    "Photo d'événement — Prix à discuter": "Event photography — Price to discuss",
+    "Chargement de votre espace…": "Loading your space…",
+    "Connectez-vous pour accéder à votre espace": "Sign in to access your space",
+    "Vos photos favorites, vos téléchargements et vos commandes sont conservés dans votre espace MS Comm'. La galerie reste librement consultable sans compte.": "Your favourite photos, downloads and orders are kept in your MS Comm' space. The gallery remains freely accessible without an account.",
+    "Se connecter ou créer un compte": "Sign in or create an account",
+    "Adresse e-mail": "Email address",
+    "L'adresse e-mail sert de clé à vos commandes et ne peut pas être modifiée ici. Écrivez-nous pour la changer.": "Your email address is the key to your orders and cannot be changed here. Contact us to update it.",
+    "Créer dans L'atelier": "Create in The Atelier",
+    "Vous avez déjà un compte ?": "Already have an account?",
+    "Espace créé. Bienvenue !": "Account created. Welcome!",
+    "Vous êtes connecté.": "You are signed in.",
+    "Se déconnecter": "Sign out",
+    "Afficher le mot de passe": "Show password",
+    "Masquer le mot de passe": "Hide password",
+    "⚠️ Le serveur photo est momentanément indisponible. Réessayez dans quelques instants.": "⚠️ The photo server is temporarily unavailable. Please try again shortly.",
+    "Erreur serveur.": "Server error.",
+    "Erreur lors du paiement. Réessayez.": "Payment error. Please try again.",
+    "Veuillez accepter les conditions de vente et la politique de confidentialité.": "Please accept the terms of sale and privacy policy.",
+    "Retrouvez vos favoris, vos téléchargements et vos commandes.": "Find your favourites, downloads and orders.",
+    "Se connecter": "Sign in",
+    "Créer un compte": "Create an account",
+    "Mot de passe": "Password",
+    "Rester connecté pendant 30 jours": "Keep me signed in for 30 days",
+    "Mot de passe oublié ?": "Forgot your password?",
+    "Pas encore de compte ?": "Don't have an account yet?",
+    "Super accompagnement !": "Great support!",
+    "Navigation principale": "Main navigation",
+    "Réglages de création": "Creation settings",
+    "Aperçu de la création": "Creation preview",
+    "Melody en événement sportif": "Melody at a sporting event",
+    "La photo,": "The photo,",
+    "hors écran.": "off-screen.",
+    "Tirages, coques et calendriers pensés comme des pièces photo. Choisissez une image, choisissez un objet, puis vendez sans stock grâce à l'impression à la demande.": "Prints, phone cases and calendars designed as photo pieces. Choose an image, choose an object, then sell without stock through print-on-demand.",
+    "Voir la collection": "View the collection",
+    "Production à la demande · France & Europe": "Print-on-demand · France & Europe",
+    "Une collection courte, avec de vraies marges.": "A focused collection with real margins.",
+    "Prix publics conseillés pour lancer la gamme. Le fournisseur fabrique et expédie ; MS Comm' garde la direction artistique.": "Suggested retail prices to launch the range. The supplier manufactures and ships; MS Comm' keeps the art direction.",
+    "Tarifs indicatifs · vérifiés le 13/09/2026": "Indicative prices · checked 13/09/2026",
+    "À partir de": "From",
+    "Giclée sur papier mat ou texturé, pour une image qui se garde.": "Giclée print on matte or textured paper, made to last.",
+    "Préparer ce tirage": "Prepare this print",
+    "Une pièce murale mate, avec option cadre pour monter en gamme.": "A matte wall piece, with an optional frame for a premium finish.",
+    "Préparer ce poster": "Prepare this poster",
+    "Coque de téléphone": "Phone case",
+    "Préparer cette coque": "Prepare this case",
+    "Douze images, une couverture, un objet cadeau qui revient toute l'année.": "Twelve images, one cover, a gift object that returns all year.",
+    "Préparer ce calendrier": "Prepare this calendar",
+    "Quel site choisir ?": "Which platform should you choose?",
+    "Trois options sérieuses selon le produit, la zone de livraison et la marge recherchée.": "Three solid options depending on the product, delivery zone and target margin.",
+    "Le meilleur pour les tirages photo": "Best for photo prints",
+    "Le meilleur pour livrer localement": "Best for local delivery",
+    "Le meilleur pour le catalogue merch": "Best for a merch catalogue",
+    "Composer avant de vendre.": "Compose before you sell.",
+    "Choisissez une photo, testez le support et sauvegardez l'idée dans votre profil.": "Choose a photo, test the product and save the idea to your profile.",
+    "Édition": "Editor",
+    "Échelle": "Scale",
+    "Ma création MS Comm": "My MS Comm creation",
+    "Mes créations": "My creations",
+    "Vos essais restent dans ce navigateur et sont visibles depuis votre profil.": "Your drafts stay in this browser and are visible from your profile.",
+    "Aucune création enregistrée pour l'instant. Commencez avec une photo de la galerie.": "No saved creation yet. Start with a photo from the gallery.",
+    "Conditions générales de vente": "Terms of sale",
+    "Politique de confidentialité": "Privacy policy",
+    "Mentions légales": "Legal notice",
+    "*Prix publics conseillés, hors TVA et frais de plateforme. Les frais réels varient selon pays, format, taxes et options ; le prix final doit être confirmé dans le catalogue fournisseur avant mise en vente.": "*Suggested retail prices, excluding VAT and platform fees. Actual fees vary by country, format, taxes and options; the final price must be confirmed in the supplier catalogue before listing.",
+    "dès 3 €": "from €3",
+    "dès £9,50": "from £9.50",
+    "dès £6,95": "from £6.95",
+    "dès 5,79 $": "from $5.79",
+    "dès 7,29 $": "from $7.29",
+    "Expédition": "Shipping",
+    ". Une réclamation peut être adressée à la CNIL.": ". You may also lodge a complaint with the CNIL.",
+    "À compléter avant activation commerciale.": "To be completed before commercial launch.",
+    "Informations obligatoires à renseigner avant mise en ligne commerciale.": "Mandatory information to complete before commercial launch.",
+    "Données collectées": "Data collected",
+    "Finalités et durée": "Purposes and retention",
+    "Vos droits": "Your rights",
+    "Cookies": "Cookies",
+    "Hébergement": "Hosting",
     "MS Comm' logo": "MS Comm' logo",
     "MS": "MS"
   };

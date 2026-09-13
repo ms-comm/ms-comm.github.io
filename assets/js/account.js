@@ -441,6 +441,8 @@
     const host = document.querySelector('.topbar-inner');
     if (!host || document.getElementById('acct-control')) return;
     const cta = host.querySelector('.nav-cta');
+    const actionRow = cta && cta.parentNode;
+    if (actionRow) actionRow.classList.add('nav-actions');
     const wrap = document.createElement('div');
     wrap.className = 'acct-control';
     wrap.id = 'acct-control';
