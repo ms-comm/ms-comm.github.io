@@ -33,6 +33,14 @@ and SMTP must be enabled in the private admin settings for delivery.
 
 > **Update this file + the relevant `docs/` file at every code change.**
 
+### Bilingual changes (FR/EN)
+
+Every new or edited visitor-facing string must ship with its French source and
+English translation in `assets/data/translations.json` (or an explicit
+`data-i18n` semantic entry). Never add a hard-coded French-only label in a
+shared page, dynamic component, email link, menu, status, or error message.
+After UI changes, test both `fr` and `en` before pushing GitHub Pages.
+
 Visitor tracking + admin stats: `assets/js/track.js` journals every visitor (anonymous = `vid` + IP, signed-in = linked to the account) into `db/track-events.json` / `track-sessions.json` / `visitors.json` through `POST /api/public/track` (`services/tracking.js`, always 204, client-only event types). Server-side truths (`download`, `album_download`, `favorite_*`, `login`, `signup`, `logout`, `order`) are written by `tracking.logServerEvent()` at the point where the action happens and can never be forged from the browser. `services/stats.js` aggregates for `/api/admin/stats/*` (summary, photos, albums, visitors, events — every route accepts `range=7d|30d|90d|12m|all` or `from/to` + `granularity`), and feeds the Overview (`trackingActive`, `breakdown`, extra kpis) and Clients (`segment=visitors`, `tracking{}`, `journey[]`). Views are deduped per visitor/target within 30 s; the raw IP is kept on purpose and only ever surfaces behind `requireAuth`. `X-MS-Vid` must stay in the CORS `allowedHeaders`. Contract: [docs/tracking.md](docs/tracking.md).
 
 ---

@@ -256,7 +256,7 @@ history is visible without a destructive migration.
 | `db.js` | Atomic JSON read/write with per-file mutexes. Retries rename with backoff; fallback to direct overwrite. |
 | `flickrService.js` | OAuth 1.0a, upload, download, photoset sync, circuit breaker. See [flickr_integration.md](flickr_integration.md). |
 | `imageProcessor.js` | Sharp pipeline: decode → resize (1200px preview) → watermark SVG → encode JPG q85. |
-| `emailService.js` | Nodemailer: private album access codes, order download links. |
+| `emailService.js` | Nodemailer: branded MS Comm' logo, private album access codes, account welcome, password reset, and order download links. |
 | `stripeService.js` | Stripe SDK: create payment intent, validate webhook signature. |
 | `analytics.js` | Lightweight download/visit counters in JSON files (capped at 5000 entries). |
 | `insights.js` | Read-only aggregation for Overview + Clients. `getOverview(range)`, `getClients(query)`, `getClientDetail(id)`. Never mutates state. |

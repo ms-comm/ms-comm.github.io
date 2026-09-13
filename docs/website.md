@@ -82,7 +82,8 @@ are intentionally generic so the endpoint cannot enumerate registered emails.
 - Storage: `localStorage['mscomm_lang']`
 - Dictionary source: `assets/data/translations.json` (loaded by server at `/api/public/translations`)
 - Engine: `walkAndTranslate` scans all DOM text nodes + attributes (`placeholder`, `alt`, `aria-label`, `title`)
-- **Important**: Elements with `data-i18n` attributes are translated by the DICT system like all others (do NOT add a skip for `data-i18n` in `shouldSkip` — was a known bug, now fixed)
+- **Important**: Elements with `data-i18n` attributes are translated through the semantic layer first; the legacy text walker skips those subtrees so language switches cannot overwrite them. Missing semantic entries fall back to the shared FR→EN dictionary.
+- **Bilingual rule**: every new visitor-facing string needs a French source and English translation in `assets/data/translations.json` (or a semantic `data-i18n` entry), including dynamic labels, menus, statuses, emails, and errors.
 - `_fr_overrides`: admin can override French strings; stored in `translations.json._fr_overrides`
 - MutationObserver re-translates dynamically added content
 

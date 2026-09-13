@@ -756,6 +756,7 @@
 
   const nodeOriginals   = new WeakMap(); /* Text-node → original FR value */
   const attrOriginals   = new WeakMap(); /* Element  → { attrName: origValue } */
+  const semanticOriginals = new WeakMap(); /* data-i18n element → original FR content */
   /* Last value we wrote to a given attribute — lets the observer tell our
      own writes apart from external updates (e.g. main.js flipping the
      menuBtn aria-label between "Menu" and "Fermer"). */
@@ -794,6 +795,9 @@
          uppercase when HTML element). We uppercase-compare above; also
          handle namespaced SVG text by checking namespace. */
       if (p.namespaceURI && p.namespaceURI.indexOf('svg') !== -1) return true;
+      /* Semantic translation owns this subtree; do not let the legacy text
+         walker overwrite it after a language switch. */
+      if (p.hasAttribute && (p.hasAttribute('data-i18n') || p.hasAttribute('data-i18n-placeholder') || p.hasAttribute('data-i18n-aria'))) return true;
       p = p.parentNode;
     }
     return false;
@@ -1065,7 +1069,7 @@
    *  it from overwriting what we set here.
    * --------------------------------------------------------------------- */
   function applyDataI18n(root, lang) {
-    if (!root || !Object.keys(_i18nData).length) return;
+    if (!root) return;
     const els = [];
     if (root.nodeType === 1 && root.hasAttribute) {
       if (root.hasAttribute('data-i18n') || root.hasAttribute('data-i18n-placeholder') || root.hasAttribute('data-i18n-aria')) {
@@ -1079,26 +1083,32 @@
       const key = el.getAttribute('data-i18n');
       if (key) {
         const entry = _i18nData[key];
-        if (entry) {
-          const text = entry[lang] !== undefined ? entry[lang] : entry['fr'];
-          if (text !== undefined && el.textContent !== text) el.textContent = text;
-        }
+        const original = semanticOriginals.has(el) ? semanticOriginals.get(el).text : el.textContent;
+        if (!semanticOriginals.has(el)) semanticOriginals.set(el, { text: original });
+        const text = entry
+          ? (entry[lang] !== undefined ? entry[lang] : entry.fr)
+          : (lang === 'fr' ? original : lookup(original));
+        if (text !== undefined && text !== null && el.textContent !== text) el.textContent = text;
       }
       const pKey = el.getAttribute('data-i18n-placeholder');
       if (pKey) {
         const entry = _i18nData[pKey];
-        if (entry) {
-          const text = entry[lang] !== undefined ? entry[lang] : entry['fr'];
-          if (text !== undefined) el.setAttribute('placeholder', text);
-        }
+        const store = semanticOriginals.get(el) || {};
+        if (!('placeholder' in store)) store.placeholder = el.getAttribute('placeholder') || '';
+        semanticOriginals.set(el, store);
+        const text = entry ? (entry[lang] !== undefined ? entry[lang] : entry.fr)
+          : (lang === 'fr' ? store.placeholder : lookup(store.placeholder));
+        if (text !== undefined && text !== null) el.setAttribute('placeholder', text);
       }
       const aKey = el.getAttribute('data-i18n-aria');
       if (aKey) {
         const entry = _i18nData[aKey];
-        if (entry) {
-          const text = entry[lang] !== undefined ? entry[lang] : entry['fr'];
-          if (text !== undefined) el.setAttribute('aria-label', text);
-        }
+        const store = semanticOriginals.get(el) || {};
+        if (!('aria' in store)) store.aria = el.getAttribute('aria-label') || '';
+        semanticOriginals.set(el, store);
+        const text = entry ? (entry[lang] !== undefined ? entry[lang] : entry.fr)
+          : (lang === 'fr' ? store.aria : lookup(store.aria));
+        if (text !== undefined && text !== null) el.setAttribute('aria-label', text);
       }
     });
   }
