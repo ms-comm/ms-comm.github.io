@@ -63,6 +63,24 @@
 .atelier-provider dt { color:rgba(255,255,255,.4); font-size:9.5px; }
 .atelier-provider dd { margin-top:4px; color:#fff; font-size:12px; font-weight:650; }
 .atelier-provider > a { display:block; margin-top:17px; color:var(--atelier-gold); font-size:11.5px; font-weight:650; }
+.atelier-comparison { background:linear-gradient(180deg,rgba(255,255,255,.018),transparent 70%); }
+.atelier-table-wrap { overflow-x:auto; border:1px solid rgba(255,255,255,.12); border-radius:18px; background:rgba(255,255,255,.035); }
+.atelier-comparison-table { width:100%; min-width:1080px; border-collapse:collapse; text-align:left; }
+.atelier-comparison-table caption { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.atelier-comparison-table th,.atelier-comparison-table td { padding:16px 14px; border-bottom:1px solid rgba(255,255,255,.09); vertical-align:top; }
+.atelier-comparison-table thead th { color:rgba(255,255,255,.48); font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+.atelier-comparison-table tbody tr:last-child th,.atelier-comparison-table tbody tr:last-child td { border-bottom:0; }
+.atelier-comparison-table tbody tr { transition:background .2s ease; }
+.atelier-comparison-table tbody tr:hover { background:rgba(255,255,255,.035); }
+.atelier-comparison-table .atelier-comparison-picked { background:rgba(120,200,120,.07); }
+.atelier-comparison-table tbody th { min-width:160px; color:#fff; font-size:13px; font-weight:650; }
+.atelier-table-provider { display:flex; align-items:center; gap:9px; }
+.atelier-table-provider > b { display:grid; place-items:center; flex:0 0 auto; width:30px; height:30px; border-radius:9px; background:var(--atelier-gold); color:#0a160b; font:700 13px var(--font-heading); }
+.atelier-table-provider > span { display:grid; gap:3px; }
+.atelier-table-provider small,.atelier-comparison-table td small { display:block; color:rgba(255,255,255,.42); font-size:10px; font-weight:400; line-height:1.35; }
+.atelier-comparison-table td strong { color:#fff; font-size:12px; font-weight:650; white-space:nowrap; }
+.atelier-comparison-table td:nth-child(2) strong,.atelier-comparison-table td:nth-child(5) strong { color:var(--atelier-gold); }
+.atelier-comparison-note { margin-top:14px; color:rgba(255,255,255,.43); font-size:11px; line-height:1.55; }
 .atelier-hero-note { align-self:end; padding:20px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.05); backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3); border-radius:18px; box-shadow:0 18px 44px rgba(0,0,0,.26); }
 .atelier-hero-note strong { display:block; font-size:13px; color:var(--atelier-gold); letter-spacing:.08em; text-transform:uppercase; }
 .atelier-hero-note p { margin-top:9px; color:rgba(255,255,255,.66); font-size:13px; line-height:1.6; }
@@ -138,6 +156,7 @@
 @media (max-width:1100px) { .atelier-product-shop-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:700px) { .atelier-hero { padding-top:calc(var(--nav-h) + 44px); } .atelier-hero-grid { grid-template-columns:1fr; } .atelier-hero-note { max-width:420px; } .atelier-workbench { grid-template-columns:1fr; } .atelier-stage { min-height:430px; order:-1; } .atelier-panel { padding:16px; } .atelier-process { grid-template-columns:1fr; } }
 @media (max-width:760px) { .atelier-shop-hero-grid { grid-template-columns:1fr; gap:20px; } .atelier-shop-hero { padding-bottom:42px; } .atelier-hero-collage { min-height:370px; max-width:520px; margin:0 auto; width:100%; } .atelier-collage-main { right:9%; width:66%; } .atelier-collage-small { width:38%; } .atelier-price-note { align-self:auto; white-space:normal; } .atelier-provider-grid { grid-template-columns:1fr; } .atelier-provider > p { min-height:0; } }
+@media (max-width:760px) { .atelier-table-wrap { overflow:visible; border:0; background:transparent; } .atelier-comparison-table { min-width:0; display:block; } .atelier-comparison-table thead { display:none; } .atelier-comparison-table tbody,.atelier-comparison-table tr,.atelier-comparison-table th,.atelier-comparison-table td { display:block; } .atelier-comparison-table tbody tr { margin-bottom:12px; padding:14px; border:1px solid rgba(255,255,255,.11); border-radius:16px; background:rgba(255,255,255,.035); } .atelier-comparison-table tbody tr:last-child { margin-bottom:0; } .atelier-comparison-table tbody th,.atelier-comparison-table tbody td { min-width:0; padding:0; border:0; } .atelier-comparison-table tbody th { padding-bottom:13px; } .atelier-comparison-table tbody td { display:grid; grid-template-columns:44% 56%; gap:8px; padding:8px 0; border-top:1px solid rgba(255,255,255,.08); } .atelier-comparison-table tbody td::before { content:attr(data-label); color:rgba(255,255,255,.45); font-size:10px; letter-spacing:.08em; text-transform:uppercase; } .atelier-comparison-table td strong { white-space:normal; } .atelier-comparison-table .atelier-comparison-picked { background:rgba(120,200,120,.08); } }
 @media (max-width:480px) { .atelier-page .container { width:min(var(--max),calc(100% - 30px)); } .atelier-products,.atelier-saved-grid { grid-template-columns:1fr 1fr; gap:8px; } .atelier-product { min-height:135px; padding:13px; } .atelier-product h3 { font-size:12.5px; } .atelier-product p { font-size:11px; } .atelier-stage { min-height:360px; } .atelier-artboard { width:74%; } .atelier-actions .atelier-btn { flex:1; } }
 @media (max-width:520px) { .atelier-product-shop-grid { grid-template-columns:1fr; } .atelier-product-image { height:250px; } .atelier-section-heading { align-items:flex-start; flex-direction:column; } .atelier-hero-collage { min-height:310px; } .atelier-shop-hero h1 { font-size:clamp(50px,16vw,74px); } }
 @media (prefers-reduced-motion:reduce) { .atelier-btn,.atelier-choice,.atelier-artboard,.atelier-artboard img { transition:none; } }
