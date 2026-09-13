@@ -10,6 +10,24 @@
   const menuBtn = document.getElementById('menuBtn');
   const drawer = document.getElementById('drawer');
 
+  /* ---------- L'atelier entry point ----------
+     Keep the new surface discoverable from every existing page without
+     duplicating another navigation variant in each static document. */
+  const atelierPath = 'atelier.html';
+  const currentFile = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('.nav, .drawer').forEach((nav) => {
+    if (nav.querySelector('[data-nav-atelier]')) return;
+    const link = document.createElement('a');
+    link.href = atelierPath;
+    link.dataset.navAtelier = 'true';
+    link.textContent = "L'atelier";
+    link.setAttribute('aria-label', "Ouvrir L'atelier");
+    if (currentFile === atelierPath) link.classList.add('active');
+    const contact = Array.from(nav.children).find((el) => el.matches('a[href*="contact"]'));
+    if (contact) nav.insertBefore(link, contact);
+    else nav.appendChild(link);
+  });
+
   function closeDrawer() {
     if (!drawer) return;
     drawer.classList.remove('is-open');

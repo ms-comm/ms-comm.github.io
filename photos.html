@@ -367,6 +367,8 @@
 .lb-btn-cart:hover { background:rgba(34,197,94,.25); }
 .lb-btn-print { background:rgba(255,255,255,.08); color:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.1); }
 .lb-btn-print:hover { background:rgba(255,255,255,.14); color:#f0f0f0; }
+.lb-btn-atelier { background:rgba(198,155,0,.14); color:var(--gold-2); border:1px solid rgba(198,155,0,.38); }
+.lb-btn-atelier:hover { background:rgba(198,155,0,.24); color:#fff; border-color:var(--gold-2); }
 .lb-btn-share { background:rgba(255,255,255,.06); color:var(--muted); border:1px solid rgba(255,255,255,.08); }
 .lb-btn-share:hover { color:#f0f0f0; }
 /* Keep the lightbox compact on phones: the image stays primary, while
@@ -395,6 +397,8 @@
 .dl-modal-overlay.open { display:flex; animation:dlOlIn .15s ease; }
 @keyframes dlOlIn { from{opacity:0} to{opacity:1} }
 .dl-modal-title { color:#f0f0f0; font-family:'Poppins',sans-serif; font-size:15px; font-weight:600; padding:14px 18px 8px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-bottom:1px solid rgba(255,255,255,.06); }
+.dl-atelier-link { display:flex; align-items:center; justify-content:center; margin:8px 8px 4px; min-height:40px; border-radius:9px; border:1px solid rgba(198,155,0,.34); background:rgba(198,155,0,.12); color:var(--gold-2); font-size:12.5px; font-weight:600; text-decoration:none; transition:background .18s,border-color .18s; }
+.dl-atelier-link:hover { background:rgba(198,155,0,.22); border-color:var(--gold-2); color:#fff; }
 .dl-modal-close { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:0 6px; line-height:1; transition:color .15s; }
 .dl-modal-close:hover { color:#f0f0f0; }
 .dl-dropdown { background:#141414; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:6px; width:min(420px,calc(100vw - 32px)); min-width:0; max-width:100%; box-shadow:0 24px 64px rgba(0,0,0,.7); animation:dlMin .18s ease; box-sizing:border-box; }
@@ -776,6 +780,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
           <span id="lb-fav-label">Ajouter aux favoris</span>
         </button>
+        <button class="lb-btn lb-btn-atelier" id="lb-atelier" type="button" aria-label="Créer un merch dans L'atelier">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg>
+          <span>Créer dans L'atelier</span>
+        </button>
         <button class="lb-btn lb-btn-share" id="lb-share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <span class="lb-share-label">Partager</span>
@@ -796,6 +804,7 @@
             <button class="dl-modal-close" id="lb-dl-close" aria-label="Fermer">×</button>
           </div>
           <div id="lb-dl-options"></div>
+          <a class="dl-atelier-link" id="lb-dl-atelier" href="atelier.html">Créer un objet avec cette photo →</a>
         </div>
       </div>
       <div class="lb-copyright" id="lb-copyright">Les images présentées sur ce site sont protégées par le droit d'auteur. Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés. Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.</div>
@@ -2069,6 +2078,12 @@ function renderLightbox() {
   if (paidNote) meta.push(paidNote);
   document.getElementById('lb-meta').innerHTML = meta.join('');
 
+  const atelierLink = document.getElementById('lb-dl-atelier');
+  const atelierButton = document.getElementById('lb-atelier');
+  const atelierHref = `atelier.html?photo=${encodeURIComponent(p.id || '')}&title=${encodeURIComponent(p.title || 'Ma création MS Comm')}&src=${encodeURIComponent(resolveUrl(p.previewUrl || p.watermarkedUrl || ''))}`;
+  if (atelierLink) atelierLink.href = atelierHref;
+  if (atelierButton) atelierButton.dataset.href = atelierHref;
+
   buildDlDropdown(p);
   renderFilmstrip();
   updateLbFavorite();
@@ -2373,6 +2388,13 @@ document.getElementById('lb-share').addEventListener('click', () => {
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lb-share-label">Lien copié !</span>`;
     setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lb-share-label">Partager</span>`; }, 2000);
   });
+});
+
+document.getElementById('lb-atelier').addEventListener('click', () => {
+  const p = lbPhotos[lbIndex];
+  if (!p) return;
+  const href = `atelier.html?photo=${encodeURIComponent(p.id || '')}&title=${encodeURIComponent(p.title || 'Ma création MS Comm')}&src=${encodeURIComponent(resolveUrl(p.previewUrl || p.watermarkedUrl || ''))}`;
+  window.location.href = href;
 });
 
 /* ===== FAVORITES (lightbox) =====================================

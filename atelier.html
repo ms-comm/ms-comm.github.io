@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>L'atelier | MS Comm'</title>
+  <meta name="description" content="L'atelier MS Comm' : transformez une photo en création prête pour le merch." />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/account.css" />
+  <link rel="stylesheet" href="assets/css/atelier.css" />
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/account.js" defer></script>
+  <script src="assets/js/track.js" defer></script>
+  <script src="assets/js/atelier.js" defer></script>
+</head>
+<body class="atelier-page">
+  <header class="topbar">
+    <div class="container"><div class="topbar-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="assets/data/logo_black-removebg.png" alt="MS Comm' logo" /><div class="brand-text"><strong>MS Comm'</strong><span>Prestataire de services de communication</span></div></a>
+      <nav class="nav" aria-label="Navigation principale">
+        <a href="index.html">Accueil</a><a href="experiences.html">Expériences</a><a href="services.html">Services</a><a href="portfolio.html">Portfolio</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:10px"><a class="nav-cta" href="contact.html">Demander un devis</a><button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    </div></div>
+  </header>
+  <div class="drawer" id="drawer"><a href="index.html">Accueil</a><a href="experiences.html">Expériences</a><a href="services.html">Services</a><a href="portfolio.html">Portfolio</a><a href="photos.html">Photographie</a><a href="contact.html">Contact</a></div>
+
+  <main>
+    <section class="atelier-hero"><div class="container"><div class="atelier-hero-grid">
+      <div>
+        <div class="atelier-kicker">MS Comm' · création physique</div>
+        <h1>L'<em>atelier</em></h1>
+        <p class="atelier-hero-copy">Une photo vous plaît ? Donnez-lui une autre vie. Ajustez son format, imaginez son support, gardez votre création, puis finalisez la production sur le site partenaire de votre choix.</p>
+        <div class="atelier-actions"><a class="atelier-btn atelier-btn-primary" href="photos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>Choisir une photo</a><a class="atelier-btn" href="#atelier-produits">Voir les idées merch</a></div>
+      </div>
+      <aside class="atelier-hero-note"><strong>Du fichier à l'objet</strong><p>Le prix, la fabrication et l'expédition sont définis avec le partenaire externe. L'atelier sert à préparer et présenter votre création.</p></aside>
+    </div></div></section>
+
+    <section class="atelier-section" aria-labelledby="atelier-editor-title"><div class="container">
+      <div class="atelier-section-heading"><div><h2 id="atelier-editor-title">Préparer une création</h2><p>Commencez avec une photo de la galerie ou testez l'aperçu ci-dessous.</p></div><a class="atelier-btn" href="compte.html#profil">Mes créations enregistrées</a></div>
+      <div class="atelier-workbench">
+        <aside class="atelier-panel" aria-label="Réglages de création">
+          <h3>Réglages</h3>
+          <div class="atelier-control"><label>Support</label><fieldset class="atelier-choice-grid"><button class="atelier-choice is-active" type="button" data-product="print" aria-pressed="true">Impression</button><button class="atelier-choice" type="button" data-product="poster" aria-pressed="false">Affiche</button><button class="atelier-choice" type="button" data-product="tote" aria-pressed="false">Tote bag</button><button class="atelier-choice" type="button" data-product="tshirt" aria-pressed="false">T-shirt</button><button class="atelier-choice" type="button" data-product="mug" aria-pressed="false">Mug</button><button class="atelier-choice" type="button" data-product="card" aria-pressed="false">Carte</button></fieldset></div>
+          <div class="atelier-control"><label for="atelier-format">Format</label><select class="atelier-select" id="atelier-format"><option value="portrait">Portrait · A4</option><option value="square">Carré · 30 × 30</option><option value="landscape">Paysage · A3</option></select></div>
+          <div class="atelier-control"><label for="atelier-zoom">Échelle <span id="atelier-zoom-value">100 %</span></label><input class="atelier-range" id="atelier-zoom" type="range" min="1" max="1.45" step=".01" value="1" /><div class="atelier-range-meta"><span>Recadrer</span><span>Respirer</span></div></div>
+          <div class="atelier-actions"><button class="atelier-btn" id="atelier-rotate" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/></svg>Tourner</button><button class="atelier-btn" id="atelier-reset" type="button">Réinitialiser</button></div>
+        </aside>
+        <div class="atelier-stage"><figure class="atelier-artboard" id="atelier-artboard"><img id="atelier-preview" src="assets/data/image_photo_1.jpg" alt="Aperçu de la création" /><figcaption id="atelier-preview-title">Ma création MS Comm</figcaption></figure><p class="atelier-stage-empty" hidden>Choisissez une photo dans la galerie pour commencer.</p></div>
+        <aside class="atelier-panel atelier-partner"><div><h3>Prêt à produire ?</h3><p class="atelier-partner-copy">Enregistrez votre idée, puis envoyez-nous le support et le format souhaités. Nous vous orientons vers le site de production externe le plus adapté.</p><ul class="atelier-partner-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Fichier et recadrage conservés</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Crédit photo MS Comm' préservé</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Production et livraison séparées</li></ul></div><div><button class="atelier-btn atelier-btn-primary" id="atelier-save" type="button">Enregistrer la création</button><p class="atelier-save-status" id="atelier-save-status" role="status" aria-live="polite"></p><button class="atelier-btn" id="atelier-continue" type="button">Préparer la mise en vente</button></div></aside>
+      </div>
+    </div></section>
+
+    <section class="atelier-section" id="atelier-produits" aria-labelledby="atelier-products-title"><div class="container"><div class="atelier-section-heading"><div><h2 id="atelier-products-title">Ce que vous pouvez proposer</h2><p>Une première gamme claire, à ajuster selon le partenaire d'impression et les marges souhaitées.</p></div></div><div class="atelier-products">
+      <article class="atelier-product"><span class="atelier-product-tag">Iconique</span><div><h3>Impressions fine art</h3><p>Papier mat, satiné ou texturé pour les images fortes.</p></div></article>
+      <article class="atelier-product"><span class="atelier-product-tag">Mur</span><div><h3>Affiches & cadres</h3><p>Formats A4, A3 ou grand format, avec option encadrement.</p></div></article>
+      <article class="atelier-product"><span class="atelier-product-tag">Quotidien</span><div><h3>Tote bags</h3><p>Un support accessible pour une série ou un visuel signature.</p></div></article>
+      <article class="atelier-product"><span class="atelier-product-tag">Textile</span><div><h3>T-shirts & sweats</h3><p>Une capsule en petite série, avec placement frontal ou dos.</p></div></article>
+      <article class="atelier-product"><span class="atelier-product-tag">Objet</span><div><h3>Mugs & accessoires</h3><p>Des objets cadeaux pour clubs, équipes et communautés.</p></div></article>
+      <article class="atelier-product"><span class="atelier-product-tag">Édition</span><div><h3>Cartes & mini-prints</h3><p>Petits formats à collectionner ou glisser dans une commande.</p></div></article>
+    </div><div class="atelier-process"><article class="atelier-process-item"><b>01 · sélectionner</b><strong>Une image, une intention</strong><p>Depuis la galerie, ouvrez une photo puis touchez L’atelier.</p></article><article class="atelier-process-item"><b>02 · éditer</b><strong>Un objet qui ressemble à l’image</strong><p>Support, format, échelle et titre restent lisibles avant production.</p></article><article class="atelier-process-item"><b>03 · vendre</b><strong>Un partenaire prend le relais</strong><p>MS Comm' prépare la création ; le site externe fabrique, encaisse et expédie.</p></article></div></div></section>
+
+    <section class="atelier-section atelier-saved" aria-labelledby="atelier-saved-title"><div class="container"><div class="atelier-section-heading"><div><h2 id="atelier-saved-title">Mes dernières créations</h2><p>Vos essais restent dans ce navigateur. Connectez-vous pour préparer une future synchronisation de compte.</p></div></div><div class="atelier-saved-grid" id="atelier-saved-grid"></div><div class="atelier-empty" id="atelier-saved-empty">Aucune création enregistrée pour l'instant. Votre première idée peut commencer avec une photo de la galerie.</div></div></section>
+  </main>
+  <footer class="footer"><div class="container"><div class="footer-inner"><p>© <span id="year"></span> MS Comm' — Tous droits réservés</p><div class="footer-links"><a href="photos.html">Photographie</a><a href="compte.html#profil">Mon profil</a><a href="contact.html">Contact</a></div></div></div></footer>
+</body>
+</html>
