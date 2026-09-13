@@ -391,37 +391,66 @@
   .album-download-actions .lb-btn { width:auto; min-width:0; height:36px; padding:8px 12px; justify-content:flex-start; }
   .album-download-actions .lb-btn > svg { margin:0; }
 }
-/* download dropdown — now displayed as a centered modal popup */
+/* download sheet — editorial purchase/download surface */
 .dl-dropdown-wrap { position:relative; }
-.dl-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:9000; align-items:center; justify-content:center; padding:24px; backdrop-filter:blur(4px); }
-.dl-modal-overlay.open { display:flex; animation:dlOlIn .15s ease; }
+.dl-modal-overlay { display:none; position:fixed; inset:0; background:rgba(3,4,5,.84); z-index:9000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(14px) saturate(.85); }
+.dl-modal-overlay.open { display:flex; animation:dlOlIn .22s cubic-bezier(.16,1,.3,1); }
 @keyframes dlOlIn { from{opacity:0} to{opacity:1} }
-.dl-modal-title { color:#f0f0f0; font-family:'Poppins',sans-serif; font-size:15px; font-weight:600; padding:14px 18px 8px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-bottom:1px solid rgba(255,255,255,.06); }
-.dl-atelier-link { display:flex; align-items:center; justify-content:center; margin:8px 8px 4px; min-height:40px; border-radius:9px; border:1px solid rgba(198,155,0,.34); background:rgba(198,155,0,.12); color:var(--gold-2); font-size:12.5px; font-weight:600; text-decoration:none; transition:background .18s,border-color .18s; }
-.dl-atelier-link:hover { background:rgba(198,155,0,.22); border-color:var(--gold-2); color:#fff; }
-.dl-modal-close { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:0 6px; line-height:1; transition:color .15s; }
-.dl-modal-close:hover { color:#f0f0f0; }
-.dl-dropdown { background:#141414; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:6px; width:min(420px,calc(100vw - 32px)); min-width:0; max-width:100%; box-shadow:0 24px 64px rgba(0,0,0,.7); animation:dlMin .18s ease; box-sizing:border-box; }
-@keyframes dlMin { from{opacity:0; transform:scale(.95)} to{opacity:1; transform:scale(1)} }
-.dl-sep { height:1px; background:rgba(255,255,255,.07); margin:4px 0; }
+.dl-dropdown { background:linear-gradient(145deg,#1a1b1f 0%,#121316 100%); border:1px solid rgba(255,255,255,.14); border-radius:22px; width:min(760px,calc(100vw - 28px)); min-width:0; max-width:100%; max-height:min(740px,calc(100vh - 36px)); overflow:auto; box-shadow:0 32px 100px rgba(0,0,0,.7),0 0 0 1px rgba(198,155,0,.08); animation:dlMin .24s cubic-bezier(.16,1,.3,1); box-sizing:border-box; }
+@keyframes dlMin { from{opacity:0; transform:translateY(12px) scale(.97)} to{opacity:1; transform:translateY(0) scale(1)} }
+.dl-modal-head { display:grid; grid-template-columns:92px minmax(0,1fr) auto; align-items:center; gap:16px; padding:20px 22px 18px; border-bottom:1px solid rgba(255,255,255,.08); }
+.dl-modal-media { width:92px; height:112px; border-radius:12px; overflow:hidden; background:#0b0c0e; border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 24px rgba(0,0,0,.28); }
+.dl-modal-media > div { width:100%; height:100%; background-position:center; background-size:cover; background-repeat:no-repeat; }
+.dl-modal-heading { min-width:0; }
+.dl-modal-kicker { display:block; color:var(--gold-2); font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; margin-bottom:6px; }
+.dl-modal-title { color:#f7f7f7; font-family:'Poppins',sans-serif; font-size:19px; line-height:1.2; font-weight:650; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dl-modal-subtitle { color:var(--muted); font-size:12px; margin:7px 0 0; }
+.dl-modal-close { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.68); font-size:20px; cursor:pointer; padding:0; line-height:1; transition:color .15s,background .15s,border-color .15s; }
+.dl-modal-close:hover { color:#fff; background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.22); }
+.dl-modal-body { padding:18px 22px 4px; }
+.dl-atelier-link { display:flex; align-items:center; justify-content:center; gap:8px; margin:12px 22px 22px; min-height:46px; border-radius:12px; border:1px solid rgba(198,155,0,.48); background:rgba(198,155,0,.12); color:var(--gold-2); font-size:13px; font-weight:650; text-decoration:none; transition:background .18s,border-color .18s,transform .18s; }
+.dl-atelier-link::after { content:'→'; font-size:16px; transition:transform .18s; }
+.dl-atelier-link:hover { background:rgba(198,155,0,.22); border-color:var(--gold-2); color:#fff; transform:translateY(-1px); }
+.dl-atelier-link:hover::after { transform:translateX(3px); }
+.dl-sep { height:1px; background:rgba(255,255,255,.08); margin:14px 0; }
 .dl-opt-print .dl-opt-label svg { color:#a78bfa; }
 .dl-opt-cart .dl-opt-label svg { color:#86efac; }
-.dl-opt { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; padding:9px 12px; border-radius:7px; cursor:pointer; font-size:13px; transition:background .15s; }
-.dl-opt:hover { background:rgba(255,255,255,.05); }
-.dl-opt-label { display:flex; align-items:center; gap:7px; min-width:0; flex:1 1 auto; color:rgba(255,255,255,.8); }
-.dl-opt-label svg { width:14px; height:14px; color:var(--gold-2); }
+.dl-opt { display:flex; align-items:center; justify-content:space-between; gap:16px; min-width:0; min-height:62px; padding:12px 14px; border:1px solid rgba(255,255,255,.09); border-radius:14px; cursor:pointer; font-size:13px; background:rgba(255,255,255,.035); transition:background .18s,border-color .18s,transform .18s; }
+.dl-opt + .dl-opt { margin-top:8px; }
+.dl-opt:hover { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); transform:translateY(-1px); }
+.dl-opt-label { display:flex; align-items:center; gap:10px; min-width:0; flex:1 1 auto; color:rgba(255,255,255,.88); font-weight:550; }
+.dl-opt-label svg { width:18px; height:18px; color:var(--gold-2); flex:0 0 auto; }
 .dl-opt-label > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.dl-opt-res { flex:0 0 auto; font-size:11px; color:var(--muted); white-space:nowrap; }
+.dl-opt-res { flex:0 0 auto; font-size:11px; color:rgba(255,255,255,.5); white-space:nowrap; font-variant-numeric:tabular-nums; }
 /* "Débloque toutes les résolutions…" hint sitting between the buy CTA and
    the locked resolution list for paid-not-yet-purchased photos. */
-.dl-hint { font-size:10.5px; color:var(--muted); padding:8px 12px 4px; text-transform:uppercase; letter-spacing:.6px; }
+.dl-hint { font-size:10px; color:rgba(255,255,255,.5); padding:6px 2px 8px; text-transform:uppercase; letter-spacing:.12em; font-weight:700; }
 /* Resolution rows displayed beneath the buy CTA — visually disabled (lock
    icon, dimmed text) so the user understands they're locked behind the
    single "Acheter" action above. A click still adds the photo to the cart
    so any row is a valid entry point to the checkout flow. */
-.dl-opt-locked { opacity:.65; }
+.dl-opt-locked { opacity:.56; background:rgba(255,255,255,.018); }
 .dl-opt-locked:hover { opacity:.9; background:rgba(198,155,0,.06); }
 .dl-opt-locked .dl-opt-label svg { color:var(--muted); }
+.dl-opt-cart { border-color:rgba(198,155,0,.48); background:linear-gradient(100deg,rgba(198,155,0,.14),rgba(198,155,0,.05)); }
+.dl-opt-cart .dl-opt-label { color:#fff; }
+.dl-opt-cart .dl-opt-label svg { color:var(--gold-2); }
+.dl-opt-cart .dl-opt-res { color:var(--gold-2) !important; font-size:14px; }
+@media (max-width:600px) {
+  .dl-modal-overlay { padding:12px; align-items:flex-end; }
+  .dl-dropdown { width:100%; border-radius:20px 20px 16px 16px; max-height:calc(100vh - 24px); }
+  .dl-modal-head { grid-template-columns:64px minmax(0,1fr) auto; gap:12px; padding:16px 16px 14px; }
+  .dl-modal-media { width:64px; height:78px; border-radius:9px; }
+  .dl-modal-title { font-size:16px; }
+  .dl-modal-body { padding:14px 16px 2px; }
+  .dl-atelier-link { margin:10px 16px 16px; }
+  .dl-opt { min-height:58px; padding:10px 12px; }
+  .dl-opt-res { font-size:10px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .dl-modal-overlay.open,.dl-dropdown { animation:none; }
+  .dl-opt,.dl-atelier-link,.dl-atelier-link::after { transition:none; }
+}
 
 /* filmstrip */
 .lb-filmstrip { height:68px; background:rgba(0,0,0,.6); border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; padding:0 20px; gap:6px; overflow-x:auto; scroll-behavior:smooth; flex-shrink:0; }
@@ -798,13 +827,18 @@
       </div>
       <!-- Download modal popup (centered, replaces the legacy dropdown) -->
       <div class="dl-modal-overlay" id="lb-dl-overlay">
-        <div class="dl-dropdown" id="lb-dl-dropdown">
-          <div class="dl-modal-title">
-            Télécharger
+        <div class="dl-dropdown" id="lb-dl-dropdown" role="dialog" aria-modal="true" aria-labelledby="lb-dl-title">
+          <div class="dl-modal-head">
+            <div class="dl-modal-media"><div id="lb-dl-preview" role="img" aria-label=""></div></div>
+            <div class="dl-modal-heading">
+              <span class="dl-modal-kicker">Téléchargement</span>
+              <h2 class="dl-modal-title" id="lb-dl-title">Télécharger</h2>
+              <p class="dl-modal-subtitle" id="lb-dl-subtitle"></p>
+            </div>
             <button class="dl-modal-close" id="lb-dl-close" aria-label="Fermer">×</button>
           </div>
-          <div id="lb-dl-options"></div>
-          <a class="dl-atelier-link" id="lb-dl-atelier" href="atelier.html">Créer un objet avec cette photo →</a>
+          <div class="dl-modal-body" id="lb-dl-options"></div>
+          <a class="dl-atelier-link" id="lb-dl-atelier" href="atelier.html">Créer un objet avec cette photo</a>
         </div>
       </div>
       <div class="lb-copyright" id="lb-copyright">Les images présentées sur ce site sont protégées par le droit d'auteur. Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés. Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.</div>
@@ -2066,6 +2100,17 @@ function renderLightbox() {
     ? '<span class="lb-paid-note" style="color:var(--gold-2)">Payant · téléchargement sans filigrane</span>'
     : '';
   document.getElementById('lb-img').alt = p.title;
+  const dlPreview = document.getElementById('lb-dl-preview');
+  if (dlPreview) {
+    const previewUrl = resolveUrl(withWm ? p.watermarkedUrl : p.previewUrl);
+    dlPreview.style.backgroundImage = `url("${previewUrl}")`;
+    dlPreview.setAttribute('aria-label', p.title || '');
+  }
+  const dlSubtitle = document.getElementById('lb-dl-subtitle');
+  if (dlSubtitle) {
+    const dimensions = p.width && p.height ? ` · ${p.width}×${p.height}` : '';
+    dlSubtitle.textContent = `${p.title || 'Photo'}${dimensions}`;
+  }
   document.getElementById('lb-counter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
   document.getElementById('lb-title').textContent = p.title;
   const lbCopyright = document.getElementById('lb-copyright');
