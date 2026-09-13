@@ -71,20 +71,6 @@
     .profile-form { display: grid; gap: 14px; max-width: 460px; }
     .profile-form .acct-row { grid-template-columns: 1fr 1fr; }
 
-    .profile-creations { margin-bottom: 34px; padding: 18px; border: 1px solid rgba(198,155,0,.22); border-radius: 16px; background: linear-gradient(145deg,rgba(198,155,0,.09),rgba(255,255,255,.025)); }
-    .profile-creations-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
-    .profile-creations h3 { font-family:var(--font-heading); font-size:16px; font-weight:600; }
-    .profile-creations p { margin-top:4px; color:rgba(255,255,255,.58); font-size:12.5px; line-height:1.5; }
-    .profile-creations-link { display:inline-flex; align-items:center; min-height:34px; padding:0 11px; border:1px solid rgba(255,210,90,.3); border-radius:9px; color:var(--gold-2); font-size:11.5px; font-weight:600; white-space:nowrap; }
-    .profile-creations-link:hover { background:rgba(198,155,0,.14); }
-    .profile-creations-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
-    .profile-creation-card { overflow:hidden; border:1px solid var(--stroke); border-radius:11px; background:rgba(0,0,0,.22); }
-    .profile-creation-card img { width:100%; aspect-ratio:4/3; object-fit:cover; }
-    .profile-creation-card div { padding:9px; }
-    .profile-creation-card strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11.5px; }
-    .profile-creation-card span { display:block; margin-top:4px; color:rgba(255,255,255,.5); font-size:10.5px; }
-    .profile-creations-empty { padding:18px 8px; border:1px dashed rgba(255,255,255,.14); border-radius:10px; color:rgba(255,255,255,.52); font-size:12.5px; line-height:1.55; }
-
     .space-empty { padding: 56px 24px; border: 1px dashed var(--stroke-hover); border-radius: 14px; text-align: center; }
     .space-empty h3 { font-family: var(--font-heading); font-size: 16px; font-weight: 600; margin-bottom: 7px; }
     .space-empty p { font-size: 13.5px; color: rgba(255,255,255,.6); max-width: 46ch; margin: 0 auto 18px; line-height: 1.6; }
@@ -171,11 +157,6 @@
         </div>
 
         <div class="space-panel" id="panel-profil">
-          <section class="profile-creations" aria-labelledby="profile-creations-title">
-            <div class="profile-creations-head"><div><h3 id="profile-creations-title">Mes créations · L'atelier</h3><p>Retrouvez vos essais d'impression, de textile et d'objets.</p></div><a class="profile-creations-link" href="atelier.html">Ouvrir L'atelier</a></div>
-            <div class="profile-creations-grid" id="profile-creations-grid"></div>
-            <div class="profile-creations-empty" id="profile-creations-empty">Aucune création pour l'instant. Ouvrez une photo puis choisissez « Créer dans L'atelier ».</div>
-          </section>
           <form class="profile-form" id="profile-form" novalidate>
             <div class="acct-row">
               <label class="acct-field"><span>Prénom</span><input name="firstName" type="text" autocomplete="given-name" /></label>
@@ -243,20 +224,6 @@
     function resolveUrl(u) {
       if (!u) return '';
       return /^https?:\/\//.test(u) ? u : window.MSAccount.API + u;
-    }
-
-    function renderCreations() {
-      const grid = $('profile-creations-grid'), empty = $('profile-creations-empty');
-      if (!grid || !empty) return;
-      let items = [];
-      try { items = JSON.parse(localStorage.getItem('mscomm_atelier_creations') || '[]'); } catch (_) {}
-      empty.hidden = items.length > 0;
-      grid.innerHTML = items.slice(0, 6).map(item => {
-        const image = /^(https?:|\/|assets\/)/.test(item.image || '') ? item.image : 'assets/data/image_photo_1.jpg';
-        return '<a class="profile-creation-card" href="atelier.html?creation=' + encodeURIComponent(item.id || '') + '">' +
-          '<img src="' + esc(image) + '" alt="' + esc(item.title || 'Création') + '" loading="lazy" />' +
-          '<div><strong>' + esc(item.title || 'Création sans titre') + '</strong><span>' + esc(item.productLabel || 'Impression') + ' · ' + esc(item.formatLabel || 'Portrait') + '</span></div></a>';
-      }).join('');
     }
 
     /* Tabs, deep-linkable so the header menu can point straight at a section. */
@@ -342,7 +309,6 @@
         ['Favoris', window.MSAccount.favorites.size || c.favorites || 0],
         ['Commandes', c.orders || 0],
         ['Photos achetées', c.photosBought || 0],
-        ['Créations', (() => { try { return JSON.parse(localStorage.getItem('mscomm_atelier_creations') || '[]').length; } catch (_) { return 0; } })()]
       ].map(([label, value]) =>
         '<div class="space-stat"><b>' + esc(String(value)) + '</b><span>' + label + '</span></div>'
       ).join('');
@@ -413,7 +379,6 @@
       $('space-sub').textContent = 'Membre depuis le ' + frDate(a.createdAt) + '.';
       renderStats();
       fillProfile();
-      renderCreations();
       renderFavorites();
       renderOrders();
     }
