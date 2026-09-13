@@ -21,7 +21,7 @@
   function write(items) { try { localStorage.setItem(STORE, JSON.stringify(items)); } catch (_) {} }
   function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
   function safeImage(src) { return /^(https?:|\/|assets\/)/.test(src || '') ? src : fallback; }
-  function productLabel() { return ({ print:'Impression', poster:'Affiche', tote:'Tote bag', tshirt:'T-shirt', mug:'Mug', card:'Carte' })[state.product] || 'Impression'; }
+  function productLabel() { return ({ print:'Tirage photo', poster:'Poster', phone:'Coque', calendar:'Calendrier', tote:'Tote bag', tshirt:'T-shirt', mug:'Mug', card:'Carte' })[state.product] || 'Tirage photo'; }
 
   if (params.get('creation')) {
     const saved = read().find((item) => item.id === params.get('creation'));
@@ -83,6 +83,10 @@
 
   document.querySelectorAll('[data-product]').forEach((button) => button.addEventListener('click', () => {
     state.product = button.dataset.product;
+    paint();
+  }));
+  document.querySelectorAll('[data-atelier-product]').forEach((link) => link.addEventListener('click', () => {
+    state.product = link.dataset.atelierProduct;
     paint();
   }));
   $('atelier-format')?.addEventListener('change', (event) => { state.format = event.target.value; paint(); });

@@ -433,6 +433,7 @@
     { href: 'photos.html?view=favorites', label: 'Mes favoris', key: 'favorites' },
     { href: 'photos.html?view=albums_partages', label: 'Mes albums partagés', key: 'albums' },
     { href: 'photos.html?view=purchased', label: 'Mes achats', key: 'orders' },
+    { href: 'atelier.html',              label: "L'atelier" },
     { href: 'compte.html#profil',    label: 'Mes informations' }
   ];
 
