@@ -137,6 +137,7 @@ are intentionally generic so the endpoint cannot enumerate registered emails.
 
 ### Topbar order
 - Right side of the row, at every width: `Demander un devis` → `FR · EN` → `Mon espace` (far right). `account.js` `mount()` inserts `#acct-control` right after `.nav-cta`; the FR/EN switcher is then inserted **inside** `.topbar-inner`, right before `#acct-control` (`positionSwitcher()` in `i18n.js`, re-called by `mount()` because i18n runs first and the anchor does not exist yet). Never restore the old absolutely-positioned rule: below 961px it fell back into normal flow and dropped to a second line.
+- Between 961px and 1280px, the compact desktop rule hides the brand tagline and reduces nav/action spacing. Navigation labels use `white-space: nowrap` so the CTA never covers `Contact` on medium desktop windows.
 - `html`/`body` use `overflow-x: clip`, never `hidden`: `hidden` turns the element into a scroll container and silently disables every `position: sticky` on the site.
 - `.nav-cta` and `.acct-trigger` are `white-space: nowrap; flex-shrink: 0` globally — their fixed 40px height turns any line break into clipped text.
 - Below 560px the brand baseline (`.brand-text span`) is hidden; it wrapped onto three lines and doubled the topbar height.

@@ -2,6 +2,10 @@
 
 ## 2026-09-13 UI/i18n update
 
+### 2026-09-15 topbar compact desktop fix
+
+- The full navigation stays readable down to 961px. Between 961px and 1280px the brand tagline is hidden, nav spacing and action padding tighten, and nav labels stay on one line so the quote CTA cannot overlap `Contact`.
+
 - Shared topbar uses a three-column grid and `.nav-actions` rail. Quote CTA, FR/EN switcher and account trigger share the 40px control rhythm; navigation hover uses a radial gold halo instead of a filled box.
 - `assets/data/translations.json` now includes September 2026 parity for needs, testimonials, account states, gallery/ZIP feedback, Atelier, legal pages, titles and metadata. `assets/js/i18n.js` merges static bundle keys into API data so a stale Fly translation file cannot leave new copy in French.
 - Legal pages load `main.js` + `i18n.js`; test both languages on every visitor-facing page after copy or layout changes.
