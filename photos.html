@@ -430,16 +430,6 @@
 .dl-opt-cart .dl-opt-label { color:#fff; }
 .dl-opt-cart .dl-opt-label svg { color:var(--gold-2); }
 .dl-opt-cart .dl-opt-res { color:var(--gold-2) !important; font-size:14px; }
-.dl-atelier-cta { display:grid; grid-template-columns:38px minmax(0,1fr) 18px; align-items:center; gap:11px; margin:14px 22px 22px; padding:13px 14px; border:1px solid rgba(255,210,90,.28); border-radius:15px; color:#fff; text-decoration:none; background:linear-gradient(110deg,rgba(198,155,0,.16),rgba(198,155,0,.045)); transition:transform .22s cubic-bezier(.16,1,.3,1),border-color .22s,background .22s,box-shadow .22s; }
-.dl-atelier-cta:hover { transform:translateY(-2px); border-color:rgba(255,210,90,.58); background:linear-gradient(110deg,rgba(198,155,0,.25),rgba(198,155,0,.08)); box-shadow:0 12px 28px rgba(0,0,0,.22); }
-.dl-atelier-cta:focus-visible { outline:2px solid var(--gold-2); outline-offset:3px; }
-.dl-atelier-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:12px; color:var(--gold-2); background:rgba(255,210,90,.12); border:1px solid rgba(255,210,90,.2); }
-.dl-atelier-icon svg { width:20px; height:20px; }
-.dl-atelier-copy { display:grid; gap:3px; min-width:0; }
-.dl-atelier-copy strong { font-size:12.5px; font-weight:700; letter-spacing:.01em; }
-.dl-atelier-copy small { color:rgba(255,255,255,.56); font-size:11px; line-height:1.4; }
-.dl-atelier-arrow { width:18px; height:18px; color:var(--gold-2); transition:transform .22s ease; }
-.dl-atelier-cta:hover .dl-atelier-arrow { transform:translateX(3px); }
 @media (max-width:600px) {
   .dl-modal-overlay { padding:12px; align-items:flex-end; }
   .dl-dropdown { width:100%; border-radius:20px 20px 16px 16px; max-height:calc(100vh - 24px); }
@@ -449,10 +439,6 @@
   .dl-modal-body { padding:14px 16px 2px; }
   .dl-opt { min-height:58px; padding:10px 12px; }
   .dl-opt-res { font-size:10px; }
-  .dl-atelier-cta { grid-template-columns:34px minmax(0,1fr) 16px; gap:9px; margin:12px 16px 16px; padding:11px 12px; }
-  .dl-atelier-icon { width:34px; height:34px; border-radius:10px; }
-  .dl-atelier-icon svg { width:18px; height:18px; }
-  .dl-atelier-copy small { font-size:10.5px; }
 }
 @media (prefers-reduced-motion:reduce) {
   .dl-modal-overlay.open,.dl-dropdown { animation:none; }
@@ -578,7 +564,6 @@
           <a href="services.html" data-i18n="nav.services">Services</a>
           <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
           <a href="photos.html" class="active" data-i18n="nav.photography">Photographie</a>
-          <a href="atelier.html" data-i18n="L'atelier">L'atelier</a>
           <a href="contact.html" data-i18n="nav.contact">Contact</a>
         </nav>
         <div class="nav-actions" style="display:flex;align-items:center;gap:10px">
@@ -596,7 +581,6 @@
     <a href="services.html" data-i18n="nav.services">Services</a>
     <a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a>
     <a href="photos.html" data-i18n="nav.photography">Photographie</a>
-    <a href="atelier.html" data-i18n="L'atelier">L'atelier</a>
     <a href="contact.html" data-i18n="nav.contact">Contact</a>
   </div>
 
@@ -843,11 +827,6 @@
             <button class="dl-modal-close" id="lb-dl-close" aria-label="Fermer">×</button>
           </div>
           <div class="dl-modal-body" id="lb-dl-options"></div>
-          <a class="dl-atelier-cta" id="lb-atelier-link" href="atelier.html">
-            <span class="dl-atelier-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 2.1 5.1L19 10l-4.9 1.9L12 17l-2.1-5.1L5 10l4.9-1.9L12 3Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg></span>
-            <span class="dl-atelier-copy"><strong data-i18n="Ouvrir L'atelier">Créer dans L'atelier</strong><small data-i18n="Préparez un tirage ou un objet photo à partir de cette image.">Préparez un tirage ou un objet photo à partir de cette image.</small></span>
-            <svg class="dl-atelier-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
         </div>
       </div>
       <div class="lb-copyright" id="lb-copyright">Les images présentées sur ce site sont protégées par le droit d'auteur. Le partage des aperçus est autorisé uniquement avec les crédits visibles et non modifiés. Toute suppression du logo, recadrage destiné à masquer les crédits ou utilisation non autorisée est strictement interdite.</div>
@@ -2119,11 +2098,6 @@ function renderLightbox() {
   if (dlSubtitle) {
     const dimensions = p.width && p.height ? ` · ${p.width}×${p.height}` : '';
     dlSubtitle.textContent = `${p.title || 'Photo'}${dimensions}`;
-  }
-  const atelierLink = document.getElementById('lb-atelier-link');
-  if (atelierLink) {
-    const atelierImage = p.watermarkedUrl || p.previewUrl || '';
-    atelierLink.href = `atelier.html?photo=${encodeURIComponent(p.id || '')}&src=${encodeURIComponent(resolveUrl(atelierImage))}&title=${encodeURIComponent(p.title || 'Ma création MS Comm')}`;
   }
   document.getElementById('lb-counter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
   document.getElementById('lb-title').textContent = p.title;
