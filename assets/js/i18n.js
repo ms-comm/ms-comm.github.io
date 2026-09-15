@@ -852,6 +852,8 @@
     "Sélectionnez une photo de la galerie et le support qui correspond à votre idée.": "Select a gallery photo and the product that fits your idea.",
     "Testez le format, le cadrage et l'échelle. Enregistrez une proposition dans votre espace.": "Test the format, crop and scale. Save a proposal in your space.",
     "Nous vérifions le fournisseur, le délai et le prix, puis nous lançons seulement après votre accord.": "We check the provider, lead time and price, then launch only after your approval.",
+    "Planning de production": "Production plan",
+    "Supports photo": "Photo products",
     "Vous avez déjà un compte ?": "Already have an account?",
     "Espace créé. Bienvenue !": "Account created. Welcome!",
     "Vous êtes connecté.": "You are signed in.",
