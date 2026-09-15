@@ -838,6 +838,7 @@
     "L'adresse e-mail sert de clé à vos commandes et ne peut pas être modifiée ici. Écrivez-nous pour la changer.": "Your email address is the key to your orders and cannot be changed here. Contact us to update it.",
     "Créer dans L'atelier": "Create in The Atelier",
     "Préparez un tirage ou un objet photo à partir de cette image.": "Prepare a print or photo object from this image.",
+    "Création enregistrée dans votre espace.": "Creation saved in your space.",
     "L'atelier MS Comm' vous aide à transformer une image de la galerie en projet de tirage ou d'objet photo. Préparez le rendu, puis nous validons ensemble le support, le prestataire et le prix avant toute commande.": "The MS Comm' Atelier helps you turn a gallery image into a print or photo-object project. Prepare the look, then we validate the product, provider and price together before any order.",
     "Choisissez un support, testez le cadrage et gardez une base claire pour notre échange.": "Choose a product, test the crop and keep a clear starting point for our discussion.",
     "Validation du projet": "Project validation",
