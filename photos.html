@@ -2360,11 +2360,11 @@ async function downloadPrivateAlbumPhoto(id, title, code, wm) {
   closeDlModal();
 }
 
-async function downloadPhoto(id, ext, title, resolution) {
+async function downloadPhoto(id, ext, title, resolution, forceWatermark = false) {
   const tokens = purchasedTokens();
   const token  = tokens[id] ? `&token=${tokens[id]}` : '';
   if (window.MSTrack) window.MSTrack.event('download_click', { photoId: id, mode: token ? 'purchased' : 'watermark', resolution: String(resolution) });
-  const url    = `${API}/api/public/photos/${id}/download?resolution=${resolution}${token}`;
+  const url    = `${API}/api/public/photos/${id}/download?resolution=${resolution}${token}${forceWatermark ? '&wm=1' : ''}`;
   /* A purchase token is an authorisation of its own: the buyer paid and may
      have no account, so that path must never be gated. */
   const finalUrl = token ? url : await withDownloadTicket(url, () => downloadPhoto(id, ext, title, resolution));
@@ -2381,7 +2381,7 @@ function downloadPhotoWatermarked(id, ext, title, resolution) {
   const storedTs = parseInt(localStorage.getItem('mscomm_copyright_ts') || '0', 10);
   closeDlModal();
   if (now - storedTs < 15 * 60 * 1000) {
-    downloadPhoto(id, ext, title, resolution);
+    downloadPhoto(id, ext, title, resolution, true);
   } else {
     _pendingWatermarkDownload = () => downloadPhoto(id, ext, title, resolution);
     const modal = document.getElementById('copyright-modal');
