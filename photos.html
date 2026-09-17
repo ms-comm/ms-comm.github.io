@@ -1339,7 +1339,7 @@ function renderMineAlbums() {
   if (empty) empty.classList.toggle('hidden', list.length > 0);
   grid.innerHTML = list.map(a => {
     const cover = a.coverPreviewUrl
-      ? `<img data-src="${resolveUrl(a.coverPreviewUrl)}" alt="${escapeAttr(a.name)}" loading="lazy" />`
+      ? `<img data-src="${resolveUrl(a.coverPreviewUrl)}" style="object-position:${coverPositionCss(a.coverPosition)}" alt="${escapeAttr(a.name)}" loading="lazy" />`
       : `<div class="album-cover-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>`;
     return `<div class="album-card" onclick="openGrantedAlbum('${a.id}')">
       <div class="album-cover">${cover}</div>
@@ -1351,6 +1351,14 @@ function renderMineAlbums() {
     </div>`;
   }).join('');
   observeLazyImages(grid);
+}
+
+function coverPositionCss(position) {
+  const rawX = position && position.x != null ? Number(position.x) : NaN;
+  const rawY = position && position.y != null ? Number(position.y) : NaN;
+  const x = Math.max(0, Math.min(100, Number.isFinite(rawX) ? rawX : 50));
+  const y = Math.max(0, Math.min(100, Number.isFinite(rawY) ? rawY : 50));
+  return `${x}% ${y}%`;
 }
 
 function escapeAttr(s) {
@@ -1701,7 +1709,7 @@ function renderAlbums() {
     }</div>`;
     return `<div class="album-card" onclick="${clickFn}">
       <div class="album-cover">
-        ${a.coverPreviewUrl ? `<img data-src="${resolveUrl(a.coverPreviewUrl)}" alt="${a.name}" loading="lazy" />` : coverPh}
+        ${a.coverPreviewUrl ? `<img data-src="${resolveUrl(a.coverPreviewUrl)}" style="object-position:${coverPositionCss(a.coverPosition)}" alt="${a.name}" loading="lazy" />` : coverPh}
         ${lockBadge}
         <button class="album-share-btn" onclick="event.stopPropagation();shareAlbumPublic('${a.id}')" title="Copier le lien de partage" aria-label="Partager l'album">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
