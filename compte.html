@@ -244,7 +244,7 @@
 
     async function renderFavorites() {
       const body = $('fav-body');
-      const r = await fetch(window.MSAccount.API + '/api/account/favorites', { credentials: 'include' });
+      const r = await window.MSAccount.request('/api/account/favorites');
       if (!r.ok) { body.innerHTML = '<p class="acct-error">Impossible de charger vos favoris.</p>'; return; }
       const data = await r.json();
       const photos = data.photos || [];
@@ -281,7 +281,7 @@
 
     async function renderOrders() {
       const body = $('orders-body');
-      const r = await fetch(window.MSAccount.API + '/api/account/orders', { credentials: 'include' });
+      const r = await window.MSAccount.request('/api/account/orders');
       if (!r.ok) { body.innerHTML = '<p class="acct-error">Impossible de charger vos commandes.</p>'; return; }
       const data = await r.json();
       const orders = data.orders || [];
@@ -328,8 +328,8 @@
       const f = e.currentTarget, msg = $('profile-msg');
       msg.textContent = '';
       msg.style.color = '';
-      const r = await fetch(window.MSAccount.API + '/api/account/me', {
-        method: 'PATCH', credentials: 'include',
+      const r = await window.MSAccount.request('/api/account/me', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName: f.firstName.value.trim(),
@@ -349,8 +349,8 @@
       const f = e.currentTarget, msg = $('password-msg');
       msg.textContent = '';
       msg.style.color = '';
-      const r = await fetch(window.MSAccount.API + '/api/account/change-password', {
-        method: 'POST', credentials: 'include',
+      const r = await window.MSAccount.request('/api/account/change-password', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword: f.currentPassword.value, newPassword: f.newPassword.value })
       });

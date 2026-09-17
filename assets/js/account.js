@@ -38,7 +38,10 @@
     listeners.forEach(fn => { try { fn(state); } catch (_) {} });
   }
 
-  async function api(pathname, options) {
+  /* Shared authenticated request for account-scoped pages. GitHub Pages and
+     the API are cross-site, so the session cookie may be omitted; always add
+     the persisted bearer token when available. */
+  async function request(pathname, options) {
     const opts = Object.assign({ credentials: 'include' }, options || {});
     const storedToken = state.accountToken || (function () {
       try { return localStorage.getItem('mscomm_account_token') || ''; } catch (_) { return ''; }
@@ -54,7 +57,11 @@
       opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
       opts.body = JSON.stringify(opts.body);
     }
-    const res = await fetch(API + pathname, opts);
+    return fetch(API + pathname, opts);
+  }
+
+  async function api(pathname, options) {
+    const res = await request(pathname, options);
     let data = null;
     try { data = await res.json(); } catch (_) {}
     return { ok: res.ok, status: res.status, data: data || {} };
@@ -562,7 +569,7 @@
     get favorites() { return state.favorites; },
     isSignedIn: () => !!state.account,
     refresh, requireAccount, openDialog, logout,
-    signDownloadUrl, downloadTicket,
+    signDownloadUrl, downloadTicket, request,
     loadFavorites, isFavorite, toggleFavorite,
     logEvent, toast,
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },

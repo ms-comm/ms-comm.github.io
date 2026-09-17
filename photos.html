@@ -1320,7 +1320,7 @@ async function loadMineAlbums(force) {
   if (!(window.MSAccount && window.MSAccount.isSignedIn())) { mineAlbums = []; mineAlbumsLoaded = false; return; }
   if (mineAlbumsLoaded && !force) return;
   try {
-    const res = await fetch(`${API}/api/account/albums`, { credentials: 'include' });
+    const res = await window.MSAccount.request('/api/account/albums');
     if (!res.ok) return;
     const data = await res.json();
     mineAlbums = Array.isArray(data.albums) ? data.albums : [];
@@ -1372,7 +1372,7 @@ function escapeAttr(s) {
 async function openGrantedAlbum(id) {
   const info = mineAlbums.find(a => a.id === id);
   try {
-    const res = await fetch(`${API}/api/account/albums/${encodeURIComponent(id)}/photos`, { credentials: 'include' });
+    const res = await window.MSAccount.request('/api/account/albums/' + encodeURIComponent(id) + '/photos');
     if (!res.ok) { alert('Cet album ne vous est plus accessible.'); loadMineAlbums(true); return; }
     const data = await res.json();
     const photos = sortPhotosNewestFirst((data.photos || []).map(p => ({
@@ -1489,7 +1489,7 @@ async function loadMineOrders(force) {
   if (!(window.MSAccount && window.MSAccount.isSignedIn())) { mineOrders = []; mineOrdersLoaded = false; return; }
   if (mineOrdersLoaded && !force) return;
   try {
-    const res = await fetch(`${API}/api/account/orders`, { credentials: 'include' });
+    const res = await window.MSAccount.request('/api/account/orders');
     if (!res.ok) return;
     const data = await res.json();
     mineOrders = (Array.isArray(data.orders) ? data.orders : [])
