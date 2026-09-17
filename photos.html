@@ -1414,7 +1414,22 @@ function refreshFavoritesTab() {
   const act = document.querySelector('.gal-tab.active');
   if (act && act.dataset.view === 'mine') renderMineView();
 }
-if (window.MSAccount) window.MSAccount.onChange(refreshFavoritesTab);
+/* account.js is loaded with `defer`, while this page module is inline and
+ * executes during parsing. At that moment `window.MSAccount` does not exist
+ * yet, so registering here alone silently drops every session update. Bind
+ * after deferred scripts have run, then repaint once in case the refresh
+ * already completed before DOMContentLoaded. */
+let accountListenersBound = false;
+function bindAccountListeners() {
+  if (accountListenersBound || !window.MSAccount) return;
+  accountListenersBound = true;
+  window.MSAccount.onChange(refreshFavoritesTab);
+  window.MSAccount.onChange(() => updateLbFavorite());
+  refreshFavoritesTab();
+  updateLbFavorite();
+}
+bindAccountListeners();
+if (!accountListenersBound) document.addEventListener('DOMContentLoaded', bindAccountListeners, { once: true });
 document.getElementById('fav-create-btn')?.addEventListener('click', () => {
   window.MSAccount?.requireAccount({
     eyebrow: 'Mon espace',
@@ -2464,9 +2479,6 @@ document.getElementById('lb-fav').addEventListener('click', async () => {
     setTimeout(() => btn.classList.remove('is-bumping'), 360);
   }
 });
-
-if (window.MSAccount) window.MSAccount.onChange(() => updateLbFavorite());
-
 
 function renderFilmstrip() {
   const strip = document.getElementById('lb-filmstrip');

@@ -141,6 +141,7 @@ are intentionally generic so the endpoint cannot enumerate registered emails.
 - `html`/`body` use `overflow-x: clip`, never `hidden`: `hidden` turns the element into a scroll container and silently disables every `position: sticky` on the site.
 - `.nav-cta` and `.acct-trigger` are `white-space: nowrap; flex-shrink: 0` globally — their fixed 40px height turns any line break into clipped text.
 - Below 560px the brand baseline (`.brand-text span`) is hidden; it wrapped onto three lines and doubled the topbar height.
+- Account listeners on `photos.html` are registered after deferred `account.js` initialization. Deep-linked personal views repaint immediately from the current session and on later session/favorites changes, preventing a connected visitor from being stuck on the first-connection door.
 
 - **Timeline**: all photos sorted by date, infinite lazy-load (sentinel IntersectionObserver)
 - **Albums**: grouped by album with the same justified masonry image style as the main gallery; public/private album photo grids use the same visual language and sort photos newest-first (`takenAt || createdAt`)
