@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>L'atelier | MS Comm'</title>
+  <meta name="description" content="L'atelier MS Comm' : vos photographies favorites imprimées sur des produits Gelato." />
+  <link rel="icon" type="image/png" href="assets/data/logo_white-removebg.png" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260918" />
+  <link rel="stylesheet" href="assets/css/account.css?v=20260918" />
+  <link rel="stylesheet" href="assets/css/atelier.css?v=20260918" />
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/i18n.js?v=20260918" defer></script>
+  <script src="assets/js/account.js?v=20260918" defer></script>
+  <script src="assets/js/track.js" defer></script>
+  <script src="assets/js/atelier.js?v=20260918" defer></script>
+</head>
+<body class="shop-page">
+  <header class="topbar"><div class="container"><div class="topbar-inner">
+    <a class="brand" href="index.html"><img class="brand-logo" src="assets/data/logo_white-removebg.png" alt="MS Comm' logo" /><div class="brand-text"><strong>MS Comm'</strong><span data-i18n="nav.tagline">Prestataire de services de communication</span></div></a>
+    <nav class="nav" aria-label="Navigation principale"><a href="index.html" data-i18n="nav.home">Accueil</a><a href="experiences.html" data-i18n="nav.experiences">Expériences</a><a href="services.html" data-i18n="nav.services">Services</a><a href="portfolio.html" data-i18n="nav.portfolio">Portfolio</a><a href="photos.html" data-i18n="nav.photography">Photographie</a><a class="active" data-atelier-link href="atelier.html">L'atelier</a><a href="contact.html" data-i18n="nav.contact">Contact</a></nav>
+    <div class="nav-actions"><button class="nav-cta shop-cart-trigger" id="shop-cart-trigger" type="button" aria-label="Ouvrir le panier"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span>Panier</span><b id="shop-cart-count">0</b></button><button class="mobile-toggle" id="menuBtn" type="button" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  </div></div></header>
+  <div class="drawer" id="drawer"><a href="index.html">Accueil</a><a href="services.html">Services</a><a href="portfolio.html">Portfolio</a><a href="photos.html">Photographie</a><a class="active" data-atelier-link href="atelier.html">L'atelier</a><a href="contact.html">Contact</a></div>
+
+  <main class="shop-shell">
+    <section class="shop-catalog" aria-label="Catalogue">
+      <div class="shop-heading"><p>MS COMM' / GELATO</p><h1>L'atelier.</h1><span>Vos photos favorites deviennent des objets à garder ou offrir.</span></div>
+      <div class="shop-products" id="shop-products"><div class="shop-loading">Chargement du catalogue…</div></div>
+    </section>
+
+    <section class="shop-stage" aria-label="Aperçu du produit">
+      <div class="shop-stage-top"><span id="shop-index">01 / 04</span><span>APERÇU</span></div>
+      <div class="shop-preview"><div class="shop-preview-shadow"></div><div class="shop-preview-object" id="shop-preview-object"><img id="shop-preview-image" src="assets/data/image_photo_1.jpg" alt="Aperçu du tirage photo" /></div></div>
+      <div class="shop-stage-foot"><button type="button" id="shop-prev" aria-label="Produit précédent">←</button><p><b id="shop-stage-name">Tirage photo</b><span id="shop-stage-note">Impression haute qualité sur papier mat.</span></p><button type="button" id="shop-next" aria-label="Produit suivant">→</button></div>
+    </section>
+
+    <aside class="shop-buy" aria-label="Configurer le produit">
+      <p class="shop-kicker">PRODUIT SÉLECTIONNÉ</p>
+      <div class="shop-title-row"><h2 id="shop-name">Tirage photo</h2><strong id="shop-price">12 €</strong></div>
+      <p class="shop-description" id="shop-description">Votre photographie imprimée sur un papier premium, prête à encadrer ou à offrir.</p>
+      <div class="shop-field"><span>Format</span><div class="shop-options" id="shop-formats"></div></div>
+      <div class="shop-field"><span>Photo</span><button class="shop-photo-choice" id="shop-photo-choice" type="button"><img id="shop-choice-image" src="assets/data/image_photo_1.jpg" alt="Photo sélectionnée" /><span><b id="shop-choice-title">Choisir dans mes favoris</b><small>Photos enregistrées dans votre espace</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div>
+      <div class="shop-purchase-row"><label><span>Quantité</span><select id="shop-quantity" aria-label="Quantité"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label><div><span>Total</span><b id="shop-total">12 €</b></div></div>
+      <button class="shop-add" id="shop-add" type="button"><span>Ajouter au panier</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7v14"/></svg></button>
+      <p class="shop-reassurance"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>Commande préparée · paiement après validation</p>
+    </aside>
+  </main>
+
+  <div class="shop-cart-backdrop" id="shop-cart-backdrop" hidden></div>
+  <aside class="shop-cart" id="shop-cart" aria-hidden="true" aria-labelledby="shop-cart-title">
+    <div class="shop-cart-head"><div><p>VOTRE COMMANDE</p><h2 id="shop-cart-title">Panier</h2></div><button id="shop-cart-close" type="button" aria-label="Fermer le panier">×</button></div>
+    <div class="shop-cart-items" id="shop-cart-items"></div>
+    <div class="shop-cart-empty" id="shop-cart-empty"><span>Votre panier est vide.</span><small>Ajoutez un produit pour commencer.</small></div>
+    <div class="shop-cart-total"><span>Total</span><b id="shop-cart-total">0 €</b></div>
+    <button class="shop-checkout" id="shop-checkout" type="button">Envoyer ma commande <span>→</span></button>
+    <small class="shop-cart-legal">Les frais de livraison sont confirmés avant paiement.</small>
+  </aside>
+  <div class="favorite-picker" id="favorite-picker" hidden role="dialog" aria-modal="true" aria-labelledby="favorite-picker-title"><button class="favorite-picker-backdrop" type="button" aria-label="Fermer"></button><section class="favorite-picker-panel"><header><div><p>VOTRE ESPACE</p><h2 id="favorite-picker-title">Choisir une photo favorite</h2></div><button id="favorite-picker-close" type="button" aria-label="Fermer">×</button></header><div class="favorite-picker-state" id="favorite-picker-state">Chargement de vos favoris…</div><div class="favorite-picker-grid" id="favorite-picker-grid"></div><footer><a href="photos.html">Ajouter des photos aux favoris</a></footer></section></div>
+</body>
+</html>

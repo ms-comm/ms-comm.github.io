@@ -10,6 +10,44 @@
   const menuBtn = document.getElementById('menuBtn');
   const drawer = document.getElementById('drawer');
 
+  /* L'atelier is a remotely switchable storefront. Keep its links out of the
+     public navigation while the admin switch is OFF; direct URLs still show a
+     clear unavailable state from atelier.js. */
+  function setupAtelierVisibility() {
+    const apiBase = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
+      ? 'http://localhost:3000'
+      : 'https://ms-comm-server.fly.dev';
+    const nav = document.querySelector('.nav');
+    const siteDrawer = document.getElementById('drawer');
+    const ensureLink = (root) => {
+      if (!root || root.querySelector('[data-atelier-link]')) return;
+      const link = document.createElement('a');
+      link.href = 'atelier.html';
+      link.textContent = "L'atelier";
+      link.dataset.atelierLink = '';
+      const contact = root.querySelector('a[href$="contact.html"]');
+      root.insertBefore(link, contact || null);
+    };
+    ensureLink(nav);
+    ensureLink(siteDrawer);
+    const links = document.querySelectorAll('[data-atelier-link]');
+    if (!links.length) return;
+    fetch(`${apiBase}/api/atelier/catalog`, { cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((catalog) => {
+        const active = catalog?.enabled === true;
+        links.forEach((link) => {
+          link.hidden = !active;
+          link.setAttribute('aria-hidden', String(!active));
+        });
+      })
+      .catch(() => links.forEach((link) => {
+        link.hidden = true;
+        link.setAttribute('aria-hidden', 'true');
+      }));
+  }
+  setupAtelierVisibility();
+
   function closeDrawer() {
     if (!drawer) return;
     drawer.classList.remove('is-open');
@@ -282,6 +320,23 @@
   const addServiceBtn = document.getElementById('addServiceBtn');
   const customServiceToggle = document.getElementById('customServiceToggle');
   const selectedServices = [];
+
+  /* L'atelier: carry the local cart into the contact form so an order can be
+     sent without making the buyer retype every product, format and quantity. */
+  if (params.get('order') === 'shop' && subjectInput) {
+    try {
+      const order = JSON.parse(localStorage.getItem('mscomm_merch_checkout') || '{}');
+      const lines = Array.isArray(order.cart) ? order.cart.map(item =>
+        `• ${item.name} — ${item.format} — quantité ${item.quantity} — ${(item.price * item.quantity).toFixed(2).replace('.00', '')} €`
+      ) : [];
+      const messageInput = document.querySelector('textarea[name="message"]');
+      subjectInput.value = "Commande L'atelier MS Comm'";
+      subjectInput.dataset.autoSubject = 'false';
+      if (messageInput && lines.length) {
+        messageInput.value = `Bonjour,\n\nJe souhaite commander :\n${lines.join('\n')}\n\nTotal produits : ${Number(order.total || 0).toFixed(2).replace('.00', '')} €\n\nMerci de me confirmer les frais de livraison et le paiement.`;
+      }
+    } catch (_) { /* panier local absent ou illisible : formulaire normal */ }
+  }
 
   function renderServiceSelection() {
     if (!selectedServicesEl) return;
