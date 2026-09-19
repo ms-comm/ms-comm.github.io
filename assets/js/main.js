@@ -38,11 +38,18 @@
           link.dataset.i18n = 'nav.portfolio';
           link.textContent = 'Portfolio';
         }
-        /* Contact is the highlighted action now, never a duplicate tab. */
-        if (root.classList.contains('nav') && /contact\.html/.test(href) && !link.classList.contains('nav-cta')) {
-          link.dataset.navDuplicate = 'true';
-          link.hidden = true;
-          link.setAttribute('aria-hidden', 'true');
+        /* Contact is the highlighted action now, never a duplicate desktop tab. */
+        if (/contact\.html/.test(href) && !link.classList.contains('nav-cta')) {
+          if (root.classList.contains('nav')) {
+            link.dataset.navDuplicate = 'true';
+            link.hidden = true;
+            link.setAttribute('aria-hidden', 'true');
+          } else if (root.id === 'drawer') {
+            link.href = 'contact.html?intent=design';
+            link.dataset.siteModule = 'design-contact';
+            link.dataset.i18n = 'nav.contact';
+            link.textContent = 'Contact';
+          }
         }
       });
       /* There used to be two separate entries. Keep one canonical Portfolio. */
@@ -76,11 +83,11 @@
         link.href = href;
         link.textContent = label;
         link.dataset.i18n = `nav.${key}`;
-        link.dataset.siteModule = key === 'photo' ? 'photography-contact' : 'atelier-cta';
+        link.dataset.siteModule = key === 'photo' ? 'photography' : 'atelier';
         link.className = `nav-cta nav-cta-${className}`;
       };
-      addAction('photo', 'Projet photo', 'contact.html?intent=photography', 'photo');
-      addAction('atelier', "L'atelier", 'atelier.html', 'atelier');
+      addAction('photo', 'Photographie', 'photos.html', 'photo');
+      addAction('atelier', 'Atelier', 'atelier.html', 'atelier');
     }
 
     /* Drawer gets the same two routes, but as full-width rows. */
@@ -91,8 +98,8 @@
         if (!link) { link = document.createElement('a'); link.dataset.navAction = key; drawer.appendChild(link); }
         link.href = href; link.textContent = label; link.dataset.siteModule = module; link.dataset.i18n = `nav.${key}`;
       };
-      addDrawer('photo', 'Projet photo', 'contact.html?intent=photography', 'photography-contact');
-      addDrawer('atelier', "L'atelier", 'atelier.html', 'atelier-cta');
+      addDrawer('photo', 'Photographie', 'photos.html', 'photography');
+      addDrawer('atelier', 'Atelier', 'atelier.html', 'atelier');
     }
 
     const apply = async () => {
