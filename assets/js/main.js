@@ -94,8 +94,13 @@
     const drawer = document.getElementById('drawer');
     if (drawer) {
       const addDrawer = (key, label, href, module) => {
-        let link = drawer.querySelector(`[data-nav-action="${key}"]`);
+        /* Reuse the static link when the page already contains this route;
+           otherwise the dynamic module control would duplicate Photographie
+           inside the mobile drawer. */
+        let link = drawer.querySelector(`[data-nav-action="${key}"]`)
+          || drawer.querySelector(`a[href="${href}"]`);
         if (!link) { link = document.createElement('a'); link.dataset.navAction = key; drawer.appendChild(link); }
+        link.dataset.navAction = key;
         link.href = href; link.textContent = label; link.dataset.siteModule = module; link.dataset.i18n = `nav.${key}`;
       };
       addDrawer('photo', 'Photographie', 'photos.html', 'photography');
