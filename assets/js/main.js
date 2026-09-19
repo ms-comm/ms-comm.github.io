@@ -138,7 +138,7 @@
       const section = document.createElement('section');
       section.className = 'section portfolio-experiences';
       section.id = 'experiences';
-      section.innerHTML = '<div class="container"><div class="section-header"><div class="section-line"></div><h2>Parcours &amp; <span class="gold">expériences</span></h2><p>Les projets qui ont construit mon regard et ma méthode.</p></div></div>';
+      section.innerHTML = '<div class="container"><div class="section-header"><div class="section-line"></div><h2>Parcours &amp; expériences</h2><p>Les projets qui ont construit mon regard et ma méthode.</p></div></div>';
       const container = section.querySelector('.container');
       container.appendChild(grid.cloneNode(true));
       const firstSection = main.querySelector('.section');
