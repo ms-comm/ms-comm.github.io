@@ -176,11 +176,18 @@ main {
 
 .topbar-inner {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(230px, 1fr) auto minmax(330px, 1fr);
   align-items: center;
-  gap: clamp(16px, 2.5vw, 40px);
+  gap: clamp(18px, 3vw, 44px);
   height: var(--nav-h);
 }
+
+/* Header alignment: the brand owns the left rail, the primary menu stays
+   mathematically centred, and account/language/actions hug the right rail. */
+.topbar > .container { width: min(var(--max), calc(100% - 32px)); }
+.brand { justify-self: start; min-width: 0; }
+.nav { justify-self: center; justify-content: center; gap: clamp(10px, 1.5vw, 24px); }
+.nav-actions { justify-self: end; margin-left: auto; }
 
 .brand {
   display: flex;
@@ -189,8 +196,8 @@ main {
 }
 
 .brand-logo {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 0;
   object-fit: contain;
   filter: brightness(1.1);
@@ -226,10 +233,10 @@ main {
 
 .nav a {
   isolation: isolate;
-  font-size: 12px;
+  font-size: clamp(13px, 1vw, 15px);
   font-weight: 500;
   color: var(--muted);
-  padding: 8px 4px;
+  padding: 10px 5px;
   border-radius: 10px;
   transition: all 0.25s ease;
   position: relative;
@@ -336,6 +343,16 @@ main {
 }
 
 .nav-actions > * { flex: 0 0 auto; }
+
+/* Desktop rail: service shortcuts first, then settings/account at the true
+   right edge. DOM injection can happen in a different order, so keep this
+   visual contract in CSS. */
+.nav-actions .nav-cta-design { order: 1; }
+.nav-actions .nav-cta-photo,
+.nav-actions .nav-cta-atelier { order: 2; }
+.nav-actions .lang-switch { order: 3; }
+.nav-actions .acct-control { order: 4; }
+.nav-actions .mobile-toggle { order: 5; }
 
 /* ===== BUTTONS ===== */
 .btn {
@@ -2183,7 +2200,7 @@ textarea:focus {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 960px) {
+@media (max-width: 1040px) {
   .section-header p.services-intro-line {
     max-width: 90vw;
   }
@@ -2226,6 +2243,14 @@ textarea:focus {
   .nav-cta {
     display: none;
   }
+
+  /* Keep the compact controls in a deliberate order: language, profile,
+     then the menu trigger at the absolute right edge. */
+  .topbar-inner { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .topbar-inner .nav-actions { grid-column: 2; gap: 7px !important; }
+  .topbar-inner .lang-switch { order: 1; }
+  .topbar-inner .acct-control { order: 2; }
+  .topbar-inner .mobile-toggle { order: 3; margin-left: 2px; }
 
   .mobile-toggle {
     display: inline-flex;
@@ -2491,7 +2516,7 @@ textarea:focus {
  * littéralement — « Demander un devis » passait par-dessus « Contact ».
  * Le palier commence à 1280px car le conteneur utile fait 1200px au
  * maximum : le défaut apparaissait déjà sur les fenêtres 1220–1280px. */
-@media (min-width: 961px) and (max-width: 1280px) {
+@media (min-width: 1041px) and (max-width: 1280px) {
   .topbar-inner { gap: 8px; min-width: 0; }
   .topbar-inner .nav { gap: 0; min-width: 0; flex-shrink: 1; }
   .topbar-inner .nav a {

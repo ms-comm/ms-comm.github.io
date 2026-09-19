@@ -384,7 +384,7 @@ body.acct-locked { overflow: hidden; }
 .card-fav.is-fav { opacity: 1; }
 .card-fav:hover { background: rgba(10,10,10,.85); }
 
-@media (max-width: 960px) {
+@media (max-width: 1040px) {
   /* The trigger keeps its icon only; the label would crowd the hamburger. */
   .acct-control { order: 2; }
   .acct-name { display: none; }
