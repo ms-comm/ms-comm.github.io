@@ -10,43 +10,135 @@
   const menuBtn = document.getElementById('menuBtn');
   const drawer = document.getElementById('drawer');
 
-  /* L'atelier is a remotely switchable storefront. Keep its links out of the
-     public navigation while the admin switch is OFF; direct URLs still show a
-     clear unavailable state from atelier.js. */
-  function setupAtelierVisibility() {
+  /* Public navigation is data-driven by Admin → Réglages → Modules du site.
+     Keep the static HTML useful without JavaScript, then reconcile links with
+     the live feature flags. This lets the owner run several public surfaces
+     (services, portfolio, photo, Atelier) without editing every page. */
+  function setupSiteNavigation() {
     const apiBase = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
       ? 'http://localhost:3000'
       : 'https://ms-comm-server.fly.dev';
+    const roots = [...document.querySelectorAll('.nav, #drawer, .footer-links')];
     const nav = document.querySelector('.nav');
-    const siteDrawer = document.getElementById('drawer');
-    const ensureLink = (root) => {
-      if (!root || root.querySelector('[data-atelier-link]')) return;
-      const link = document.createElement('a');
-      link.href = 'atelier.html';
-      link.textContent = "L'atelier";
-      link.dataset.atelierLink = '';
-      const contact = root.querySelector('a[href$="contact.html"]');
-      root.insertBefore(link, contact || null);
+    const actions = document.querySelector('.nav-actions');
+    const moduleFor = (href) => {
+      if (/services\.html/.test(href)) return 'services';
+      if (/photos\.html/.test(href)) return 'photography';
+      if (/atelier\.html/.test(href)) return 'atelier';
+      if (/portfolio\.html|experiences\.html/.test(href)) return 'portfolio';
+      return null;
     };
-    ensureLink(nav);
-    ensureLink(siteDrawer);
-    const links = document.querySelectorAll('[data-atelier-link]');
-    if (!links.length) return;
-    fetch(`${apiBase}/api/atelier/catalog`, { cache: 'no-store' })
-      .then((response) => response.ok ? response.json() : null)
-      .then((catalog) => {
-        const active = catalog?.enabled === true;
-        links.forEach((link) => {
-          link.hidden = !active;
-          link.setAttribute('aria-hidden', String(!active));
-        });
-      })
-      .catch(() => links.forEach((link) => {
-        link.hidden = true;
-        link.setAttribute('aria-hidden', 'true');
-      }));
+    roots.forEach((root) => {
+      root.querySelectorAll('a').forEach((link) => {
+        const module = moduleFor(link.getAttribute('href') || '');
+        if (module) link.dataset.siteModule = module;
+        if (/experiences\.html/.test(link.getAttribute('href') || '')) {
+          link.href = 'portfolio.html#experiences';
+          link.dataset.i18n = 'nav.portfolio';
+          link.textContent = 'Portfolio';
+        }
+      });
+      /* There used to be two separate entries. Keep one canonical Portfolio. */
+      const portfolioLinks = [...root.querySelectorAll('a[data-site-module="portfolio"]')];
+      portfolioLinks.slice(1).forEach((link) => { link.dataset.navDuplicate = 'true'; link.hidden = true; link.setAttribute('aria-hidden', 'true'); });
+    });
+
+    /* Replace the long quote CTA with a compact contact action, then add two
+       purpose-specific routes with unmistakable accents. */
+    if (actions) {
+      let quote = actions.querySelector('.nav-cta:not(.shop-cart-trigger)');
+      if (!quote) {
+        quote = document.createElement('a');
+        quote.className = 'nav-cta';
+        actions.insertBefore(quote, actions.querySelector('.mobile-toggle') || null);
+      }
+      if (quote) {
+        quote.href = 'contact.html?intent=design';
+        quote.dataset.siteModule = 'design-contact';
+        quote.dataset.i18n = 'nav.contact';
+        quote.textContent = 'Contact';
+        quote.classList.add('nav-cta-design');
+      }
+      const addAction = (key, label, href, className) => {
+        let link = actions.querySelector(`[data-nav-action="${key}"]`);
+        if (!link) {
+          link = document.createElement('a');
+          link.dataset.navAction = key;
+          actions.insertBefore(link, actions.querySelector('.mobile-toggle') || null);
+        }
+        link.href = href;
+        link.textContent = label;
+        link.dataset.i18n = `nav.${key}`;
+        link.dataset.siteModule = key === 'photo' ? 'photography-contact' : 'atelier-cta';
+        link.className = `nav-cta nav-cta-${className}`;
+      };
+      addAction('photo', 'Projet photo', 'contact.html?intent=photography', 'photo');
+      addAction('atelier', "L'atelier", 'atelier.html', 'atelier');
+    }
+
+    /* Drawer gets the same two routes, but as full-width rows. */
+    const drawer = document.getElementById('drawer');
+    if (drawer) {
+      const addDrawer = (key, label, href, module) => {
+        let link = drawer.querySelector(`[data-nav-action="${key}"]`);
+        if (!link) { link = document.createElement('a'); link.dataset.navAction = key; drawer.appendChild(link); }
+        link.href = href; link.textContent = label; link.dataset.siteModule = module; link.dataset.i18n = `nav.${key}`;
+      };
+      addDrawer('photo', 'Projet photo', 'contact.html?intent=photography', 'photography-contact');
+      addDrawer('atelier', "L'atelier", 'atelier.html', 'atelier-cta');
+    }
+
+    const apply = async () => {
+      const [settings, catalog] = await Promise.all([
+        fetch(`${apiBase}/api/public/settings/public?cb=${Date.now()}`, { cache: 'no-store' }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+        fetch(`${apiBase}/api/atelier/catalog?cb=${Date.now()}`, { cache: 'no-store' }).then((r) => r.ok ? r.json() : {}).catch(() => ({}))
+      ]);
+      const flags = {
+        services: settings.showServices !== false,
+        portfolio: settings.showPortfolio !== false,
+        photography: settings.showPhotography !== false,
+        atelier: settings.showAtelier !== false && catalog.enabled === true,
+        'design-contact': settings.showDesignContact !== false,
+        'photography-contact': settings.showPhotographyContact !== false,
+        'atelier-cta': settings.showAtelierCta !== false && catalog.enabled === true
+      };
+      document.querySelectorAll('[data-site-module]').forEach((link) => {
+        const visible = link.dataset.navDuplicate !== 'true' && flags[link.dataset.siteModule] !== false;
+        link.hidden = !visible;
+        link.setAttribute('aria-hidden', String(!visible));
+      });
+    };
+    apply();
   }
-  setupAtelierVisibility();
+  setupSiteNavigation();
+
+  /* The former experiences route remains a safe legacy URL. The public
+     destination is now Portfolio, which starts with the complete experience
+     timeline and then continues into the existing portfolio work. */
+  if (/\/experiences\.html$/.test(window.location.pathname) && !new URLSearchParams(window.location.search).has('embed')) {
+    window.location.replace('portfolio.html#experiences');
+  }
+
+  /* Compose the two existing, content-rich surfaces without duplicating the
+     portfolio markup by hand. The fetch is same-origin on Pages; if it fails,
+     the portfolio still remains fully usable. */
+  if (/\/portfolio\.html$/.test(window.location.pathname) && !document.querySelector('.portfolio-experiences')) {
+    fetch('experiences.html?embed=1', { cache: 'no-store' }).then((r) => r.text()).then((html) => {
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      const grid = parsed.querySelector('.exp-grid');
+      const main = document.querySelector('main');
+      if (!grid || !main) return;
+      const section = document.createElement('section');
+      section.className = 'section portfolio-experiences';
+      section.id = 'experiences';
+      section.innerHTML = '<div class="container"><div class="section-header"><div class="section-line"></div><h2>Parcours &amp; <span class="gold">expériences</span></h2><p>Les projets qui ont construit mon regard et ma méthode.</p></div></div>';
+      const container = section.querySelector('.container');
+      container.appendChild(grid.cloneNode(true));
+      const firstSection = main.querySelector('.section');
+      main.insertBefore(section, firstSection || null);
+      section.querySelectorAll('.reveal, .reveal-left, .reveal-right, .stagger').forEach((el) => el.classList.add('is-visible'));
+    }).catch(() => {});
+  }
 
   function closeDrawer() {
     if (!drawer) return;

@@ -158,6 +158,8 @@
     "Ouvrir L'atelier": "Open The Atelier",
     "Contact": "Contact",
     "Demander un devis": "Request a quote",
+    "Projet design": "Design project",
+    "Projet photo": "Photo project",
     "Menu": "Menu",
     "création physique": "physical creation",
     "Une photo vous plaît ? Donnez-lui une autre vie.": "Love a photo? Give it another life.",
