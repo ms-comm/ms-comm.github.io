@@ -57,8 +57,26 @@
       portfolioLinks.slice(1).forEach((link) => { link.dataset.navDuplicate = 'true'; link.hidden = true; link.setAttribute('aria-hidden', 'true'); });
     });
 
-    /* Replace the long quote CTA with a compact contact action, then add two
-       purpose-specific routes with unmistakable accents. */
+    /* Photography and L'atelier are primary navigation destinations, not
+       oversized utility buttons. Reuse the static photography link when a
+       page already has it, then add Atelier beside it. */
+    if (nav) {
+      const addPrimary = (key, label, href, module) => {
+        let link = nav.querySelector(`[data-nav-action="${key}"]`)
+          || nav.querySelector(`a[href="${href}"]`);
+        if (!link) link = document.createElement('a');
+        link.dataset.navAction = key;
+        link.href = href;
+        link.textContent = label;
+        link.dataset.i18n = `nav.${key}`;
+        link.dataset.siteModule = module;
+        if (!link.parentNode) nav.appendChild(link);
+      };
+      addPrimary('photo', 'Photographie', 'photos.html', 'photography');
+      addPrimary('atelier', 'Atelier', 'atelier.html', 'atelier');
+    }
+
+    /* Keep Contact as the single highlighted action. */
     if (actions) {
       let quote = actions.querySelector('.nav-cta:not(.shop-cart-trigger)');
       if (!quote) {
@@ -73,21 +91,6 @@
         quote.textContent = 'Contact';
         quote.classList.add('nav-cta-design');
       }
-      const addAction = (key, label, href, className) => {
-        let link = actions.querySelector(`[data-nav-action="${key}"]`);
-        if (!link) {
-          link = document.createElement('a');
-          link.dataset.navAction = key;
-          actions.insertBefore(link, actions.querySelector('.mobile-toggle') || null);
-        }
-        link.href = href;
-        link.textContent = label;
-        link.dataset.i18n = `nav.${key}`;
-        link.dataset.siteModule = key === 'photo' ? 'photography' : 'atelier';
-        link.className = `nav-cta nav-cta-${className}`;
-      };
-      addAction('photo', 'Photographie', 'photos.html', 'photo');
-      addAction('atelier', 'Atelier', 'atelier.html', 'atelier');
     }
 
     /* Drawer gets the same two routes, but as full-width rows. */

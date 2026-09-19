@@ -227,7 +227,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2px;
+  gap: clamp(18px, 2vw, 32px);
   min-width: 0;
 }
 
@@ -344,12 +344,10 @@ main {
 
 .nav-actions > * { flex: 0 0 auto; }
 
-/* Desktop rail: service shortcuts first, then settings/account at the true
-   right edge. DOM injection can happen in a different order, so keep this
-   visual contract in CSS. */
+/* Desktop rail: Contact stays highlighted; language/account stay at the
+   true right edge. DOM injection can happen in a different order, so keep
+   this visual contract in CSS. */
 .nav-actions .nav-cta-design { order: 1; }
-.nav-actions .nav-cta-photo,
-.nav-actions .nav-cta-atelier { order: 2; }
 .nav-actions .lang-switch { order: 3; }
 .nav-actions .acct-control { order: 4; }
 .nav-actions .mobile-toggle { order: 5; }
@@ -2510,15 +2508,15 @@ textarea:focus {
 
 /* ── Compression de la rangée entre 961 et 1280px ──────────────────────
  * À ces largeurs la navigation complète est encore affichée (elle ne
- * disparaît qu'à 960px) mais la rangée demande plus de place qu'il n'y
- * en a : six liens, le bouton devis, le compte et le sélecteur FR/EN.
+ * disparaît qu'à 1040px) mais la rangée demande plus de place qu'il n'y
+ * en a : les liens, Contact, le compte et le sélecteur FR/EN.
  * Rien n'étant autorisé à se comprimer, les blocs se chevauchaient
  * littéralement — « Demander un devis » passait par-dessus « Contact ».
  * Le palier commence à 1280px car le conteneur utile fait 1200px au
  * maximum : le défaut apparaissait déjà sur les fenêtres 1220–1280px. */
 @media (min-width: 1041px) and (max-width: 1280px) {
   .topbar-inner { gap: 8px; min-width: 0; }
-  .topbar-inner .nav { gap: 0; min-width: 0; flex-shrink: 1; }
+  .topbar-inner .nav { gap: clamp(12px, 1.4vw, 18px); min-width: 0; flex-shrink: 1; }
   .topbar-inner .nav a {
     white-space: nowrap;
     font-size: 12px;
