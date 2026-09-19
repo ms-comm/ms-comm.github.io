@@ -30,12 +30,19 @@
     };
     roots.forEach((root) => {
       root.querySelectorAll('a').forEach((link) => {
-        const module = moduleFor(link.getAttribute('href') || '');
+        const href = link.getAttribute('href') || '';
+        const module = moduleFor(href);
         if (module) link.dataset.siteModule = module;
-        if (/experiences\.html/.test(link.getAttribute('href') || '')) {
+        if (/experiences\.html/.test(href)) {
           link.href = 'portfolio.html#experiences';
           link.dataset.i18n = 'nav.portfolio';
           link.textContent = 'Portfolio';
+        }
+        /* Contact is the highlighted action now, never a duplicate tab. */
+        if (root.classList.contains('nav') && /contact\.html/.test(href) && !link.classList.contains('nav-cta')) {
+          link.dataset.navDuplicate = 'true';
+          link.hidden = true;
+          link.setAttribute('aria-hidden', 'true');
         }
       });
       /* There used to be two separate entries. Keep one canonical Portfolio. */
