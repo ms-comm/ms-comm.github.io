@@ -160,6 +160,8 @@
     "Demander un devis": "Request a quote",
     "Projet design": "Design project",
     "Projet photo": "Photo project",
+    "Parcours & expériences": "Journey & experience",
+    "Les projets qui ont construit mon regard et ma méthode.": "Projects that shaped my eye and method.",
     "Menu": "Menu",
     "création physique": "physical creation",
     "Une photo vous plaît ? Donnez-lui une autre vie.": "Love a photo? Give it another life.",
