@@ -18,6 +18,7 @@
   }
 
   function canRequestAlbumDownload(type, mode) {
+    if (type === 'paid') return false;
     return albumDownloadModes(type).includes(mode);
   }
 
