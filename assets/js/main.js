@@ -7,8 +7,8 @@
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
   /* ---------- Mobile drawer ---------- */
-  const menuBtn = document.getElementById('menuBtn');
-  const drawer = document.getElementById('drawer');
+  let menuBtn = document.getElementById('menuBtn');
+  let drawer = document.getElementById('drawer');
 
   /* Public navigation is data-driven by Admin → Réglages → Modules du site.
      Keep the static HTML useful without JavaScript, then reconcile links with
@@ -20,7 +20,8 @@
       : 'https://ms-comm-server.fly.dev';
     const roots = [...document.querySelectorAll('.nav, #drawer, .footer-links')];
     const nav = document.querySelector('.nav');
-    const actions = document.querySelector('.nav-actions');
+    let actions = document.querySelector('.nav-actions');
+    const topbarInner = document.querySelector('.topbar-inner');
     const moduleFor = (href) => {
       if (/services\.html/.test(href)) return 'services';
       if (/photos\.html/.test(href)) return 'photography';
@@ -37,6 +38,7 @@
           link.href = 'portfolio.html#experiences';
           link.dataset.i18n = 'nav.portfolio';
           link.textContent = 'Portfolio';
+          link.dataset.navAction = 'portfolio';
         }
         /* Contact is the highlighted action now, never a duplicate desktop tab. */
         if (/contact\.html/.test(href) && !link.classList.contains('nav-cta')) {
@@ -57,9 +59,8 @@
       portfolioLinks.slice(1).forEach((link) => { link.dataset.navDuplicate = 'true'; link.hidden = true; link.setAttribute('aria-hidden', 'true'); });
     });
 
-    /* Photography and L'atelier are primary navigation destinations, not
-       oversized utility buttons. Reuse the static photography link when a
-       page already has it, then add Atelier beside it. */
+    /* Keep one canonical primary navigation on every public page, including
+       the compact legal pages whose static header only has a few links. */
     if (nav) {
       const addPrimary = (key, label, href, module) => {
         let link = nav.querySelector(`[data-nav-action="${key}"]`)
@@ -72,8 +73,53 @@
         link.dataset.siteModule = module;
         if (!link.parentNode) nav.appendChild(link);
       };
+      addPrimary('home', 'Accueil', 'index.html', null);
+      addPrimary('portfolio', 'Portfolio', 'portfolio.html', 'portfolio');
+      addPrimary('services', 'Services', 'services.html', 'services');
       addPrimary('photo', 'Photographie', 'photos.html', 'photography');
-      addPrimary('atelier', 'Atelier', 'atelier.html', 'atelier');
+      addPrimary('atelier', "L'Atelier", 'atelier.html', 'atelier');
+
+      /* Stable order prevents a minimal page from rendering a different
+         header sequence than the home page before the async flags arrive. */
+      ['home', 'portfolio', 'services', 'photo', 'atelier'].forEach((key) => {
+        const link = nav.querySelector(`[data-nav-action="${key}"]`);
+        if (link) nav.appendChild(link);
+      });
+      const portfolioLinks = [...nav.querySelectorAll('[data-site-module="portfolio"]')];
+      const canonicalPortfolio = nav.querySelector('[data-nav-action="portfolio"]') || portfolioLinks[0];
+      portfolioLinks.forEach((link) => {
+        const duplicate = link !== canonicalPortfolio;
+        if (duplicate) link.dataset.navDuplicate = 'true';
+        else delete link.dataset.navDuplicate;
+        link.hidden = duplicate;
+        link.setAttribute('aria-hidden', String(duplicate));
+      });
+    }
+
+    /* Some utility/legal pages predate the shared header and have no action
+       rail or drawer. Build the same controls so every tab has one header. */
+    if (!actions && topbarInner) {
+      actions = document.createElement('div');
+      actions.className = 'nav-actions';
+      topbarInner.appendChild(actions);
+    }
+    if (!drawer) {
+      const topbar = document.querySelector('header.topbar');
+      if (topbar) {
+        drawer = document.createElement('div');
+        drawer.className = 'drawer';
+        drawer.id = 'drawer';
+        topbar.insertAdjacentElement('afterend', drawer);
+      }
+    }
+    if (!menuBtn && actions) {
+      menuBtn = document.createElement('button');
+      menuBtn.className = 'mobile-toggle';
+      menuBtn.id = 'menuBtn';
+      menuBtn.type = 'button';
+      menuBtn.setAttribute('aria-label', 'Menu');
+      menuBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      actions.appendChild(menuBtn);
     }
 
     /* Keep Contact as the single highlighted action. */
@@ -93,8 +139,7 @@
       }
     }
 
-    /* Drawer gets the same two routes, but as full-width rows. */
-    const drawer = document.getElementById('drawer');
+    /* Drawer gets the same routes, but as full-width rows. */
     if (drawer) {
       const addDrawer = (key, label, href, module) => {
         /* Reuse the static link when the page already contains this route;
@@ -106,8 +151,16 @@
         link.dataset.navAction = key;
         link.href = href; link.textContent = label; link.dataset.siteModule = module; link.dataset.i18n = `nav.${key}`;
       };
+      addDrawer('home', 'Accueil', 'index.html', null);
+      addDrawer('portfolio', 'Portfolio', 'portfolio.html', 'portfolio');
+      addDrawer('services', 'Services', 'services.html', 'services');
       addDrawer('photo', 'Photographie', 'photos.html', 'photography');
-      addDrawer('atelier', 'Atelier', 'atelier.html', 'atelier');
+      addDrawer('atelier', "L'Atelier", 'atelier.html', 'atelier');
+      addDrawer('contact', 'Contact', 'contact.html?intent=design', 'design-contact');
+      ['home', 'portfolio', 'services', 'photo', 'atelier', 'contact'].forEach((key) => {
+        const link = drawer.querySelector(`[data-nav-action="${key}"]`);
+        if (link) drawer.appendChild(link);
+      });
     }
 
     const apply = async () => {
@@ -153,12 +206,12 @@
       const section = document.createElement('section');
       section.className = 'section portfolio-experiences';
       section.id = 'experiences';
-      section.innerHTML = '<div class="container"><div class="section-header"><div class="section-line"></div><h2>Parcours &amp; expériences</h2><p>Les projets qui ont construit mon regard et ma méthode.</p></div></div>';
+      section.innerHTML = '<div class="container"><div class="section-header reveal"><div class="section-line"></div><h2>Parcours &amp; expériences</h2><p>Les projets qui ont construit mon regard et ma méthode.</p></div></div>';
       const container = section.querySelector('.container');
       container.appendChild(grid.cloneNode(true));
       const firstSection = main.querySelector('.section');
       main.insertBefore(section, firstSection || null);
-      section.querySelectorAll('.reveal, .reveal-left, .reveal-right, .stagger').forEach((el) => el.classList.add('is-visible'));
+      observeRevealElements(section);
     }).catch(() => {});
   }
 
@@ -187,8 +240,12 @@
 
   /* ---------- Scroll reveal (IntersectionObserver) ---------- */
   const revealSelectors = '.reveal, .reveal-left, .reveal-right, .stagger';
-  const revealEls = document.querySelectorAll(revealSelectors);
-  const revealIO = new IntersectionObserver(
+  let revealIO;
+  function observeRevealElements(root) {
+    if (!revealIO || !root) return;
+    root.querySelectorAll(revealSelectors).forEach((el) => revealIO.observe(el));
+  }
+  revealIO = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -199,7 +256,7 @@
     },
     { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
   );
-  revealEls.forEach((el) => revealIO.observe(el));
+  observeRevealElements(document);
 
   /* ---------- Testimonials marquee ---------- */
   const testimonialsRail  = document.getElementById('testimonialsRail');
@@ -444,7 +501,7 @@
         `• ${item.name} — ${item.format} — quantité ${item.quantity} — ${(item.price * item.quantity).toFixed(2).replace('.00', '')} €`
       ) : [];
       const messageInput = document.querySelector('textarea[name="message"]');
-      subjectInput.value = "Commande L'atelier MS Comm'";
+      subjectInput.value = "Commande L'Atelier MS Comm'";
       subjectInput.dataset.autoSubject = 'false';
       if (messageInput && lines.length) {
         messageInput.value = `Bonjour,\n\nJe souhaite commander :\n${lines.join('\n')}\n\nTotal produits : ${Number(order.total || 0).toFixed(2).replace('.00', '')} €\n\nMerci de me confirmer les frais de livraison et le paiement.`;
