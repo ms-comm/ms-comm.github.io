@@ -347,7 +347,7 @@ if (data.cart && data.cart.length) {
     <div class="co-item">
       <img class="co-item-thumb" src="${escapeHtml(safeUrl(resolveUrl(item.watermarkedUrl)))}" data-fallback="${escapeHtml(safeUrl(resolveUrl(item.previewUrl)))}" alt="${escapeHtml(item.title || 'Photo')}" />
       <div class="co-item-info">
-        <div class="co-item-title">${escapeHtml(item.title || 'Photo')}</div>
+        <div class="co-item-title">${escapeHtml(item.type === 'album' ? `Album · ${item.title || ''}` : (item.title || 'Photo'))}</div>
         <div class="co-item-price">${Number(item.price || 0).toFixed(2)}€</div>
       </div>
     </div>`).join('');
@@ -359,7 +359,7 @@ if (data.cart && data.cart.length) {
 
   const subtotal = data.cart.reduce((s, c) => s + c.price, 0);
   totalsEl.innerHTML = `
-    <div class="co-total-row subtotal-row"><span>Sous-total (${data.cart.length} photos)</span><span>${subtotal.toFixed(2)}€</span></div>
+    <div class="co-total-row subtotal-row"><span>Sous-total (${data.cart.length === 1 && data.cart[0].type === 'album' ? '1 album' : `${data.cart.length} photos`})</span><span>${subtotal.toFixed(2)}€</span></div>
     ${data.discPct > 0 ? `<div class="co-total-row discount"><span>Remise ${data.discPct}%</span><span>-${data.tierDiscount.toFixed(2)}€</span></div>` : ''}
     ${data.promoDiscount > 0 ? `<div class="co-total-row discount"><span>Code promo</span><span>-${data.promoDiscount.toFixed(2)}€</span></div>` : ''}
     <div class="co-total-row final"><span>Total</span><span>${parseFloat(data.total).toFixed(2)}€</span></div>`;
