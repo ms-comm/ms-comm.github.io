@@ -352,10 +352,6 @@
 .lb-img-wrap { max-width:90vw; width:90vw; height:100%; position:relative; display:flex; align-items:center; justify-content:center; }
 .lb-img-wrap img { max-width:100%; max-height:100%; object-fit:contain; border-radius:4px; display:block; user-select:none; -webkit-user-drag:none; }
 .photo-protection-overlay { position:absolute; inset:0; z-index:1; pointer-events:none; user-select:none; overflow:hidden; display:flex; align-items:center; justify-content:center; }
-.photo-protection-overlay::before,
-.photo-protection-overlay::after { content:"MS COMM' · APERÇU PROTÉGÉ"; position:absolute; color:rgba(255,255,255,.16); font-size:clamp(13px,1.6vw,20px); font-weight:700; letter-spacing:.18em; white-space:nowrap; transform:rotate(-24deg); text-shadow:0 1px 2px rgba(0,0,0,.55); }
-.photo-protection-overlay::before { top:27%; left:-15%; }
-.photo-protection-overlay::after { bottom:27%; right:-15%; }
 .photo-protected { user-select:none !important; -webkit-user-drag:none !important; }
 @media print {
   .photo-protection-enabled img.photo-protected,
