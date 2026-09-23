@@ -97,12 +97,12 @@ Toute réponse renvoie `{ range:{from,to,granularity,label}, generatedAt, ... }`
 | `GET /albums/:id` | `album`, `counters`, `previous`, `series[]`, `topPhotos[]` (même forme que /photos items), `viewers[]`, `events[]` |
 | `GET /visitors?segment=all|anonymous|identified|online|new|returning&sort=recent|duration|pageViews|sessions&search=&page=&pageSize=` | `items:[{vid, accountId, displayName, type:'account'|'visitor', online, lastIp, device, browser, os, lang, firstSeenAt, lastSeenAt, sessions, totalDurationMs, lastSessionDurationMs, pageViews, photoViews, albumViews, downloads, favorites, lastPath}]`, `summary`, `total` |
 | `GET /visitors/:vid` | `visitor`, `account` (profil public si relié), `sessions:[{sid,startAt,endAt,durationMs,activeMs,pageViews,pages,landing,exit,ref,ip,device}]` (30 dernières), `journey:[événements enrichis, 200 derniers]`, `topAlbums`, `topPhotos`, `counters` |
-| `GET /events?type=&photoId=&albumId=&vid=&accountId=&page=&pageSize=&sort=desc` | `items:[{id,ts,type,label,detail,vid,accountId,displayName,ip,device,photo:{id,title,thumb}?,album:{id,name}?,path,meta}]`, `total`, `types:[{key,count}]` — drill-down universel |
+| `GET /events?type=&photoId=&albumId=&vid=&accountId=&pageName=&page=&pageSize=&sort=desc` | `items:[{id,ts,type,label,detail,vid,accountId,displayName,ip,device,photo:{id,title,thumb}?,album:{id,name}?,path,meta}]`, `total`, `types:[{key,count}]` — drill-down universel. `page` indique le numéro de page; `pageName` filtre sur le slug de page. |
 
 Compléments d'implémentation (`services/stats.js`) : `range=all` démarre au premier événement journalisé ;
 `/photos` accepte aussi `onlyActive=1` et `sort=viewers`, `/albums` accepte `type=` et `sort=time|photoViews`,
 `/visitors` accepte les segments `mobile|desktop` et `sort=downloads|first`, `/events` accepte `type=a,b`
-(liste), `ip=`, `sid=`, `device=`, `browser=`, `os=`, `lang=`, `page=`, `referrer=` (hôte ou `direct`), `hour=0-23`,
+(liste), `ip=`, `sid=`, `device=`, `browser=`, `os=`, `lang=`, `pageName=` (slug de page), `referrer=` (hôte ou `direct`), `hour=0-23`,
 `weekday=0-6` (lundi = 0), `includeHeartbeat=1` (les heartbeats sont masqués par défaut). `/photos/:id` renvoie aussi
 `allTime`. `pageSize` est borné à 5–200. Toutes les réponses ajoutent `range.key` et `range.days`. Les `series[]`
 portent aussi `views` (= `photoViews` + `albumViews`, ou seulement les vues de la cible sur `/photos/:id` et `/albums/:id`).
