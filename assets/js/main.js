@@ -35,10 +35,15 @@
         const module = moduleFor(href);
         if (module) link.dataset.siteModule = module;
         if (/experiences\.html/.test(href)) {
-          link.href = 'portfolio.html#experiences';
-          link.dataset.i18n = 'nav.portfolio';
-          link.textContent = 'Portfolio';
-          link.dataset.navAction = 'portfolio';
+          /* Experiences is now a section inside Portfolio, not another nav
+             item. Keep the direct Portfolio link canonical in both headers. */
+          if (root.classList.contains('nav') || root.id === 'drawer') {
+            link.dataset.navDuplicate = 'true';
+            link.hidden = true;
+            link.setAttribute('aria-hidden', 'true');
+          } else {
+            link.href = 'portfolio.html#experiences';
+          }
         }
         /* Contact is the highlighted action now, never a duplicate desktop tab. */
         if (/contact\.html/.test(href) && !link.classList.contains('nav-cta')) {
@@ -56,15 +61,23 @@
       });
       /* There used to be two separate entries. Keep one canonical Portfolio. */
       const portfolioLinks = [...root.querySelectorAll('a[data-site-module="portfolio"]')];
-      portfolioLinks.slice(1).forEach((link) => { link.dataset.navDuplicate = 'true'; link.hidden = true; link.setAttribute('aria-hidden', 'true'); });
+      const canonicalPortfolio = portfolioLinks.find((link) => link.getAttribute('href') === 'portfolio.html')
+        || portfolioLinks.find((link) => !link.hidden)
+        || portfolioLinks[0];
+      portfolioLinks.forEach((link) => {
+        const duplicate = link !== canonicalPortfolio;
+        link.dataset.navDuplicate = String(duplicate);
+        link.hidden = duplicate;
+        link.setAttribute('aria-hidden', String(duplicate));
+      });
     });
 
     /* Keep one canonical primary navigation on every public page, including
        the compact legal pages whose static header only has a few links. */
     if (nav) {
       const addPrimary = (key, label, href, module) => {
-        let link = nav.querySelector(`[data-nav-action="${key}"]`)
-          || nav.querySelector(`a[href="${href}"]`);
+        let link = nav.querySelector(`a[href="${href}"]`)
+          || nav.querySelector(`[data-nav-action="${key}"]`);
         if (!link) link = document.createElement('a');
         link.dataset.navAction = key;
         link.href = href;
@@ -84,6 +97,16 @@
       ['home', 'portfolio', 'services', 'photo', 'atelier'].forEach((key) => {
         const link = nav.querySelector(`[data-nav-action="${key}"]`);
         if (link) nav.appendChild(link);
+      });
+      const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+      const currentKey = currentFile === 'experiences.html' ? 'portfolio'
+        : ({ 'index.html': 'home', 'portfolio.html': 'portfolio', 'services.html': 'services',
+            'photos.html': 'photo', 'atelier.html': 'atelier' })[currentFile];
+      nav.querySelectorAll('[data-nav-action]').forEach((link) => {
+        const active = link.dataset.navAction === currentKey && link.dataset.navDuplicate !== 'true';
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
       });
       const portfolioLinks = [...nav.querySelectorAll('[data-site-module="portfolio"]')];
       const canonicalPortfolio = nav.querySelector('[data-nav-action="portfolio"]') || portfolioLinks[0];
@@ -139,14 +162,20 @@
       }
     }
 
+    if (drawer) drawer.setAttribute('aria-hidden', 'true');
+    if (menuBtn) {
+      menuBtn.setAttribute('aria-controls', 'drawer');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+
     /* Drawer gets the same routes, but as full-width rows. */
     if (drawer) {
       const addDrawer = (key, label, href, module) => {
         /* Reuse the static link when the page already contains this route;
            otherwise the dynamic module control would duplicate Photographie
            inside the mobile drawer. */
-        let link = drawer.querySelector(`[data-nav-action="${key}"]`)
-          || drawer.querySelector(`a[href="${href}"]`);
+        let link = drawer.querySelector(`a[href="${href}"]`)
+          || drawer.querySelector(`[data-nav-action="${key}"]`);
         if (!link) { link = document.createElement('a'); link.dataset.navAction = key; drawer.appendChild(link); }
         link.dataset.navAction = key;
         link.href = href; link.textContent = label; link.dataset.siteModule = module; link.dataset.i18n = `nav.${key}`;
@@ -161,27 +190,61 @@
         const link = drawer.querySelector(`[data-nav-action="${key}"]`);
         if (link) drawer.appendChild(link);
       });
+      const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+      const currentKey = currentFile === 'experiences.html' ? 'portfolio'
+        : ({ 'index.html': 'home', 'portfolio.html': 'portfolio', 'services.html': 'services',
+            'photos.html': 'photo', 'atelier.html': 'atelier' })[currentFile];
+      drawer.querySelectorAll('[data-nav-action]').forEach((link) => {
+        const active = link.dataset.navAction === currentKey && link.dataset.navDuplicate !== 'true';
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
     }
 
-    const apply = async () => {
-      const [settings, catalog] = await Promise.all([
-        fetch(`${apiBase}/api/public/settings/public?cb=${Date.now()}`, { cache: 'no-store' }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
-        fetch(`${apiBase}/api/atelier/catalog?cb=${Date.now()}`, { cache: 'no-store' }).then((r) => r.ok ? r.json() : {}).catch(() => ({}))
-      ]);
+    const applyFlags = (settings, catalogEnabled) => {
       const flags = {
         services: settings.showServices !== false,
         portfolio: settings.showPortfolio !== false,
         photography: settings.showPhotography !== false,
-        atelier: settings.showAtelier !== false && catalog.enabled === true,
+        atelier: settings.showAtelier !== false && catalogEnabled === true,
         'design-contact': settings.showDesignContact !== false,
         'photography-contact': settings.showPhotographyContact !== false,
-        'atelier-cta': settings.showAtelierCta !== false && catalog.enabled === true
+        'atelier-cta': settings.showAtelierCta !== false && catalogEnabled === true
       };
       document.querySelectorAll('[data-site-module]').forEach((link) => {
         const visible = link.dataset.navDuplicate !== 'true' && flags[link.dataset.siteModule] !== false;
         link.hidden = !visible;
         link.setAttribute('aria-hidden', String(!visible));
       });
+    };
+    /* Fail closed for Atelier while public settings load. A slow catalog
+       request must never flash a module that the owner disabled. */
+    document.querySelectorAll('[data-site-module="atelier"], [data-site-module="atelier-cta"]').forEach((link) => {
+      link.hidden = true;
+      link.setAttribute('aria-hidden', 'true');
+    });
+    const apply = async () => {
+      const settingsResponse = await fetch(`${apiBase}/api/public/settings/public?cb=${Date.now()}`, { cache: 'no-store' })
+        .catch(() => null);
+      if (!settingsResponse || !settingsResponse.ok) {
+        applyFlags({}, false);
+        return;
+      }
+      const settings = await settingsResponse.json().catch(() => null);
+      if (!settings || typeof settings !== 'object') {
+        applyFlags({}, false);
+        return;
+      }
+      applyFlags(settings, false);
+      if (settings.showAtelier === false && settings.showAtelierCta === false) {
+        return;
+      }
+      const catalogResponse = await fetch(`${apiBase}/api/atelier/catalog?cb=${Date.now()}`, { cache: 'no-store' })
+        .catch(() => null);
+      if (!catalogResponse || !catalogResponse.ok) return;
+      const catalog = await catalogResponse.json().catch(() => ({}));
+      applyFlags(settings, catalog.enabled === true);
     };
     apply();
   }
@@ -218,13 +281,19 @@
   function closeDrawer() {
     if (!drawer) return;
     drawer.classList.remove('is-open');
-    if (menuBtn) menuBtn.setAttribute('aria-label', 'Menu');
+    drawer.setAttribute('aria-hidden', 'true');
+    if (menuBtn) {
+      menuBtn.setAttribute('aria-label', 'Menu');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
   }
 
   if (menuBtn && drawer) {
     menuBtn.addEventListener('click', () => {
       const open = drawer.classList.toggle('is-open');
       menuBtn.setAttribute('aria-label', open ? 'Fermer' : 'Menu');
+      menuBtn.setAttribute('aria-expanded', String(open));
+      drawer.setAttribute('aria-hidden', String(!open));
     });
     drawer.addEventListener('click', (e) => {
       if (e.target.tagName === 'A') closeDrawer();

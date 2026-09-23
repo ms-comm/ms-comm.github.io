@@ -41,6 +41,13 @@
   transition: opacity .22s ease, transform .22s cubic-bezier(.22,1,.36,1);
 }
 .acct-trigger svg { width: 17px; height: 17px; color: var(--muted); transition: color .2s; }
+.acct-trigger.is-pending { cursor: default; color: var(--muted); }
+.acct-trigger.is-pending::before { display: none; }
+.acct-trigger.is-pending svg { color: var(--gold-2); }
+@media (prefers-reduced-motion: no-preference) {
+  .acct-trigger.is-pending svg { animation: acct-session-spin 1.25s linear infinite; }
+}
+@keyframes acct-session-spin { to { transform: rotate(360deg); } }
 .acct-trigger:hover,
 .acct-trigger:focus-visible { background: transparent; border-color: transparent; }
 .acct-trigger:hover::before,

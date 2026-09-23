@@ -243,6 +243,12 @@ main {
   white-space: nowrap;
 }
 
+/* Author display rules on drawer links can override the browser's `hidden`
+   default. Keep nav deduplication authoritative at every breakpoint. */
+.nav a[hidden],
+.drawer a[hidden],
+.footer-links a[hidden] { display: none !important; }
+
 .nav a::before {
   content: '';
   position: absolute;
@@ -1866,6 +1872,11 @@ textarea:focus {
 .drawer a:hover {
   background: rgba(255,255,255,0.06);
   color: var(--text);
+}
+
+.drawer a.active {
+  color: var(--gold-2);
+  background: rgba(198,155,0,0.12);
 }
 
 .drawer.is-open {

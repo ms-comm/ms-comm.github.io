@@ -20,17 +20,65 @@
 
   const state = {
     account: null,
+    cachedAccount: null,
+    cachedCounts: null,
     counts: null,
     dlTicket: null,
     accountToken: null,
     ticketAt: 0,
     favorites: new Set(),
     ready: false,
+    profilePending: false,
+    refreshPromise: null,
     pending: null,          /* action to replay after a successful sign-in */
     resetToken: ''
   };
 
   const listeners = new Set();
+  const SESSION_PROFILE_KEY = 'mscomm_account_profile';
+
+  function hydrateSessionProfile() {
+    try {
+      if (!localStorage.getItem('mscomm_account_token')) {
+        localStorage.removeItem(SESSION_PROFILE_KEY);
+        return;
+      }
+      state.profilePending = true;
+      const cached = JSON.parse(localStorage.getItem(SESSION_PROFILE_KEY) || 'null');
+      if (!cached || !cached.account || !cached.account.id) return;
+      state.cachedAccount = cached.account;
+      state.cachedCounts = cached.counts || null;
+      state.profilePending = false;
+    } catch (_) { /* storage disabled or cache malformed: normal refresh */ }
+  }
+
+  function saveSessionProfile(account, counts) {
+    try {
+      if (!account) {
+        localStorage.removeItem(SESSION_PROFILE_KEY);
+        state.cachedAccount = null;
+        state.cachedCounts = null;
+        state.profilePending = false;
+        return;
+      }
+      const safeAccount = {
+        id: account.id,
+        firstName: account.firstName || '',
+        lastName: account.lastName || '',
+        displayName: account.displayName || '',
+        email: account.email || ''
+      };
+      const safeCounts = counts ? {
+        favorites: Number(counts.favorites) || 0,
+        albums: Number(counts.albums) || 0,
+        photosBought: Number(counts.photosBought) || 0
+      } : null;
+      state.cachedAccount = safeAccount;
+      state.cachedCounts = safeCounts;
+      state.profilePending = false;
+      localStorage.setItem(SESSION_PROFILE_KEY, JSON.stringify({ account: safeAccount, counts: safeCounts }));
+    } catch (_) { /* profile cache is only a visual optimization */ }
+  }
   function emit() {
     /* The header shows live counters (favourites), so any state change has to
        repaint it, not just notify page listeners. */
@@ -80,6 +128,7 @@
       state.accountToken = null;
       try { localStorage.removeItem('mscomm_account_token'); } catch (_) {}
     }
+    saveSessionProfile(state.account, state.counts);
     state.ticketAt = state.dlTicket ? Date.now() : 0;
     if (!state.account) state.favorites = new Set();
     if (state.account && window.MSTrack) window.MSTrack.identify(state.account.id);
@@ -88,14 +137,19 @@
   }
 
   async function refresh() {
-    const r = await api('/api/account/me');
-    /* Only a confirmed 401/empty account logs the visitor out. A transient
-       5xx or network failure must not erase the 30-day bearer fallback. */
-    if (r.ok) applySession(r.data);
-    else if (r.status === 401) applySession(null);
-    state.ready = true;
-    if (state.account) loadFavorites();
-    return state.account;
+    const pending = (async () => {
+      const r = await api('/api/account/me');
+      /* Only a confirmed 401/empty account logs the visitor out. A transient
+         5xx or network failure must not erase the 30-day bearer fallback. */
+      if (r.ok) applySession(r.data);
+      else if (r.status === 401) applySession(null);
+      state.ready = true;
+      if (state.account) loadFavorites();
+      return state.account;
+    })();
+    state.refreshPromise = pending;
+    try { return await pending; }
+    finally { if (state.refreshPromise === pending) state.refreshPromise = null; }
   }
 
   /* The ticket authorises browser-initiated downloads across the
@@ -404,6 +458,9 @@
    */
   function requireAccount(opts) {
     if (state.account) return Promise.resolve(true);
+    if (state.cachedAccount && !state.ready && state.refreshPromise) {
+      return state.refreshPromise.then(() => state.account ? true : requireAccount(opts));
+    }
     return new Promise(resolve => {
       state.pending = { resolve, reject: () => resolve(false) };
       openDialog(opts || {});
@@ -476,7 +533,17 @@
     const wrap = document.getElementById('acct-control');
     if (!wrap) return;
 
-    if (!state.account) {
+    const displayAccount = state.account || state.cachedAccount;
+    if (!displayAccount) {
+      if (state.profilePending) {
+        wrap.innerHTML =
+          '<span class="acct-trigger is-pending" role="status" aria-live="polite">' +
+          '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
+          '    <circle cx="12" cy="12" r="9" stroke-dasharray="42 16" />' +
+          '  </svg>' +
+          '  <span>Chargement de votre espace…</span></span>';
+        return;
+      }
       wrap.innerHTML =
         '<button class="acct-trigger" type="button" id="acct-signin">' +
         '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
@@ -486,17 +553,17 @@
       return;
     }
 
-    const name = state.account.firstName || state.account.displayName || 'Mon espace';
-    const c = state.counts || {};
+    const name = displayAccount.firstName || displayAccount.displayName || 'Mon espace';
+    const c = state.counts || state.cachedCounts || {};
     wrap.innerHTML = [
-      '<button class="acct-trigger is-in" type="button" id="acct-menu-btn" aria-haspopup="menu" aria-expanded="false">',
-      '  <span class="acct-avatar" aria-hidden="true">' + initials(state.account) + '</span>',
+      '<button class="acct-trigger is-in' + (state.account ? '' : ' is-pending') + '" type="button" id="acct-menu-btn" aria-haspopup="menu" aria-expanded="false">',
+      '  <span class="acct-avatar" aria-hidden="true">' + initials(displayAccount) + '</span>',
       '  <span class="acct-name">' + escapeHtml(name) + '</span>',
       '</button>',
       '<div class="acct-menu" id="acct-menu" role="menu" hidden>',
       '  <div class="acct-menu-head">',
-      '    <strong>' + escapeHtml(state.account.displayName || state.account.email) + '</strong>',
-      '    <span>' + escapeHtml(state.account.email) + '</span>',
+      '    <strong>' + escapeHtml(displayAccount.displayName || displayAccount.email) + '</strong>',
+      '    <span>' + escapeHtml(displayAccount.email) + '</span>',
       '  </div>',
       '  <div class="acct-menu-stats">',
       '    <a href="photos.html?view=favorites"><b>' + (state.favorites.size || c.favorites || 0) + '</b><span>Favoris</span></a>',
@@ -549,6 +616,7 @@
 
   function boot() {
     bindPasswordToggles(document);
+    hydrateSessionProfile();
     mount();
     refresh().catch(() => { state.ready = true; });
     try {
