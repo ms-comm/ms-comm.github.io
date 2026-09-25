@@ -2,6 +2,7 @@
 const $=id=>document.getElementById(id),CART_KEY='mscomm_merch_cart',params=new URLSearchParams(location.search),fallbackImage='assets/data/image_photo_1.jpg';
 const API=()=>window.MSAccount?.API||'https://ms-comm-server.fly.dev';
 let products=[],index=0,format='',cart=[],lastTrackedProduct='',photo={id:'',title:'Choisir dans mes favoris',image:fallbackImage};
+try{const requestedId=params.get('photo'),saved=JSON.parse(sessionStorage.getItem('mscomm_atelier_photo')||'null');sessionStorage.removeItem('mscomm_atelier_photo');if(requestedId&&saved?.id===requestedId&&typeof saved.image==='string'){const image=new URL(saved.image,location.href),allowedOrigins=new Set([location.origin,new URL(API()).origin]);if(image.protocol==='https:'||allowedOrigins.has(image.origin))photo={id:requestedId,title:String(saved.title||'Photo choisie').slice(0,160),image:image.href}}}catch(_){}
 try{cart=JSON.parse(localStorage.getItem(CART_KEY)||'[]').filter(item=>item&&item.productUid)}catch(_){cart=[]}
 const money=(n,c='EUR')=>new Intl.NumberFormat(document.documentElement.lang||'fr',{style:'currency',currency:c||'EUR'}).format(Number(n)||0);
 const esc=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));

@@ -202,21 +202,28 @@
       });
     }
 
+    let currentSiteModuleFlags = null;
+    const applySiteModuleFlags = () => {
+      if (!currentSiteModuleFlags) return;
+      document.querySelectorAll('[data-site-module]').forEach((link) => {
+        const visible = link.dataset.navDuplicate !== 'true' && currentSiteModuleFlags[link.dataset.siteModule] !== false;
+        link.hidden = !visible;
+        link.setAttribute('aria-hidden', String(!visible));
+      });
+    };
+    window.MSApplySiteModuleFlags = applySiteModuleFlags;
+
     const applyFlags = (settings, catalogEnabled) => {
-      const flags = {
+      currentSiteModuleFlags = {
         services: settings.showServices !== false,
         portfolio: settings.showPortfolio !== false,
         photography: settings.showPhotography !== false,
         atelier: settings.showAtelier !== false && catalogEnabled === true,
         'design-contact': settings.showDesignContact !== false,
         'photography-contact': settings.showPhotographyContact !== false,
-        'atelier-cta': settings.showAtelierCta !== false && catalogEnabled === true
+        'atelier-cta': settings.showAtelier !== false && settings.showAtelierCta !== false && catalogEnabled === true
       };
-      document.querySelectorAll('[data-site-module]').forEach((link) => {
-        const visible = link.dataset.navDuplicate !== 'true' && flags[link.dataset.siteModule] !== false;
-        link.hidden = !visible;
-        link.setAttribute('aria-hidden', String(!visible));
-      });
+      applySiteModuleFlags();
     };
     /* Fail closed for Atelier while public settings load. A slow catalog
        request must never flash a module that the owner disabled. */
@@ -237,7 +244,7 @@
         return;
       }
       applyFlags(settings, false);
-      if (settings.showAtelier === false && settings.showAtelierCta === false) {
+      if (settings.showAtelier === false) {
         return;
       }
       const catalogResponse = await fetch(`${apiBase}/api/atelier/catalog?cb=${Date.now()}`, { cache: 'no-store' })
