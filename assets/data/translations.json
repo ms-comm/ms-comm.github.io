@@ -827,8 +827,9 @@
     ]
   },
   "site_2026_09": {
-    "Personnaliser dans L’atelier": "Personalize in The Atelier",
-    "Démarrer une création avec cette photo.": "Start a creation with this photo.",
+    "Créer avec cette photo": "Create with this photo",
+    "Démarrer une création dans L’atelier.": "Start a creation in The Atelier.",
+    "Personnaliser": "Personalize",
     "MS Comm' — Créations": "MS Comm' — Creations",
     "Vous avez un": "You have a",
     "besoin précis ?": "specific need?",
