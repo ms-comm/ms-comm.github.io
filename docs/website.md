@@ -245,3 +245,10 @@ Structure:
 - [ ] Verify `data-i18n` attributes translate in EN mode
 - [ ] Check meta tags and `<title>` update on lang switch
 - [ ] Verify no broken images (Flickr CDN URLs vs local fallback)
+
+## Search discovery
+
+- The indexable landing pages are `index.html`, `services.html`, `portfolio.html`, `experiences.html`, `contact.html`, and `photos.html`. Each has unique French title/description and static FR/EN `hreflang`; `assets/js/seo.js` forces and shares the English `?lang=en` version and updates canonical/social metadata.
+- `sitemap.xml` lists French canonical URLs and matching English variants with reciprocal `hreflang`; `robots.txt` points to that sitemap. Keep `lastmod` tied to significant page changes.
+- `compte.html` and `checkout.html` stay `noindex`. `atelier.html` stays out of the sitemap and `noindex` while its product catalog is inactive.
+- Structured data must reflect visible, verified facts. Do not add a guessed street address or generic city-center coordinates; the homepage Organization entity uses the public logo, email, and official social profiles.

@@ -1,39 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://ms-comm.github.io/</loc>
-    <lastmod>2026-03-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/?lang=en</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/" />
   </url>
   <url>
     <loc>https://ms-comm.github.io/services.html</loc>
-    <lastmod>2026-03-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/services.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/services.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/services.html" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/services.html?lang=en</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/services.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/services.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/services.html" />
   </url>
   <url>
     <loc>https://ms-comm.github.io/portfolio.html</loc>
-    <lastmod>2026-03-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/portfolio.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/portfolio.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/portfolio.html" />
   </url>
   <url>
-    <loc>https://ms-comm.github.io/photos.html</loc>
-    <lastmod>2026-09-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://ms-comm.github.io/contact.html</loc>
-    <lastmod>2026-03-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://ms-comm.github.io/portfolio.html?lang=en</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/portfolio.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/portfolio.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/portfolio.html" />
   </url>
   <url>
     <loc>https://ms-comm.github.io/experiences.html</loc>
-    <lastmod>2026-03-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/experiences.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/experiences.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/experiences.html" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/experiences.html?lang=en</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/experiences.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/experiences.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/experiences.html" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/contact.html</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/contact.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/contact.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/contact.html" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/contact.html?lang=en</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/contact.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/contact.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/contact.html" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/photos.html</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/photos.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/photos.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/photos.html" />
+  </url>
+  <url>
+    <loc>https://ms-comm.github.io/photos.html?lang=en</loc>
+    <lastmod>2026-09-26</lastmod>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ms-comm.github.io/photos.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://ms-comm.github.io/photos.html?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ms-comm.github.io/photos.html" />
   </url>
 </urlset>

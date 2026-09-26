@@ -219,3 +219,10 @@ assets/data/translations.json  /admin  (SPA)
 | Translations not updating in EN | `shouldSkip` bug | Check `i18n.js` — `data-i18n` skip must not be present |
 | Services prices not updating | Backend serving old `db/translations.json` | Save again from admin Texts → Services, or remove stale dev `photo-server/db/translations.json` |
 | Upload crashes after ~30 photos | Fly.io CPU burst credit exhaustion | watermark q82 + no preview copy — see [docs/fixes_and_issues.md](docs/fixes_and_issues.md) |
+
+## Search discovery (2026-09-26)
+
+- `index.html`, `services.html`, `portfolio.html`, `experiences.html`, `contact.html`, and `photos.html` are the public search landing pages. Keep each title and description page-specific and mirrored in `assets/data/translations.json` plus the fallback dictionary in `assets/js/i18n.js`.
+- `assets/js/seo.js` keeps the language query shareable, applies localized metadata, canonical URLs, and internal links. Preserve static FR/EN `hreflang` links and the matching pairs in `sitemap.xml`.
+- `robots.txt` must retain the sitemap declaration. `sitemap.xml` includes only indexable public landing pages; account and checkout stay `noindex`. `atelier.html` stays `noindex` until its product catalog is active.
+- Do not add unverified street addresses or city-center coordinates to metadata or structured data. `index.html` Organization markup uses verified brand/contact/social details only.
