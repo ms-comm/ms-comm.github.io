@@ -188,6 +188,7 @@
     window.MSCommI18n.setLang(forcedLang);
   }
   currentLang = window.MSCommI18n?.getLang() || document.documentElement.lang || 'fr';
+  syncLanguageUrl(currentLang);
   applyDocumentMetadata(currentLang);
   localizeInternalLinks(currentLang);
 
@@ -209,6 +210,7 @@
     if (window.MSCommI18n && window.MSCommI18n.getLang() !== language) {
       window.MSCommI18n.setLang(language);
     }
+    syncLanguageUrl(language);
     applyDocumentMetadata(language);
     localizeInternalLinks(language);
   });

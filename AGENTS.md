@@ -224,5 +224,6 @@ assets/data/translations.json  /admin  (SPA)
 
 - `index.html`, `services.html`, `portfolio.html`, `experiences.html`, `contact.html`, and `photos.html` are the public search landing pages. Keep each title and description page-specific and mirrored in `assets/data/translations.json` plus the fallback dictionary in `assets/js/i18n.js`.
 - `assets/js/seo.js` keeps the language query shareable, applies localized metadata, canonical URLs, and internal links. Preserve static FR/EN `hreflang` links and the matching pairs in `sitemap.xml`.
+- The rendered language must match its canonical URL: French uses the clean URL; English uses `?lang=en`. Normalize the URL before assigning localized metadata, including when language comes from browser preference.
 - `robots.txt` must retain the sitemap declaration. `sitemap.xml` includes only indexable public landing pages; account and checkout stay `noindex`. `atelier.html` stays `noindex` until its product catalog is active.
 - Do not add unverified street addresses or city-center coordinates to metadata or structured data. `index.html` Organization markup uses verified brand/contact/social details only.
