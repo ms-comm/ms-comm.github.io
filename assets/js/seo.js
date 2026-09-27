@@ -78,7 +78,7 @@
 
   function pageUrl(language) {
     const url = baseUrl();
-    if (language === 'en') url.searchParams.set('lang', 'en');
+    url.searchParams.set('lang', language === 'en' ? 'en' : 'fr');
     return url;
   }
 
@@ -168,8 +168,7 @@
           : url.pathname.slice(url.pathname.lastIndexOf('/') + 1);
         if (!PAGE_META[linkedPath]) return;
         if (linkedPath === 'index.html') url.pathname = '/';
-        if (language === 'en') url.searchParams.set('lang', 'en');
-        else url.searchParams.delete('lang');
+        url.searchParams.set('lang', language === 'en' ? 'en' : 'fr');
         anchor.setAttribute('href', `${url.pathname}${url.search}${url.hash}`);
       } catch (_) {}
     });
@@ -177,8 +176,8 @@
 
   function syncLanguageUrl(language) {
     const url = new URL(window.location.href);
-    if (language === 'en') url.searchParams.set('lang', 'en');
-    else url.searchParams.delete('lang');
+    if (page === 'index.html') url.pathname = '/';
+    url.searchParams.set('lang', language === 'en' ? 'en' : 'fr');
     window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
   }
 
