@@ -6,7 +6,7 @@ Previews composite the selected photo onto an illustrative paper, case or calend
 
 Favorites use the authenticated `MSAccount.request` Response and parse its JSON. A cart entry stores photo ID, exact Gelato UID, variant, price and quantity. The contact request includes those references. Checkout remains a request for approval, with no automatic payment or Gelato order submission. Catalog changes prevent stale-price requests. Local storage is a convenience, not a trusted payment source.
 
-Desktop presents four family selectors above a preview and product configuration. Mobile stacks these elements without a fixed-height viewport. Product detail, shipping/payment explanation and product names remain visible. Keyboard focus is retained in the photo picker and cart. The page supports reduced motion.
+Desktop keeps the four product-family selectors across the top, then places the black-and-gold product preview on the left and configuration on the right. The mockup retains its scale while the preview panel is slightly narrower; product description and specifications appear beneath it in the natural page scroll. The top cards are the only product switcher. Mobile stacks the same sections without a fixed-height viewport. Keyboard focus is retained in the photo picker and cart. The page supports reduced motion.
 
 Verification: desktop and 390 px Chrome, FR/EN, actual variant selection, favorite photo selection, quantity two, cart total and contact-prefill checks using isolated synthetic account data. No test message or production order was sent.
 

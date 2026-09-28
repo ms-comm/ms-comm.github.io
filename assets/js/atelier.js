@@ -240,7 +240,7 @@
 
     $('shop-name').textContent = familyName(kind);
     $('shop-price').textContent = money(product.retailPrice, product.currency);
-    $('shop-description').textContent = localized(product, 'description');
+    $('shop-stage-description').textContent = localized(product, 'description');
     $('shop-specifications').textContent = localized(product, 'specifications') || localized(product, 'description');
     $('shop-choice-image').src = photo.image || fallbackImage;
     $('shop-choice-title').textContent = photo.id ? photo.title : copy('Choisir dans mes favoris', 'Choose from my favorites');
@@ -489,7 +489,7 @@
     $('shop-price').textContent = '—';
     $('shop-total').textContent = '—';
     $('shop-formats').innerHTML = '<span class="shop-no-format">' + copy('Aucun produit actif', 'No active products') + '</span>';
-    $('shop-description').textContent = message;
+    $('shop-stage-description').textContent = message;
   }
 
   async function loadCatalog() {
@@ -561,16 +561,6 @@
     }, 1200);
   }
 
-  $('shop-prev').onclick = () => {
-    if (!products.length) return;
-    index = (index + products.length - 1) % products.length;
-    renderProduct();
-  };
-  $('shop-next').onclick = () => {
-    if (!products.length) return;
-    index = (index + 1) % products.length;
-    renderProduct();
-  };
   $('shop-formats').onclick = event => {
     const button = event.target.closest('[data-format]');
     if (!button) return;

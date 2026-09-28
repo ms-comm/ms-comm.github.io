@@ -234,3 +234,4 @@ assets/data/translations.json  /admin  (SPA)
 - Storefront variants retain exact Gelato UIDs and photo IDs through cart/contact requests. Previews are illustrative; no automatic payment or production order is implied. Preserve the master publication flag. See `docs/atelier.md`.
 
 - Atelier disabled/unavailable states show a gallery return link and hide the empty product configuration and preview.
+- Keep product-family cards at the top as the only product switcher; do not restore previous/next controls under the preview. The preview sits left of configuration on desktop, uses the black-and-gold Atelier palette, and keeps the merchandise mockup scale stable as its panel narrows slightly. Description and specifications live beneath the mockup; page scroll stays natural on desktop and mobile.
