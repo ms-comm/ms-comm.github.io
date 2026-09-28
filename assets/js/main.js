@@ -575,9 +575,19 @@
       const order = JSON.parse(localStorage.getItem('mscomm_merch_checkout') || '{}');
       const english = (localStorage.getItem('mscomm_lang') || document.documentElement.lang) === 'en';
       const label = (fr, en) => english ? en : fr;
-      const lines = Array.isArray(order.cart) ? order.cart.map(item =>
-        `• ${item.name} — ${item.format} — ${label('Quantité','Quantity')} ${item.quantity} — ${(item.price * item.quantity).toFixed(2)} €\n  ${label('Référence photo','Photo reference')} : ${item.photoId || '—'} (${item.photoTitle || ''})\n  ${label('Référence produit','Product reference')} : ${item.productUid}`
-      ) : [];
+      const lines = Array.isArray(order.cart) ? order.cart.map(item => {
+        const photos = Array.isArray(item.photos) ? item.photos :
+          (item.photoId ? [{ id: item.photoId, title: item.photoTitle, quantity: item.quantity }] : []);
+        const photoRefs = photos.map(entry => {
+          const slot = english ? entry.slotLabelEn : entry.slotLabel;
+          const copies = item.family === 'print' && Number(entry.quantity) > 1 ? ' × ' + entry.quantity : '';
+          return '  - ' + (slot ? slot + ' : ' : '') + (entry.title || 'Photo') + ' · ' +
+            label('réf.', 'ref.') + ' ' + (entry.id || '—') + copies;
+        }).join('\n');
+        return '• ' + item.name + ' — ' + item.format + ' — ' +
+          label('Quantité ', 'Quantity ') + item.quantity + ' — ' + (item.price * item.quantity).toFixed(2) + ' €\n' +
+          photoRefs + '\n  ' + label('Référence produit', 'Product reference') + ' : ' + item.productUid;
+      }) : [];
       const messageInput = document.querySelector('textarea[name="message"]');
       subjectInput.value = label('Demande de création L’Atelier','Atelier creation request');
       subjectInput.dataset.autoSubject = 'false';
