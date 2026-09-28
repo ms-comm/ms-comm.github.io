@@ -232,3 +232,5 @@ assets/data/translations.json  /admin  (SPA)
 
 - Atelier admin has Products / Statistics / Gelato settings tabs; supplier costs and gross margin are distinct from shipping and net profit. Public product data excludes provider costs.
 - Storefront variants retain exact Gelato UIDs and photo IDs through cart/contact requests. Previews are illustrative; no automatic payment or production order is implied. Preserve the master publication flag. See `docs/atelier.md`.
+
+- Atelier disabled/unavailable states show a gallery return link and hide the empty product configuration and preview.
