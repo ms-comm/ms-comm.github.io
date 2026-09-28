@@ -573,14 +573,16 @@
   if (params.get('order') === 'shop' && subjectInput) {
     try {
       const order = JSON.parse(localStorage.getItem('mscomm_merch_checkout') || '{}');
+      const english = (localStorage.getItem('mscomm_lang') || document.documentElement.lang) === 'en';
+      const label = (fr, en) => english ? en : fr;
       const lines = Array.isArray(order.cart) ? order.cart.map(item =>
-        `• ${item.name} — ${item.format} — quantité ${item.quantity} — ${(item.price * item.quantity).toFixed(2).replace('.00', '')} €`
+        `• ${item.name} — ${item.format} — ${label('Quantité','Quantity')} ${item.quantity} — ${(item.price * item.quantity).toFixed(2)} €\n  ${label('Référence photo','Photo reference')} : ${item.photoId || '—'} (${item.photoTitle || ''})\n  ${label('Référence produit','Product reference')} : ${item.productUid}`
       ) : [];
       const messageInput = document.querySelector('textarea[name="message"]');
-      subjectInput.value = "Commande L'Atelier MS Comm'";
+      subjectInput.value = label('Demande de création L’Atelier','Atelier creation request');
       subjectInput.dataset.autoSubject = 'false';
       if (messageInput && lines.length) {
-        messageInput.value = `Bonjour,\n\nJe souhaite commander :\n${lines.join('\n')}\n\nTotal produits : ${Number(order.total || 0).toFixed(2).replace('.00', '')} €\n\nMerci de me confirmer les frais de livraison et le paiement.`;
+        messageInput.value = `${label('Bonjour,','Hello,')}\n\n${lines.join('\n\n')}\n\n${label('Total produits indicatif','Indicative product total')} : ${Number(order.total || 0).toFixed(2)} €\n\n${label('Merci de confirmer le cadrage, les frais de livraison et le total avant paiement.','Please confirm the crop, shipping costs and total before payment.')}`;
       }
     } catch (_) { /* panier local absent ou illisible : formulaire normal */ }
   }

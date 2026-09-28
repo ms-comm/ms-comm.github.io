@@ -227,3 +227,8 @@ assets/data/translations.json  /admin  (SPA)
 - The rendered language must match its canonical URL: French uses `?lang=fr`; English uses `?lang=en`. Normalize the URL before assigning localized metadata, including when language comes from browser preference.
 - `robots.txt` must retain the sitemap declaration. `sitemap.xml` includes only indexable public landing pages; account and checkout stay `noindex`. `atelier.html` stays `noindex` until its product catalog is active.
 - Do not add unverified street addresses or city-center coordinates to metadata or structured data. `index.html` Organization markup uses verified brand/contact/social details only.
+
+### 2026-09-28 Atelier catalogue and preview
+
+- Atelier admin has Products / Statistics / Gelato settings tabs; supplier costs and gross margin are distinct from shipping and net profit. Public product data excludes provider costs.
+- Storefront variants retain exact Gelato UIDs and photo IDs through cart/contact requests. Previews are illustrative; no automatic payment or production order is implied. Preserve the master publication flag. See `docs/atelier.md`.
