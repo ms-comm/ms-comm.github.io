@@ -235,3 +235,4 @@ assets/data/translations.json  /admin  (SPA)
 
 - Atelier disabled/unavailable states show a gallery return link and hide the empty product configuration and preview.
 - Keep product-family cards at the top as the only product switcher; do not restore previous/next controls under the preview. The preview sits left of configuration on desktop, uses the black-and-gold Atelier palette, and keeps the merchandise mockup scale stable as its panel narrows slightly. Description and specifications live beneath the mockup; page scroll stays natural on desktop and mobile.
+- At 760px and below, constrain cards and stacked sections to the shell width; use zero-min grid tracks so the product row cannot introduce horizontal page scroll.
