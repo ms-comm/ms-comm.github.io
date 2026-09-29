@@ -11,3 +11,13 @@ Desktop keeps the four product-family selectors across the top, then places the 
 Verification: the production page was checked at desktop and 390 px, in FR and EN. All four family cards remain above the preview; product details follow the mockup; previous/next arrows are absent; and the mobile content fits the viewport. The 10-print minimum and 14 distinct calendar slots still gate cart addition. Earlier checks covered variant selection, favorite selection, quantity, total and contact-prefill with isolated synthetic data; no test message or production order was sent.
 
 Disabled/unavailable state hides the empty configuration and preview panels and provides a gallery return link; it never exposes a purchase action.
+
+## Photo customization — 2026-09-29
+
+The black-and-gold preview now has a soft animated yellow halo (disabled for reduced-motion preferences). The product mockup keeps its existing dimensions. A shared photo editor lets the visitor drag each image to set its crop and zoom for the selected product. The crop belongs to that image: every A6 print tile and each filled calendar slot can be adjusted independently. Captions up to 60 characters can be added below a poster/print, on a phone case, or on a calendar page.
+
+Person cutout is opt-in. The first click loads the pinned MediaPipe 1.0.1 browser runtime and Google's 249 KB Selfie Segmenter model; the selected image is fetched to the browser and segmented there, without sending it to a segmentation service. The compressed transparent WebP is limited to preview resolution/size and stays in the local cart. It is not a production-resolution image and is not sent as a Gelato print file. Browser/network/CORS failures leave crop and captions available.
+
+The approval message carries any non-default crop coordinates/zoom, custom text and whether a person cutout preview was requested, per photo. Requests still need manual review and confirmation of the final production artwork. The user can drag inside the crop frame, use the zoom slider or arrow keys, reset the crop, optionally cut out/restore the person, add text, then choose Apply. Single-image products use “Recadrer ou détourer”; print tiles and filled calendar slots have their own crop action.
+
+New visitor copy is present in `assets/data/translations.json` and the inline fallback in `assets/js/i18n.js`. Check the live editor and contact-prefill metadata in both languages before treating the change as verified.

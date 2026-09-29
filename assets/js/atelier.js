@@ -33,6 +33,23 @@
   let printPhotos = [];
   let calendarPhotos = Array(14).fill(null);
   let photo = { id: '', title: 'Choisir dans mes favoris', image: fallbackImage };
+  let editorTarget = null;
+  let editorDraft = null;
+  let editorReturnFocus = null;
+  let segmenterPromise = null;
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, Number(value) || 0));
+  const photoCrop = item => ({
+    x: clamp(item?.crop?.x ?? 50, 0, 100),
+    y: clamp(item?.crop?.y ?? 50, 0, 100),
+    zoom: clamp(item?.crop?.zoom ?? 1, 1, 3)
+  });
+  const cropStyle = item => {
+    const crop = photoCrop(item);
+    return 'object-position:' + crop.x + '% ' + crop.y + '%;transform:scale(' + crop.zoom + ')';
+  };
+  const previewImage = item => item?.cutoutPreview || item?.image || fallbackImage;
+  const selectedPhoto = item => ({ ...item, crop: photoCrop(item), caption: String(item?.caption || '').slice(0, 60) });
 
   try {
     const requestedId = params.get('photo');
@@ -76,10 +93,25 @@
     phone: copy('Coque de téléphone', 'Phone case'),
     calendar: copy('Calendrier', 'Calendar')
   }[kind]);
+  function photoAspect(kind, product) {
+    if (kind === 'phone') return 9 / 18;
+    if (kind === 'calendar') return 3 / 2;
+    if (kind === 'print') return 105 / 148;
+    const details = [variant(product), localized(product, 'specifications'), localized(product, 'description')].join(' ').toLowerCase();
+    const dimensions = details.match(/(\d+(?:[.,]\d+)?)\s*[×x]\s*(\d+(?:[.,]\d+)?)/i);
+    if (!dimensions) return 3 / 4;
+    const first = Number(dimensions[1].replace(',', '.'));
+    const second = Number(dimensions[2].replace(',', '.'));
+    if (!first || !second) return 3 / 4;
+    if (/paysage|landscape/.test(details)) return Math.max(first, second) / Math.min(first, second);
+    if (/portrait/.test(details)) return Math.min(first, second) / Math.max(first, second);
+    return first / second;
+  }
   const variant = product => localized(product, 'variantLabel') || String(product.title || '').split('·')[1]?.trim() || 'Standard';
   const slotName = slot => copy(SLOT_NAMES[slot][0], SLOT_NAMES[slot][1]);
   const printCount = () => printPhotos.reduce((sum, item) => sum + item.quantity, 0);
-  const photoThumb = (url, alt) => '<img src="' + esc(url || fallbackImage) + '" alt="' + esc(alt || '') + '" loading="lazy">';
+  const photoThumb = (url, alt, item) => '<img src="' + esc(url || fallbackImage) + '" alt="' + esc(alt || '') + '"' +
+    (item ? ' style="' + cropStyle(item) + '"' : '') + ' loading="lazy">';
 
   function thumbnail(product, url = photo.image) {
     return '<span class="shop-object-thumb kind-' + family(product) + '" aria-hidden="true"><span>' +
@@ -121,10 +153,11 @@
   function renderPrintSelection() {
     const root = $('shop-print-selection');
     root.innerHTML = printPhotos.map((item, itemIndex) =>
-      '<article class="shop-print-tile"><div class="shop-print-image">' + photoThumb(item.image, item.title) +
+      '<article class="shop-print-tile"><div class="shop-print-image">' + photoThumb(previewImage(item), item.title, item) +
       '<button class="shop-print-remove" type="button" data-remove-print="' + itemIndex +
       '" aria-label="' + esc(copy('Retirer ', 'Remove ') + item.title) + '">' + REMOVE + '</button></div>' +
-      '<span class="shop-print-title">' + esc(item.title) + '</span><div class="shop-print-quantity">' +
+      '<span class="shop-print-title">' + esc(item.title) + '</span><button class="shop-print-edit" type="button" data-edit-print="' + itemIndex + '">' +
+      copy('Recadrer / texte', 'Crop / caption') + '</button><div class="shop-print-quantity">' +
       '<button type="button" data-change-print="' + itemIndex + '" data-delta="-1" aria-label="' +
       esc(copy('Retirer un tirage de ', 'Remove one print of ') + item.title) + '">' + MINUS + '</button>' +
       '<span>' + item.quantity + '</span><button type="button" data-change-print="' + itemIndex +
@@ -137,6 +170,9 @@
     root.querySelector('#shop-add-print-photo').onclick = () => openPicker(true, { mode: 'print' });
     root.querySelectorAll('[data-remove-print]').forEach(button => {
       button.onclick = () => { printPhotos.splice(Number(button.dataset.removePrint), 1); renderProduct(); };
+    });
+    root.querySelectorAll('[data-edit-print]').forEach(button => {
+      button.onclick = () => openPhotoEditor({ kind: 'print', index: Number(button.dataset.editPrint) });
     });
     root.querySelectorAll('[data-change-print]').forEach(button => {
       button.onclick = () => {
@@ -162,14 +198,18 @@
     const root = $('shop-calendar-slots');
     root.innerHTML = SLOT_NAMES.map((_, slot) => {
       const item = calendarPhotos[slot];
-      return '<button type="button" class="shop-calendar-slot ' + (item ? 'is-filled' : 'is-empty') +
+      return '<div class="shop-calendar-cell"><button type="button" class="shop-calendar-slot ' + (item ? 'is-filled' : 'is-empty') +
         '" data-calendar-slot="' + slot + '" aria-label="' +
         esc(copy('Choisir la photo pour ', 'Choose photo for ') + slotName(slot)) + '">' +
-        (item ? photoThumb(item.image, item.title) : '<span class="shop-calendar-plus">' + PLUS + '</span>') +
-        '<span class="shop-calendar-slot-name">' + esc(slotName(slot)) + '</span></button>';
+        (item ? photoThumb(previewImage(item), item.title, item) : '<span class="shop-calendar-plus">' + PLUS + '</span>') +
+        '<span class="shop-calendar-slot-name">' + esc(slotName(slot)) + '</span></button>' +
+        (item ? '<button type="button" class="shop-calendar-edit" data-edit-calendar="' + slot + '">' + copy('Recadrer', 'Crop') + '</button>' : '') + '</div>';
     }).join('');
     root.querySelectorAll('[data-calendar-slot]').forEach(button => {
       button.onclick = () => openPicker(true, { mode: 'calendar', slot: Number(button.dataset.calendarSlot) });
+    });
+    root.querySelectorAll('[data-edit-calendar]').forEach(button => {
+      button.onclick = () => openPhotoEditor({ kind: 'calendar', index: Number(button.dataset.editCalendar) });
     });
     const filled = calendarPhotos.filter(Boolean).length;
     $('shop-calendar-status').textContent = copy(filled + ' / 14 photos choisies', filled + ' / 14 photos selected');
@@ -195,6 +235,253 @@
     }
   }
 
+  function photoAt(target) {
+    if (!target) return null;
+    if (target.kind === 'single') return photo;
+    if (target.kind === 'print') return printPhotos[target.index] || null;
+    if (target.kind === 'calendar') return calendarPhotos[target.index] || null;
+    return null;
+  }
+
+  function updateEditorPreview() {
+    if (!editorDraft) return;
+    const crop = photoCrop(editorDraft);
+    const image = $('shop-photo-editor-image');
+    image.src = previewImage(editorDraft);
+    image.style.objectPosition = crop.x + '% ' + crop.y + '%';
+    image.style.transform = 'scale(' + crop.zoom + ')';
+    $('shop-crop-zoom').value = crop.zoom;
+    $('shop-crop-zoom-value').value = Math.round(crop.zoom * 100) + ' %';
+    $('shop-photo-editor-caption').textContent = editorDraft.caption || '';
+    $('shop-photo-editor-caption').hidden = !editorDraft.caption;
+    $('shop-cutout-reset').hidden = !editorDraft.cutoutPreview;
+  }
+
+  function openPhotoEditor(target) {
+    const source = photoAt(target);
+    if (!source?.id || !products.length || products[index]?.previewEnabled === false) return;
+    editorTarget = target;
+    editorDraft = { ...source, crop: photoCrop(source), caption: String(source.caption || '').slice(0, 60) };
+    editorReturnFocus = document.activeElement;
+    const kind = target.kind === 'single' ? family(products[index]) : target.kind;
+    $('shop-photo-editor-frame').className = 'shop-photo-editor-frame is-' + kind;
+    $('shop-photo-editor-frame').style.aspectRatio = String(photoAspect(kind, products[index]));
+    $('shop-photo-editor-title').textContent = copy('Personnaliser · ', 'Customize · ') + (source.title || familyName(kind));
+    $('shop-caption-label').textContent = kind === 'phone'
+      ? copy('Texte sur la coque', 'Text on the case')
+      : kind === 'calendar'
+        ? copy('Texte sur cette page', 'Text on this page')
+        : copy('Texte sous la photo', 'Text below the photo');
+    $('shop-caption-input').value = editorDraft.caption;
+    $('shop-editor-status').textContent = editorDraft.cutoutPreview
+      ? copy('Détourage appliqué à cet aperçu.', 'Cutout applied to this preview.') : '';
+    $('shop-photo-editor').hidden = false;
+    document.body.classList.add('shop-photo-editor-open');
+    updateEditorPreview();
+    $('shop-photo-editor-close').focus();
+  }
+
+  function closePhotoEditor(apply = false) {
+    const appliedTarget = editorTarget;
+    if (apply && editorDraft && editorTarget) {
+      if (editorTarget.kind === 'single') photo = editorDraft;
+      else if (editorTarget.kind === 'print') printPhotos[editorTarget.index] = editorDraft;
+      else if (editorTarget.kind === 'calendar') calendarPhotos[editorTarget.index] = editorDraft;
+    }
+    $('shop-photo-editor').hidden = true;
+    document.body.classList.remove('shop-photo-editor-open');
+    editorDraft = null;
+    editorTarget = null;
+    if (apply) renderProduct();
+    const replacementFocus = appliedTarget?.kind === 'print'
+      ? $('shop-print-selection').querySelector('[data-edit-print="' + appliedTarget.index + '"]')
+      : appliedTarget?.kind === 'calendar'
+        ? $('shop-calendar-slots').querySelector('[data-edit-calendar="' + appliedTarget.index + '"]')
+        : $('shop-edit-photo');
+    if (editorReturnFocus?.isConnected) editorReturnFocus.focus();
+    else replacementFocus?.focus();
+    editorReturnFocus = null;
+  }
+
+  async function createPhotoSegmenter() {
+    const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs');
+    const wasm = await vision.FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm'
+    );
+    return vision.ImageSegmenter.createFromOptions(wasm, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite'
+      },
+      runningMode: 'IMAGE',
+      outputCategoryMask: true,
+      outputConfidenceMasks: true
+    });
+  }
+
+  function canvasBlob(canvas, quality) {
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+  }
+
+  async function runPersonCutout() {
+    if (!editorDraft || $('shop-cutout').disabled) return;
+    const draft = editorDraft;
+    const button = $('shop-cutout');
+    button.disabled = true;
+    $('shop-editor-status').textContent = copy('Chargement du modèle de détourage…', 'Loading the cutout model…');
+    try {
+      if (!segmenterPromise) {
+        segmenterPromise = createPhotoSegmenter().catch(error => { segmenterPromise = null; throw error; });
+      }
+      const segmenter = await segmenterPromise;
+      $('shop-editor-status').textContent = copy('Détection de la personne…', 'Finding the person…');
+      const response = await fetch(draft.image, { mode: 'cors', credentials: 'omit' });
+      if (!response.ok) throw new Error('image');
+      const bitmap = await createImageBitmap(await response.blob());
+      const maxSide = 420;
+      const ratio = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+      const width = Math.max(1, Math.round(bitmap.width * ratio));
+      const height = Math.max(1, Math.round(bitmap.height * ratio));
+      const sourceCanvas = document.createElement('canvas');
+      sourceCanvas.width = width;
+      sourceCanvas.height = height;
+      sourceCanvas.getContext('2d', { willReadFrequently: true }).drawImage(bitmap, 0, 0, width, height);
+
+      let maskWidth = 0, maskHeight = 0, values, maskMode = 'category', personClass = 1;
+      try {
+        const result = segmenter.segment(bitmap);
+        const labels = segmenter.getLabels().map(label => String(label).toLowerCase());
+        const confidenceMasks = result.confidenceMasks || [];
+        if (confidenceMasks.length) {
+          const detectedPersonClass = labels.findIndex(label => /person|human|foreground/.test(label));
+          personClass = confidenceMasks.length === 1 ? 0 : detectedPersonClass >= 0 ? detectedPersonClass : confidenceMasks.length - 1;
+          const mask = confidenceMasks[personClass];
+          maskWidth = mask.width;
+          maskHeight = mask.height;
+          values = new Float32Array(mask.getAsFloat32Array());
+          maskMode = 'confidence';
+        } else {
+          const mask = result.categoryMask;
+          if (!mask) throw new Error('mask');
+          const labelIndex = labels.findIndex(label => /person|human|foreground/.test(label));
+          personClass = labelIndex >= 0 ? labelIndex : 1;
+          maskWidth = mask.width;
+          maskHeight = mask.height;
+          values = new Uint8Array(mask.getAsUint8Array());
+        }
+        result.close();
+      } finally {
+        bitmap.close();
+      }
+      const maskCanvas = document.createElement('canvas');
+      maskCanvas.width = maskWidth;
+      maskCanvas.height = maskHeight;
+      const maskContext = maskCanvas.getContext('2d');
+      const maskPixels = maskContext.createImageData(maskCanvas.width, maskCanvas.height);
+      for (let i = 0; i < values.length; i++) {
+        const offset = i * 4;
+        maskPixels.data[offset] = 255;
+        maskPixels.data[offset + 1] = 255;
+        maskPixels.data[offset + 2] = 255;
+        const confidence = maskMode === 'confidence' ? clamp((values[i] - 0.08) / 0.84, 0, 1) : (values[i] === personClass ? 1 : 0);
+        maskPixels.data[offset + 3] = Math.round(confidence * 255);
+      }
+      maskContext.putImageData(maskPixels, 0, 0);
+      const output = document.createElement('canvas');
+      output.width = width;
+      output.height = height;
+      const outputContext = output.getContext('2d');
+      outputContext.imageSmoothingEnabled = true;
+      outputContext.drawImage(sourceCanvas, 0, 0);
+      outputContext.globalCompositeOperation = 'destination-in';
+      outputContext.drawImage(maskCanvas, 0, 0, width, height);
+      outputContext.globalCompositeOperation = 'source-over';
+
+      let blob = await canvasBlob(output, 0.82);
+      if (!blob || !blob.type.includes('webp')) throw new Error('format');
+      let compressed = output;
+      for (let attempt = 0; blob.size > 64000 && attempt < 5; attempt++) {
+        const smaller = document.createElement('canvas');
+        smaller.width = Math.max(1, Math.round(compressed.width * 0.78));
+        smaller.height = Math.max(1, Math.round(compressed.height * 0.78));
+        smaller.getContext('2d').drawImage(compressed, 0, 0, smaller.width, smaller.height);
+        compressed = smaller;
+        blob = await canvasBlob(compressed, 0.78 - attempt * 0.08);
+      }
+      if (!blob || blob.size > 64000) throw new Error('size');
+      draft.cutoutPreview = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      if (editorDraft !== draft) return;
+      $('shop-editor-status').textContent = copy('Détourage prêt · aperçu local à valider.', 'Cutout ready · local preview to review.');
+      updateEditorPreview();
+    } catch (_) {
+      $('shop-editor-status').textContent = copy(
+        'Détourage impossible ici. Vérifiez la connexion ou gardez le cadrage seul.',
+        'Cutout could not run here. Check the connection or keep crop only.'
+      );
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  $('shop-edit-photo').onclick = () => openPhotoEditor({ kind: 'single' });
+  $('shop-photo-editor-close').onclick = () => closePhotoEditor(false);
+  $('shop-photo-editor-cancel').onclick = () => closePhotoEditor(false);
+  $('shop-photo-editor-apply').onclick = () => closePhotoEditor(true);
+  $('shop-photo-editor-backdrop').onclick = () => closePhotoEditor(false);
+  $('shop-crop-zoom').oninput = event => {
+    if (!editorDraft) return;
+    editorDraft.crop.zoom = Number(event.target.value);
+    updateEditorPreview();
+  };
+  $('shop-crop-reset').onclick = () => {
+    if (!editorDraft) return;
+    editorDraft.crop = { x: 50, y: 50, zoom: 1 };
+    updateEditorPreview();
+  };
+  $('shop-caption-input').oninput = event => {
+    if (!editorDraft) return;
+    editorDraft.caption = event.target.value.slice(0, 60);
+    updateEditorPreview();
+  };
+  $('shop-cutout').onclick = runPersonCutout;
+  $('shop-cutout-reset').onclick = () => {
+    if (!editorDraft) return;
+    delete editorDraft.cutoutPreview;
+    $('shop-editor-status').textContent = copy('Arrière-plan d’origine restauré.', 'Original background restored.');
+    updateEditorPreview();
+  };
+  let cropDrag = null;
+  $('shop-photo-editor-frame').addEventListener('pointerdown', event => {
+    if (!editorDraft || event.button !== 0) return;
+    cropDrag = { x: event.clientX, y: event.clientY };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  $('shop-photo-editor-frame').addEventListener('pointermove', event => {
+    if (!cropDrag || !editorDraft) return;
+    const frame = event.currentTarget.getBoundingClientRect();
+    editorDraft.crop.x = clamp(editorDraft.crop.x - (event.clientX - cropDrag.x) / frame.width * 100, 0, 100);
+    editorDraft.crop.y = clamp(editorDraft.crop.y - (event.clientY - cropDrag.y) / frame.height * 100, 0, 100);
+    cropDrag = { x: event.clientX, y: event.clientY };
+    updateEditorPreview();
+  });
+  $('shop-photo-editor-frame').addEventListener('pointerup', () => { cropDrag = null; });
+  $('shop-photo-editor-frame').addEventListener('pointercancel', () => { cropDrag = null; });
+  $('shop-photo-editor-frame').addEventListener('keydown', event => {
+    if (!editorDraft || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    event.preventDefault();
+    const delta = event.shiftKey ? 5 : 1;
+    if (event.key === 'ArrowLeft') editorDraft.crop.x = clamp(editorDraft.crop.x - delta, 0, 100);
+    if (event.key === 'ArrowRight') editorDraft.crop.x = clamp(editorDraft.crop.x + delta, 0, 100);
+    if (event.key === 'ArrowUp') editorDraft.crop.y = clamp(editorDraft.crop.y - delta, 0, 100);
+    if (event.key === 'ArrowDown') editorDraft.crop.y = clamp(editorDraft.crop.y + delta, 0, 100);
+    updateEditorPreview();
+  });
+
   function renderProduct() {
     if (!products.length) return;
     const product = products[index];
@@ -209,11 +496,19 @@
 
     const previewPhoto = kind === 'print' ? printPhotos[0] : kind === 'calendar' ? calendarPhotos[0] : photo;
     $('shop-index').textContent = variant(product);
-    $('shop-preview-image').src = (previewPhoto?.image || fallbackImage);
+    const preview = $('shop-preview-image');
+    preview.src = previewImage(previewPhoto);
+    const crop = photoCrop(previewPhoto);
+    preview.style.objectPosition = crop.x + '% ' + crop.y + '%';
+    preview.style.transform = 'scale(' + crop.zoom + ')';
     $('shop-preview-image').alt = copy('Simulation : ', 'Preview: ') + localized(product, 'title');
+    const caption = $('shop-preview-custom-caption');
+    caption.textContent = previewPhoto?.caption || '';
+    caption.hidden = !previewPhoto?.caption;
 
     const object = $('shop-preview-object');
     object.className = 'shop-preview-object product-' + kind;
+    object.style.aspectRatio = kind === 'calendar' ? '210 / 297' : String(photoAspect(kind, product));
     object.hidden = product.previewEnabled === false;
     object.querySelector('.shop-calendar-grid')?.remove();
     if (kind === 'calendar') {
@@ -244,6 +539,7 @@
     $('shop-specifications').textContent = localized(product, 'specifications') || localized(product, 'description');
     $('shop-choice-image').src = photo.image || fallbackImage;
     $('shop-choice-title').textContent = photo.id ? photo.title : copy('Choisir dans mes favoris', 'Choose from my favorites');
+    $('shop-edit-photo').disabled = !photo.id || product.previewEnabled === false;
     $('shop-variant-label').textContent = kind === 'phone'
       ? copy('Modèle de téléphone', 'Phone model') : copy('Format', 'Size');
     $('shop-variant').innerHTML = products.map((item, itemIndex) => family(item) === kind
@@ -291,10 +587,11 @@
           ? copy('14 photos · ' + item.quantity + ' calendrier(s)', '14 photos · ' + item.quantity + ' calendar(s)')
           : esc(item.format) + ' · ' + copy('Qté ', 'Qty ') + item.quantity;
       const strip = photos.length
-        ? '<span class="shop-cart-photo-strip">' + photos.slice(0, 6).map(entry => photoThumb(entry.image, entry.title)).join('') +
+        ? '<span class="shop-cart-photo-strip">' + photos.slice(0, 6).map(entry => photoThumb(previewImage(entry), entry.title, entry)).join('') +
           (photos.length > 6 ? '<small>+' + (photos.length - 6) + '</small>' : '') + '</span>'
         : '';
-      return '<article class="shop-cart-item">' + thumbnail({ family: item.family || 'poster' }, item.image) +
+      const cover = photos[0] ? previewImage(photos[0]) : item.image;
+      return '<article class="shop-cart-item">' + thumbnail({ family: item.family || 'poster' }, cover) +
         '<div><b>' + esc(name) + '</b><small>' + detail + '</small>' + strip + '</div><span><b>' +
         money(item.price * item.quantity, item.currency) + '</b><button type="button" data-remove="' + itemIndex +
         '">' + copy('Retirer', 'Remove') + '</button></span></article>';
@@ -412,7 +709,7 @@
   }
 
   function chooseFavorite(item) {
-    const selected = { id: item.id, title: item.title || 'Photo favorite', image: abs(item.watermarkedUrl || item.previewUrl) };
+    const selected = selectedPhoto({ id: item.id, title: item.title || 'Photo favorite', image: abs(item.watermarkedUrl || item.previewUrl) });
     if (pickerMode === 'single') {
       photo = selected;
       openPicker(false);
@@ -457,12 +754,12 @@
   $('favorite-picker-confirm').addEventListener('click', () => {
     const additions = pickerFavorites.filter(item => pickerSelected.has(item.id) &&
       !printPhotos.some(existing => existing.id === item.id));
-    additions.forEach(item => printPhotos.push({
+    additions.forEach(item => printPhotos.push(selectedPhoto({
       id: item.id,
       title: item.title || 'Photo favorite',
       image: abs(item.watermarkedUrl || item.previewUrl),
       quantity: 1
-    }));
+    })));
     openPicker(false);
     renderProduct();
     requestAnimationFrame(() => $('shop-add-print-photo')?.focus());
@@ -523,13 +820,14 @@
     if (kind !== 'print' && kind !== 'calendar' && !photo.id) return openPicker(true);
     const quantity = kind === 'print' ? printCount() : Number($('shop-quantity').value || 1);
     const selectedPhotos = kind === 'print'
-      ? printPhotos.map(item => ({ id: item.id, title: item.title, image: item.image, quantity: item.quantity }))
+      ? printPhotos.map(item => ({ ...item, crop: photoCrop(item), caption: String(item.caption || '').slice(0, 60) }))
       : kind === 'calendar'
         ? calendarPhotos.map((item, slot) => ({
           id: item.id, title: item.title, image: item.image, slotIndex: slot,
-          slotLabel: SLOT_NAMES[slot][0], slotLabelEn: SLOT_NAMES[slot][1]
+          slotLabel: SLOT_NAMES[slot][0], slotLabelEn: SLOT_NAMES[slot][1], crop: photoCrop(item),
+          caption: String(item.caption || '').slice(0, 60), cutoutPreview: item.cutoutPreview || ''
         }))
-        : [{ id: photo.id, title: photo.title, image: photo.image, quantity: 1 }];
+        : [{ ...photo, quantity: 1, crop: photoCrop(photo), caption: String(photo.caption || '').slice(0, 60) }];
     if (kind === 'print' && quantity < minimumQuantity(product)) return;
     if (kind === 'calendar' && selectedPhotos.length !== 14) return;
     cart.push({
@@ -577,7 +875,10 @@
   $('favorite-picker-close').onclick = () => openPicker(false);
   document.querySelector('.favorite-picker-backdrop').onclick = () => openPicker(false);
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { openCart(false); openPicker(false); }
+    if (event.key === 'Escape') {
+      if (!$('shop-photo-editor').hidden) closePhotoEditor(false);
+      else { openCart(false); openPicker(false); }
+    }
   });
   $('shop-checkout').onclick = () => {
     if (!products.length) return;
@@ -608,7 +909,8 @@
   $('shop-cart').inert = true;
   document.addEventListener('keydown', event => {
     if (event.key !== 'Tab') return;
-    const root = !$('favorite-picker').hidden ? $('favorite-picker') :
+    const root = !$('shop-photo-editor').hidden ? $('shop-photo-editor') :
+      !$('favorite-picker').hidden ? $('favorite-picker') :
       $('shop-cart').classList.contains('is-open') ? $('shop-cart') : null;
     if (!root) return;
     const items = [...root.querySelectorAll('button:not(:disabled),a[href],input,select')]

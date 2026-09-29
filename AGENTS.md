@@ -232,6 +232,7 @@ assets/data/translations.json  /admin  (SPA)
 
 - Atelier admin has Products / Statistics / Gelato settings tabs; supplier costs and gross margin are distinct from shipping and net profit. Public product data excludes provider costs.
 - Storefront variants retain exact Gelato UIDs and photo IDs through cart/contact requests. Previews are illustrative; no automatic payment or production order is implied. Preserve the master publication flag. See `docs/atelier.md`.
+- Photo editing applies independent crop/zoom and optional captions to each selected image, including every print and calendar slot. Person cutout loads MediaPipe only on explicit click and runs in the browser; the compressed result is a preview, never a Gelato-ready file. Carry crop, caption and cutout-request metadata into the approval message, and keep manual production approval explicit.
 
 - Atelier disabled/unavailable states show a gallery return link and hide the empty product configuration and preview.
 - Keep product-family cards at the top as the only product switcher; do not restore previous/next controls under the preview. The preview sits left of configuration on desktop, uses the black-and-gold Atelier palette, and keeps the merchandise mockup scale stable as its panel narrows slightly. Description and specifications live beneath the mockup; page scroll stays natural on desktop and mobile.

@@ -581,8 +581,16 @@
         const photoRefs = photos.map(entry => {
           const slot = english ? entry.slotLabelEn : entry.slotLabel;
           const copies = item.family === 'print' && Number(entry.quantity) > 1 ? ' × ' + entry.quantity : '';
+          const crop = entry.crop || {};
+          const cropChanged = Math.abs(Number(crop.x ?? 50) - 50) > 1 || Math.abs(Number(crop.y ?? 50) - 50) > 1 ||
+            Math.abs(Number(crop.zoom ?? 1) - 1) > 0.02;
+          const choices = [];
+          if (cropChanged) choices.push(label('cadrage ', 'crop ') + Math.round(Number(crop.x ?? 50)) + '/' +
+            Math.round(Number(crop.y ?? 50)) + ' · ' + Math.round(Number(crop.zoom ?? 1) * 100) + '%');
+          if (entry.caption) choices.push(label('texte : ', 'text: ') + entry.caption);
+          if (entry.cutoutPreview) choices.push(label('détourage personne (aperçu local à valider)', 'person cutout (local preview to approve)'));
           return '  - ' + (slot ? slot + ' : ' : '') + (entry.title || 'Photo') + ' · ' +
-            label('réf.', 'ref.') + ' ' + (entry.id || '—') + copies;
+            label('réf.', 'ref.') + ' ' + (entry.id || '—') + copies + (choices.length ? ' · ' + choices.join(' · ') : '');
         }).join('\n');
         return '• ' + item.name + ' — ' + item.format + ' — ' +
           label('Quantité ', 'Quantity ') + item.quantity + ' — ' + (item.price * item.quantity).toFixed(2) + ' €\n' +
