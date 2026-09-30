@@ -149,6 +149,8 @@
 .album-purchase-actions.hidden { display:none; }
 .album-purchase-actions .lb-btn { min-height:36px; }
 .album-download-actions .lb-btn { min-height:36px; }
+.album-download-actions .album-share-action { min-height:36px; background:#0a0a0a; color:#f0f0f0; border:1px solid rgba(255,255,255,.18); }
+.album-download-actions .album-share-action:hover { background:#171717; border-color:rgba(255,255,255,.34); color:#fff; }
 .album-download-actions .lb-btn.zip-loading { position:relative; }
 .album-download-actions .lb-btn.zip-loading > svg { display:none; }
 .album-download-actions .lb-btn.zip-loading::before { content:'⟳'; display:inline-block; margin-right:7px; animation:zip-spin 1s linear infinite; }
@@ -726,6 +728,10 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Télécharger la sélection</span>
               </button>
+              <button class="lb-btn lb-btn-share album-share-action" id="album-share-btn" type="button" aria-label="Partager l'album" title="Copier le lien de partage">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>Partager</span>
+              </button>
               <button class="lb-btn lb-btn-dl" id="album-download-watermark" aria-label="Tout télécharger avec filigrane" title="Tout télécharger avec filigrane">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Tout télécharger (avec filigrane)</span>
@@ -1291,6 +1297,10 @@ function shareAlbumPublic(id) {
   if (window.MSTrack) window.MSTrack.event('share', { albumId: id, kind: 'album' });
   navigator.clipboard.writeText(url).then(() => alert('Lien copié : ' + url)).catch(() => prompt('Copiez ce lien :', url));
 }
+
+document.getElementById('album-share-btn')?.addEventListener('click', () => {
+  if (currentAlbumId) shareAlbumPublic(currentAlbumId);
+});
 
 function getSearch() { return document.getElementById('gal-search').value.toLowerCase().trim(); }
 
